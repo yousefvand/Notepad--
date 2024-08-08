@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>750</width>
+    <height>369</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Notepad--</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>example 1</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QTextEdit" name="textEdit"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>example 2</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QTextEdit" name="textEdit_2"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>750</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_New"/>
+    <addaction name="action_Open"/>
+    <addaction name="actionOpen_Folder"/>
+    <addaction name="action_Reload_from_disk"/>
+    <addaction name="separator"/>
+    <addaction name="action_Save"/>
+    <addaction name="actionSave_As"/>
+    <addaction name="actionSa_ve_a_copy_as"/>
+    <addaction name="actionSav_e_all"/>
+    <addaction name="actionRena_me"/>
+    <addaction name="separator"/>
+    <addaction name="action_Close"/>
+    <addaction name="actionC_lose_all"/>
+    <addaction name="actionClose_all_BUT_current_document"/>
+    <addaction name="separator"/>
+    <addaction name="actionLoad_session"/>
+    <addaction name="actionSave_session"/>
+    <addaction name="separator"/>
+    <addaction name="action_Print"/>
+    <addaction name="actionRecent_Files"/>
+    <addaction name="actionE_xit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="action_Undo"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="action_Redo"/>
+    <addaction name="actionCu_t"/>
+    <addaction name="action_Copy"/>
+    <addaction name="action_Paste"/>
+    <addaction name="action_Delete"/>
+    <addaction name="actionSelect_All"/>
+    <addaction name="actionBegin_End_Select"/>
+    <addaction name="actionC_opy_to_clipboard"/>
+    <addaction name="actionCo_nvert_case_to"/>
+    <addaction name="action_Line_Operations"/>
+    <addaction name="action_End_of_line"/>
+    <addaction name="action_Blank_Operations"/>
+    <addaction name="action_Indentation"/>
+   </widget>
+   <widget class="QMenu" name="menu_Search">
+    <property name="title">
+     <string>&amp;Search</string>
+    </property>
+    <addaction name="action_Find"/>
+    <addaction name="action_Advanced_sEarch"/>
+    <addaction name="actionFind_Next"/>
+    <addaction name="actionFind_previoud"/>
+    <addaction name="action_Replace"/>
+    <addaction name="action_Go_to_line"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="action_Show_Symbol"/>
+    <addaction name="action_Zoom"/>
+    <addaction name="action_Move_Clone_current_document"/>
+    <addaction name="action_Word_wrap"/>
+    <addaction name="actionMath_Rendering"/>
+    <addaction name="actionToggle_to_Former_Tab"/>
+    <addaction name="action_Full_Screen"/>
+   </widget>
+   <widget class="QMenu" name="menuEn_coding">
+    <property name="title">
+     <string>En&amp;coding</string>
+    </property>
+    <addaction name="action_Interpret_as_UTF_8"/>
+    <addaction name="actionInterpret_as_utf_8_without_BOM"/>
+    <addaction name="actionInterpret_as_16_BE"/>
+    <addaction name="actionInterpret_as_UTF_16BE_UCS_2_Big_Endian"/>
+    <addaction name="actionInterpret_As"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="action_Reload_file_interpreted_as"/>
+    <addaction name="actionConvert_to_UTF_8"/>
+    <addaction name="actionConvert_to_UTF_8_without_BOM"/>
+    <addaction name="actionConvert_to_UTF_16BE_UCS_2_Big_Endian"/>
+    <addaction name="actionConvert_to_UTF_16LE_UCS_2_Little_Endian"/>
+    <addaction name="actionC_onvert_to"/>
+   </widget>
+   <widget class="QMenu" name="menu_Language">
+    <property name="title">
+     <string>&amp;Language</string>
+    </property>
+    <addaction name="actionA"/>
+    <addaction name="actionB"/>
+    <addaction name="actionC"/>
+    <addaction name="actionD"/>
+    <addaction name="actionE"/>
+    <addaction name="actionF"/>
+    <addaction name="actionG"/>
+    <addaction name="actionH"/>
+    <addaction name="actionI"/>
+    <addaction name="actionJ"/>
+    <addaction name="actionK"/>
+    <addaction name="actionL"/>
+    <addaction name="actionM"/>
+    <addaction name="actionN"/>
+    <addaction name="actionO"/>
+    <addaction name="actionP"/>
+    <addaction name="actionT"/>
+    <addaction name="actionR"/>
+    <addaction name="actionS"/>
+    <addaction name="actionV"/>
+    <addaction name="actionW"/>
+    <addaction name="actionX"/>
+   </widget>
+   <widget class="QMenu" name="menuSettin_gs">
+    <property name="title">
+     <string>Settin&amp;gs</string>
+    </property>
+    <addaction name="action_Prefrences"/>
+    <addaction name="action_Show_menu_bar"/>
+    <addaction name="actionS_how_Toolbar"/>
+   </widget>
+   <widget class="QMenu" name="menu_Run">
+    <property name="title">
+     <string>&amp;Run</string>
+    </property>
+    <addaction name="actionRun"/>
+    <addaction name="actionModify_run_commands"/>
+   </widget>
+   <widget class="QMenu" name="menu_Window">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+    <addaction name="action_Open_a_new_window"/>
+   </widget>
+   <widget class="QMenu" name="menuAbo_ut">
+    <property name="title">
+     <string>Abo&amp;ut</string>
+    </property>
+    <addaction name="action_About_Notepad"/>
+    <addaction name="actionAbout_Qt"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Edit"/>
+   <addaction name="menu_Search"/>
+   <addaction name="menu_View"/>
+   <addaction name="menuEn_coding"/>
+   <addaction name="menu_Language"/>
+   <addaction name="menuSettin_gs"/>
+   <addaction name="menu_Run"/>
+   <addaction name="menu_Window"/>
+   <addaction name="menuAbo_ut"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_New">
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+  </action>
+  <action name="action_Open">
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Folder">
+   <property name="text">
+    <string>Open &amp;Folder...</string>
+   </property>
+  </action>
+  <action name="action_Reload_from_disk">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Reload from disk</string>
+   </property>
+  </action>
+  <action name="action_Save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="actionSave_As">
+   <property name="text">
+    <string>Save &amp;As...</string>
+   </property>
+  </action>
+  <action name="actionSa_ve_a_copy_as">
+   <property name="text">
+    <string>Sa&amp;ve a copy as...</string>
+   </property>
+  </action>
+  <action name="actionSav_e_all">
+   <property name="text">
+    <string>Sav&amp;e all</string>
+   </property>
+  </action>
+  <action name="actionRena_me">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Rena&amp;me...</string>
+   </property>
+  </action>
+  <action name="action_Close">
+   <property name="text">
+    <string>&amp;Close</string>
+   </property>
+  </action>
+  <action name="actionC_lose_all">
+   <property name="text">
+    <string>C&amp;lose all</string>
+   </property>
+  </action>
+  <action name="actionClose_all_BUT_current_document">
+   <property name="text">
+    <string>Close all &amp;BUT current document</string>
+   </property>
+  </action>
+  <action name="actionLoad_session">
+   <property name="text">
+    <string>Load session...</string>
+   </property>
+  </action>
+  <action name="actionSave_session">
+   <property name="text">
+    <string>Save session...</string>
+   </property>
+  </action>
+  <action name="action_Print">
+   <property name="text">
+    <string>&amp;Print</string>
+   </property>
+  </action>
+  <action name="actionRecent_Files">
+   <property name="text">
+    <string>Recent Files</string>
+   </property>
+  </action>
+  <action name="actionE_xit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="action_Undo">
+   <property name="text">
+    <string>&amp;Undo</string>
+   </property>
+  </action>
+  <action name="action_Redo">
+   <property name="text">
+    <string>&amp;Redo</string>
+   </property>
+  </action>
+  <action name="actionCu_t">
+   <property name="text">
+    <string>Cu&amp;t</string>
+   </property>
+  </action>
+  <action name="action_Copy">
+   <property name="text">
+    <string>&amp;Copy</string>
+   </property>
+  </action>
+  <action name="action_Paste">
+   <property name="text">
+    <string>&amp;Paste</string>
+   </property>
+  </action>
+  <action name="action_Delete">
+   <property name="text">
+    <string>&amp;Delete</string>
+   </property>
+  </action>
+  <action name="actionSelect_All">
+   <property name="text">
+    <string>Select &amp;All</string>
+   </property>
+  </action>
+  <action name="actionBegin_End_Select">
+   <property name="text">
+    <string>Begin/End Select</string>
+   </property>
+  </action>
+  <action name="actionC_opy_to_clipboard">
+   <property name="text">
+    <string>C&amp;opy to clipboard</string>
+   </property>
+  </action>
+  <action name="actionCo_nvert_case_to">
+   <property name="text">
+    <string>Co&amp;nvert case to</string>
+   </property>
+  </action>
+  <action name="action_Line_Operations">
+   <property name="text">
+    <string>&amp;Line Operations</string>
+   </property>
+  </action>
+  <action name="action_End_of_line">
+   <property name="text">
+    <string>&amp;End of line</string>
+   </property>
+  </action>
+  <action name="action_Blank_Operations">
+   <property name="text">
+    <string>&amp;Blank Operations</string>
+   </property>
+  </action>
+  <action name="action_Indentation">
+   <property name="text">
+    <string>&amp;Indentation</string>
+   </property>
+  </action>
+  <action name="action_Find">
+   <property name="text">
+    <string>&amp;Find...</string>
+   </property>
+  </action>
+  <action name="action_Advanced_sEarch">
+   <property name="text">
+    <string>&amp;Advanced search</string>
+   </property>
+  </action>
+  <action name="actionFind_Next">
+   <property name="text">
+    <string>Find &amp;Next</string>
+   </property>
+  </action>
+  <action name="actionFind_previoud">
+   <property name="text">
+    <string>Find &amp;previoud</string>
+   </property>
+  </action>
+  <action name="action_Replace">
+   <property name="text">
+    <string>&amp;Replace...</string>
+   </property>
+  </action>
+  <action name="action_Go_to_line">
+   <property name="text">
+    <string>&amp;Go to line...</string>
+   </property>
+  </action>
+  <action name="action_Show_Symbol">
+   <property name="text">
+    <string>&amp;Show Symbol</string>
+   </property>
+  </action>
+  <action name="action_Zoom">
+   <property name="text">
+    <string>&amp;Zoom</string>
+   </property>
+  </action>
+  <action name="action_Move_Clone_current_document">
+   <property name="text">
+    <string>&amp;Move/Clone current document</string>
+   </property>
+  </action>
+  <action name="action_Word_wrap">
+   <property name="text">
+    <string>&amp;Word wrap</string>
+   </property>
+  </action>
+  <action name="actionMath_Rendering">
+   <property name="text">
+    <string>&amp;Math Rendering</string>
+   </property>
+  </action>
+  <action name="actionToggle_to_Former_Tab">
+   <property name="text">
+    <string>Toggle to Former Tab</string>
+   </property>
+  </action>
+  <action name="action_Full_Screen">
+   <property name="text">
+    <string>&amp;Full Screen</string>
+   </property>
+  </action>
+  <action name="action_Interpret_as_UTF_8">
+   <property name="text">
+    <string>&amp;Interpret as UTF-8</string>
+   </property>
+  </action>
+  <action name="actionInterpret_as_utf_8_without_BOM">
+   <property name="text">
+    <string>Interpret as utf-&amp;8 without BOM</string>
+   </property>
+  </action>
+  <action name="actionInterpret_as_16_BE">
+   <property name="text">
+    <string>Interpret as UTF-16BE (UCS-2 &amp;Big Endian)</string>
+   </property>
+  </action>
+  <action name="actionInterpret_as_UTF_16BE_UCS_2_Big_Endian">
+   <property name="text">
+    <string>Interpret as UTF-16LE (UCS-2 &amp;Little Endian)</string>
+   </property>
+  </action>
+  <action name="actionInterpret_As">
+   <property name="text">
+    <string>I&amp;nterpret As...</string>
+   </property>
+  </action>
+  <action name="action_Reload_file_interpreted_as">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Reload file interpreted as...</string>
+   </property>
+  </action>
+  <action name="actionConvert_to_UTF_8">
+   <property name="text">
+    <string>Convert to UTF-8</string>
+   </property>
+  </action>
+  <action name="actionConvert_to_UTF_8_without_BOM">
+   <property name="text">
+    <string>Convert to &amp;UTF-8 without BOM</string>
+   </property>
+  </action>
+  <action name="actionConvert_to_UTF_16BE_UCS_2_Big_Endian">
+   <property name="text">
+    <string>Convert to UTF-&amp;16BE (UCS-2 Big Endian)</string>
+   </property>
+  </action>
+  <action name="actionConvert_to_UTF_16LE_UCS_2_Little_Endian">
+   <property name="text">
+    <string>Convert to UTF-16LE (UCS-&amp;2 Little Endian)</string>
+   </property>
+  </action>
+  <action name="actionC_onvert_to">
+   <property name="text">
+    <string>C&amp;onvert to...</string>
+   </property>
+  </action>
+  <action name="actionA">
+   <property name="text">
+    <string>A</string>
+   </property>
+  </action>
+  <action name="actionB">
+   <property name="text">
+    <string>B</string>
+   </property>
+  </action>
+  <action name="actionC">
+   <property name="text">
+    <string>C</string>
+   </property>
+  </action>
+  <action name="actionD">
+   <property name="text">
+    <string>D</string>
+   </property>
+  </action>
+  <action name="actionE">
+   <property name="text">
+    <string>E</string>
+   </property>
+  </action>
+  <action name="actionF">
+   <property name="text">
+    <string>F</string>
+   </property>
+  </action>
+  <action name="actionG">
+   <property name="text">
+    <string>G</string>
+   </property>
+  </action>
+  <action name="actionH">
+   <property name="text">
+    <string>H</string>
+   </property>
+  </action>
+  <action name="actionI">
+   <property name="text">
+    <string>I</string>
+   </property>
+  </action>
+  <action name="actionJ">
+   <property name="text">
+    <string>J</string>
+   </property>
+  </action>
+  <action name="actionK">
+   <property name="text">
+    <string>K</string>
+   </property>
+  </action>
+  <action name="actionL">
+   <property name="text">
+    <string>L</string>
+   </property>
+  </action>
+  <action name="actionM">
+   <property name="text">
+    <string>M</string>
+   </property>
+  </action>
+  <action name="actionN">
+   <property name="text">
+    <string>N</string>
+   </property>
+  </action>
+  <action name="actionO">
+   <property name="text">
+    <string>O</string>
+   </property>
+  </action>
+  <action name="actionP">
+   <property name="text">
+    <string>P</string>
+   </property>
+  </action>
+  <action name="actionT">
+   <property name="text">
+    <string>T</string>
+   </property>
+  </action>
+  <action name="actionR">
+   <property name="text">
+    <string>R</string>
+   </property>
+  </action>
+  <action name="actionS">
+   <property name="text">
+    <string>S</string>
+   </property>
+  </action>
+  <action name="actionV">
+   <property name="text">
+    <string>V</string>
+   </property>
+  </action>
+  <action name="actionW">
+   <property name="text">
+    <string>W</string>
+   </property>
+  </action>
+  <action name="actionX">
+   <property name="text">
+    <string>Y</string>
+   </property>
+  </action>
+  <action name="actionZ">
+   <property name="text">
+    <string>Z</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="action_Prefrences">
+   <property name="text">
+    <string>&amp;Prefrences...</string>
+   </property>
+  </action>
+  <action name="action_Show_menu_bar">
+   <property name="text">
+    <string>&amp;Show Menubar</string>
+   </property>
+  </action>
+  <action name="actionS_how_Toolbar">
+   <property name="text">
+    <string>S&amp;how Toolbar</string>
+   </property>
+  </action>
+  <action name="actionRun">
+   <property name="text">
+    <string>Run...</string>
+   </property>
+  </action>
+  <action name="actionModify_run_commands">
+   <property name="text">
+    <string>Modify run commands</string>
+   </property>
+  </action>
+  <action name="action_Open_a_new_window">
+   <property name="text">
+    <string>&amp;Open a new window</string>
+   </property>
+  </action>
+  <action name="action_About_Notepad">
+   <property name="text">
+    <string>&amp;About Notepad--</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

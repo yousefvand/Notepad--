@@ -5,4 +5,4 @@ It is a while I didn't code in C++ and my knowledge of Qt is a little. All that 
 Any contribution is welcome.
 
 In a world without walls and fences, who needs **windows** and **gates**?
-![gui](gui.png)
+![gui](assets/gui.png)
