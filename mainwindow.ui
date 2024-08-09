@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>750</width>
-    <height>369</height>
+    <height>457</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,27 +16,17 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="documentsTab">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>example 1</string>
+        <string>Open a text file</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QTextEdit" name="textEdit"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>example 2</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QTextEdit" name="textEdit_2"/>
         </item>
        </layout>
       </widget>
