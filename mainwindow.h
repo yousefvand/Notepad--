@@ -14,13 +14,15 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
-    void on_action_Open_triggered();
+    void on_action_Open_triggered();  // Slot for opening a file
+    void on_action_Save_triggered();  // Slot for saving a file
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *ui;               // Pointer to the UI object
 };
+
 #endif // MAINWINDOW_H

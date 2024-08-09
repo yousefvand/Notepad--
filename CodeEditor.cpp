@@ -15,9 +15,9 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     // Set a monospaced font
     QFont font;
-    font.setFamily("Courier");  // Monospaced font
+    font.setFamily("Fira");  // Monospaced font
     font.setFixedPitch(true);
-    font.setPointSize(10);  // Adjust size if necessary
+    font.setPointSize(12);  // Adjust size if necessary
     this->setFont(font);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
