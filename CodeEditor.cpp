@@ -96,14 +96,29 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
     int bottom = top + static_cast<int>(blockBoundingRect(block).height());
 
+    // Get the current line number
+    int currentLineNumber = textCursor().blockNumber();
+
     // Loop through each block and draw line numbers
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
-            painter.setPen(Qt::black);
+
+            // Check if this is the current line
+            if (blockNumber == currentLineNumber) {
+                // Set bold font for the current line number
+                QFont boldFont = painter.font();
+                boldFont.setBold(true);
+                painter.setFont(boldFont);
+                painter.setPen(Qt::blue); // Optional: change color for current line number
+            } else {
+                // Use normal font for other line numbers
+                painter.setFont(QFont());
+                painter.setPen(Qt::black);
+            }
 
             // Adjust the x position to keep numbers left-aligned
-            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+            painter.drawText(-5, top, lineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight | Qt::AlignVCenter, number);
         }
 
