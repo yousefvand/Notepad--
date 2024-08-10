@@ -21,6 +21,8 @@ private slots:
     void on_action_Open_triggered();  // Slot for opening a file
     void on_action_Save_triggered();  // Slot for saving a file
 
+    void on_actionSave_As_triggered();
+
 private:
     Ui::MainWindow *ui;               // Pointer to the UI object
 };

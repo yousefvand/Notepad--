@@ -61,6 +61,19 @@ void MainWindow::on_action_Open_triggered()
 void MainWindow::on_action_Save_triggered()
 {
     // Get the active editor (the one in the current tab)
+    /*CodeEditor *editor = qobject_cast<CodeEditor*>(ui->documentsTab->currentWidget());
+    if (editor)
+    {
+
+    } else
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Cannot save file: ") + file.errorString());
+    }*/
+}
+
+void MainWindow::on_actionSave_As_triggered()
+{
+    // Get the active editor (the one in the current tab)
     CodeEditor *editor = qobject_cast<CodeEditor*>(ui->documentsTab->currentWidget());
     if (editor) {
         // Open a file dialog to choose where to save the file
@@ -86,3 +99,4 @@ void MainWindow::on_action_Save_triggered()
         }
     }
 }
+
