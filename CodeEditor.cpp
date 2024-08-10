@@ -15,7 +15,7 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     // Set a monospaced font
     QFont font;
-    font.setFamily("Fira");  // Monospaced font
+    font.setFamily("Sans Serif");  // Monospaced font
     font.setFixedPitch(true);
     font.setPointSize(12);  // Adjust size if necessary
     this->setFont(font);

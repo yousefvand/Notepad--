@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QTabBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -47,8 +48,8 @@ void MainWindow::on_action_Open_triggered()
                 int currentIndex = ui->documentsTab->currentIndex();
                 ui->documentsTab->setTabText(currentIndex, baseName);
 
-                // Optionally, set the window title to the file name
-                setWindowTitle(baseName);
+                // Store the full file path as tab data using QTabBar's setTabData method
+                ui->documentsTab->tabBar()->setTabData(currentIndex, fileName);
             }
 
             file.close();  // Close the file after reading
@@ -60,15 +61,32 @@ void MainWindow::on_action_Open_triggered()
 
 void MainWindow::on_action_Save_triggered()
 {
-    // Get the active editor (the one in the current tab)
-    /*CodeEditor *editor = qobject_cast<CodeEditor*>(ui->documentsTab->currentWidget());
-    if (editor)
-    {
+    // Get the index of the current tab
+    int currentIndex = ui->documentsTab->currentIndex();
 
-    } else
-    {
-        QMessageBox::warning(this, tr("Error"), tr("Cannot save file: ") + file.errorString());
-    }*/
+    // Retrieve the full file path associated with this tab using QTabBar's tabData method
+    QString fileName = ui->documentsTab->tabBar()->tabData(currentIndex).toString();
+
+    // Check if fileName is not empty
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);  // Create a QFile object
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {  // Open the file in write mode
+            // Get the active editor (the one in the current tab)
+            CodeEditor *editor = qobject_cast<CodeEditor*>(ui->documentsTab->currentWidget());
+            if (editor) {
+                QString content = editor->toPlainText();  // Get the text from textEdit
+
+                QTextStream out(&file);  // Create a QTextStream for writing to the file
+                out << content;  // Write the content to the file
+
+                file.close();  // Close the file after writing
+            }
+        } else {
+            QMessageBox::warning(this, tr("Error"), tr("Cannot save file: ") + file.errorString());
+        }
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("No file path is associated with the current tab."));
+    }
 }
 
 void MainWindow::on_actionSave_As_triggered()
@@ -91,6 +109,9 @@ void MainWindow::on_actionSave_As_triggered()
                 int currentIndex = ui->documentsTab->currentIndex();
                 ui->documentsTab->setTabText(currentIndex, baseName);
 
+                // Store the full file path as tab data using QTabBar's setTabData method
+                ui->documentsTab->tabBar()->setTabData(currentIndex, fileName);
+
                 // Optionally, set the window title to the file name
                 setWindowTitle(baseName);
             } else {
@@ -99,4 +120,3 @@ void MainWindow::on_actionSave_As_triggered()
         }
     }
 }
-
