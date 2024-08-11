@@ -117,9 +117,24 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.setPen(Qt::black);
             }
 
-            // Adjust the x position to keep numbers left-aligned
+            // Draw the line number
             painter.drawText(-5, top, lineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight | Qt::AlignVCenter, number);
+
+            // Check if the block has wrapped lines
+            QTextLayout *layout = block.layout();
+            for (int i = 0; i < layout->lineCount(); ++i) {
+                QTextLine line = layout->lineAt(i);
+                int lineTop = top + static_cast<int>(line.y());
+                int lineBottom = lineTop + static_cast<int>(line.height());
+
+                // If the line is within the visible area and it's not the first line, draw a return symbol
+                if (i > 0 && lineTop >= event->rect().top() && lineBottom <= event->rect().bottom()) {
+                    painter.setPen(Qt::black); // Set color to black for the return symbol
+                    painter.drawText(-5, lineTop, lineNumberArea->width(), fontMetrics().height(),
+                                     Qt::AlignRight | Qt::AlignVCenter, "↩");
+                }
+            }
         }
 
         block = block.next();
