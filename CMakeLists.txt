@@ -44,6 +44,7 @@ else()
         add_executable(Notepad--
             ${PROJECT_SOURCES}
             CodeEditor.h CodeEditor.cpp
+            document.h document.cpp
         )
     endif()
 
