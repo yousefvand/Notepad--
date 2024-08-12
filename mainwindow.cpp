@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "CodeEditor.h"
+#include "codeeditor.h"
 #include "document.h"
 #include <QFileDialog>
 #include <QFileInfo>
@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Create the first Document tab with a code editor
-    Document *firstDoc = new Document(this);
+    Document *firstDoc = new Document("", this); // Pass an empty string for the file path
     ui->documentsTab->addTab(firstDoc, "Untitled Document");
     ui->documentsTab->setCurrentWidget(firstDoc); // Set the first tab as current
 }
@@ -24,11 +24,20 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_action_Open_triggered() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("Text Files (*.txt);;All Files (*)"));
-    if (!fileName.isEmpty()) {
-        Document *doc = new Document(fileName, this); // Create Document with the file path
-        ui->documentsTab->addTab(doc, QFileInfo(fileName).fileName()); // Add the Document to the tab widget
-        ui->documentsTab->setCurrentWidget(doc); // Switch to the new document tab
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("Text Files (*.txt);;All Files (*)"));
+    if (!filePath.isEmpty()) {
+        Document *currentDoc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+
+        if (currentDoc && currentDoc->content().isEmpty()) {
+            // If the current document is empty, load the file content into it
+            currentDoc->openFile(filePath);
+            ui->documentsTab->setTabText(ui->documentsTab->currentIndex(), QFileInfo(filePath).fileName());
+        } else {
+            // If the current document is not empty, create a new tab for the file
+            Document *newDoc = new Document(filePath, this);
+            ui->documentsTab->addTab(newDoc, QFileInfo(filePath).fileName());
+            ui->documentsTab->setCurrentWidget(newDoc);
+        }
     }
 }
 
@@ -44,9 +53,9 @@ void MainWindow::on_action_Save_triggered() {
 void MainWindow::on_actionSave_As_triggered() {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File As"), "", tr("Text Files (*.txt);;All Files (*)"));
-        if (!fileName.isEmpty()) {
-            doc->saveFileAs(fileName); // Call saveFileAs method of Document
+        QString filePath = QFileDialog::getSaveFileName(this, tr("Save File As"), "", tr("Text Files (*.txt);;All Files (*)"));
+        if (!filePath.isEmpty()) {
+            doc->saveFileAs(filePath); // Call saveFileAs method of Document
         }
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document to save."));
