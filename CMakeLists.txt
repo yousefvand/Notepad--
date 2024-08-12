@@ -45,6 +45,7 @@ else()
             ${PROJECT_SOURCES}
             codeeditor.h codeeditor.cpp
             document.h document.cpp
+            cppsyntaxhighlighter.h cppsyntaxhighlighter.cpp
         )
     endif()
 
