@@ -100,3 +100,12 @@ void MainWindow::on_action_New_triggered() {
     ui->documentsTab->addTab(newDoc, "Untitled Document");
     ui->documentsTab->setCurrentWidget(newDoc);
 }
+
+void MainWindow::on_actionC_3_triggered() {
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+    if (doc) {
+        doc->applyCppFormatting(); // Apply C++ formatting to editor text
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("No document to format."));
+    }
+}

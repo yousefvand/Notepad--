@@ -26,6 +26,7 @@ public:
     void saveFile();
     void saveFileAs(const QString &newFilePath);
     bool closeDocument(); // Change made here
+    void applyCppFormatting(); // Add this method declaration
 
 private:
     QString m_filePath;

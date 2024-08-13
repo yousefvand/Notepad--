@@ -136,3 +136,9 @@ bool Document::closeDocument() {
 
     return true; // No unsaved changes, allow closing
 }
+
+void Document::applyCppFormatting() {
+    // Create a new CppSyntaxHighlighter and apply it to the editor
+    CppSyntaxHighlighter *highlighter = new CppSyntaxHighlighter(editor->document());
+    highlighter->rehighlight(); // Rehighlight the current text in the editor
+}

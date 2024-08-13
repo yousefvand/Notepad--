@@ -141,9 +141,28 @@
     <property name="title">
      <string>&amp;Language</string>
     </property>
+    <widget class="QMenu" name="menuC">
+     <property name="title">
+      <string>C</string>
+     </property>
+     <addaction name="actionC_2"/>
+     <addaction name="actionClojure"/>
+     <addaction name="actionClojureScript"/>
+     <addaction name="actionClosureStylesheets"/>
+     <addaction name="actionCMake"/>
+     <addaction name="actionCobol"/>
+     <addaction name="actionCoffee_Script"/>
+     <addaction name="actionCommon_Lisp"/>
+     <addaction name="actionC_3"/>
+     <addaction name="actionCrystal"/>
+     <addaction name="actionC_4"/>
+     <addaction name="actionCSS"/>
+     <addaction name="actionCypher"/>
+     <addaction name="actionCython"/>
+    </widget>
     <addaction name="actionA"/>
     <addaction name="actionB"/>
-    <addaction name="actionC"/>
+    <addaction name="menuC"/>
     <addaction name="actionD"/>
     <addaction name="actionE"/>
     <addaction name="actionF"/>
@@ -498,11 +517,6 @@
     <string>B</string>
    </property>
   </action>
-  <action name="actionC">
-   <property name="text">
-    <string>C</string>
-   </property>
-  </action>
   <action name="actionD">
    <property name="text">
     <string>D</string>
@@ -644,6 +658,76 @@
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About &amp;Qt</string>
+   </property>
+  </action>
+  <action name="actionC_2">
+   <property name="text">
+    <string>C</string>
+   </property>
+  </action>
+  <action name="actionClojure">
+   <property name="text">
+    <string>Clojure</string>
+   </property>
+  </action>
+  <action name="actionClojureScript">
+   <property name="text">
+    <string>ClojureScript</string>
+   </property>
+  </action>
+  <action name="actionClosureStylesheets">
+   <property name="text">
+    <string>Closure Stylesheets (GSS)</string>
+   </property>
+  </action>
+  <action name="actionCMake">
+   <property name="text">
+    <string>CMake</string>
+   </property>
+  </action>
+  <action name="actionCobol">
+   <property name="text">
+    <string>Cobol</string>
+   </property>
+  </action>
+  <action name="actionCoffee_Script">
+   <property name="text">
+    <string>Coffee Script</string>
+   </property>
+  </action>
+  <action name="actionCommon_Lisp">
+   <property name="text">
+    <string>Common Lisp</string>
+   </property>
+  </action>
+  <action name="actionC_3">
+   <property name="text">
+    <string>C++</string>
+   </property>
+  </action>
+  <action name="actionCrystal">
+   <property name="text">
+    <string>Crystal</string>
+   </property>
+  </action>
+  <action name="actionC_4">
+   <property name="text">
+    <string>C#</string>
+   </property>
+  </action>
+  <action name="actionCSS">
+   <property name="text">
+    <string>CSS</string>
+   </property>
+  </action>
+  <action name="actionCypher">
+   <property name="text">
+    <string>Cypher</string>
+   </property>
+  </action>
+  <action name="actionCython">
+   <property name="text">
+    <string>Cython</string>
    </property>
   </action>
  </widget>

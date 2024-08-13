@@ -25,6 +25,8 @@ private slots:
 
     void on_action_New_triggered();
 
+    void on_actionC_3_triggered();
+
 private:
     Ui::MainWindow *ui;
     void openDocument(const QString &filePath);
