@@ -6,6 +6,8 @@
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QFileInfo>
+#include <QCryptographicHash>
+#include <QFileDialog> // Include QFileDialog for Save As dialog
 
 Document::Document(const QString &filePath, QWidget *parent)
     : QWidget(parent), m_filePath(filePath), m_content(""), syntaxHighlighter(nullptr) {
@@ -57,8 +59,9 @@ void Document::openFile(const QString &filePath) {
 
 void Document::saveFile() {
     if (m_filePath.isEmpty()) {
-        QMessageBox::warning(this, tr("Error"), tr("No file path associated with this document."));
-        return;
+        // If no file path is associated, prompt user with Save As dialog
+        saveFileAs(QFileDialog::getSaveFileName(this, tr("Save File As"), "", tr("Text Files (*.txt);;All Files (*)")));
+        return; // Exit to avoid further processing
     }
 
     QFile file(m_filePath);
@@ -73,8 +76,9 @@ void Document::saveFile() {
 }
 
 void Document::saveFileAs(const QString &newFilePath) {
-    m_filePath = newFilePath;
-    saveFile();
+    if (newFilePath.isEmpty()) return; // Don't proceed if no file path is provided
+    m_filePath = newFilePath; // Update the file path
+    saveFile(); // Call saveFile to actually perform the saving
 }
 
 void Document::applySyntaxHighlighter() {
@@ -86,4 +90,49 @@ void Document::applySyntaxHighlighter() {
     if (m_fileExtension == "cpp" || m_fileExtension == "cxx") {
         syntaxHighlighter = new CppSyntaxHighlighter(editor->document());
     }
+}
+
+QByteArray Document::calculateMD5(const QString &data) {
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(data.toUtf8());
+    return hash.result();
+}
+
+bool Document::closeDocument() {
+    QString currentContent = editor->toPlainText();
+    QString fileContent;
+
+    // Read current file content if file path is set
+    if (!m_filePath.isEmpty()) {
+        QFile file(m_filePath);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            fileContent = in.readAll();
+            file.close();
+        }
+    }
+
+    // Compare MD5 hashes
+    QByteArray currentHash = calculateMD5(currentContent);
+    QByteArray fileHash = calculateMD5(fileContent);
+
+    // Check if content has changed
+    if (currentHash != fileHash) {
+        // Show modal dialog
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::warning(this, tr("Unsaved Changes"),
+                                     tr("You have unsaved changes."),
+                                     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+        if (reply == QMessageBox::Save) {
+            saveFile(); // Save changes (will handle path through saveFile logic)
+            return true; // Allow closing
+        } else if (reply == QMessageBox::Discard) {
+            return true; // Allow closing without saving
+        } else {
+            return false; // Cancel closing
+        }
+    }
+
+    return true; // No unsaved changes, allow closing
 }

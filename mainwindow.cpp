@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "codeeditor.h"
 #include "document.h"
 #include <QFileDialog>
 #include <QFileInfo>
@@ -12,25 +11,22 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    // Remove any placeholder or default tab if it exists
+    // Remove the initial empty tab if it exists
     if (ui->documentsTab->count() > 0) {
-        ui->documentsTab->removeTab(0); // Remove the first tab (index 0)
+        ui->documentsTab->removeTab(0); // Remove the first tab
     }
 
-    // Get command-line arguments
+    // Create the initial "Untitled Document" tab
+    Document *firstDoc = new Document("", this); // Pass an empty string for the file path
+    ui->documentsTab->addTab(firstDoc, "Untitled Document");
+    ui->documentsTab->setCurrentWidget(firstDoc); // Set the first tab as current
+
+    // Open files passed as command line arguments
     QStringList filePaths = QCoreApplication::arguments();
-
-    if (filePaths.size() > 1) { // If there are more arguments than just the application path
-        for (int i = 1; i < filePaths.size(); ++i) {
-            openDocument(filePaths.at(i));
+    for (const QString &filePath : filePaths) {
+        if (filePath != QCoreApplication::applicationFilePath()) { // Skip the application path
+            openDocument(filePath);
         }
-    }
-
-    if (ui->documentsTab->count() == 0) {
-        // If no documents were opened via command line, create a new empty tab
-        Document *firstDoc = new Document("", this); // Pass an empty string for the file path
-        ui->documentsTab->addTab(firstDoc, "Untitled Document");
-        ui->documentsTab->setCurrentWidget(firstDoc); // Set the first tab as current
     }
 }
 
@@ -39,6 +35,18 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::openDocument(const QString &filePath) {
+    // Check if there is an empty tab to reuse
+    if (ui->documentsTab->count() > 0) {
+        Document *existingDoc = qobject_cast<Document *>(ui->documentsTab->widget(0));
+        if (existingDoc && existingDoc->filePath().isEmpty()) {
+            // Reuse the existing empty tab
+            existingDoc->openFile(filePath); // Open the file in the existing tab
+            ui->documentsTab->setTabText(0, QFileInfo(filePath).fileName()); // Update the tab title
+            return; // Exit as we've reused the tab
+        }
+    }
+
+    // If no empty tab exists, create a new document tab
     Document *newDoc = new Document(filePath, this);
     ui->documentsTab->addTab(newDoc, QFileInfo(filePath).fileName());
     ui->documentsTab->setCurrentWidget(newDoc);
@@ -73,8 +81,22 @@ void MainWindow::on_actionSave_As_triggered() {
 }
 
 void MainWindow::on_documentsTab_tabCloseRequested(int index) {
-    // Handle the tab close request
-    QWidget *widget = ui->documentsTab->widget(index);
-    ui->documentsTab->removeTab(index);
-    delete widget; // Free the memory
+    // Get the current document from the tab
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
+
+    if (doc) {
+        // Call the closeDocument method to handle the closing logic
+        bool canClose = doc->closeDocument(); // This method should return true if it's okay to close
+
+        if (canClose) {
+            // If the document has been closed, remove the tab
+            ui->documentsTab->removeTab(index);
+        }
+    }
+}
+
+void MainWindow::on_action_New_triggered() {
+    Document *newDoc = new Document("", this); // Pass an empty string for the file path
+    ui->documentsTab->addTab(newDoc, "Untitled Document");
+    ui->documentsTab->setCurrentWidget(newDoc);
 }

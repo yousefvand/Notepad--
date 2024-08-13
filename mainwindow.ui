@@ -28,7 +28,7 @@
       </property>
       <widget class="QWidget" name="filePath">
        <attribute name="title">
-        <string>Open a text file</string>
+        <string>Remove me</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>

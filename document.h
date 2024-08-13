@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QString>
+#include <QByteArray>
 
 class CodeEditor;
 class CppSyntaxHighlighter;
@@ -24,6 +25,7 @@ public:
     void openFile(const QString &filePath);
     void saveFile();
     void saveFileAs(const QString &newFilePath);
+    bool closeDocument(); // Change made here
 
 private:
     QString m_filePath;
@@ -34,6 +36,8 @@ private:
     CppSyntaxHighlighter *syntaxHighlighter;
 
     void applySyntaxHighlighter();
+
+    QByteArray calculateMD5(const QString &data); // New method for calculating MD5
 };
 
 #endif // DOCUMENT_H
