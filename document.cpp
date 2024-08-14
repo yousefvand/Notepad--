@@ -181,3 +181,9 @@ void Document::applySyntaxHighlighter() {
         syntaxHighlighter = new CppSyntaxHighlighter(editor->document());
     }
 }
+
+void Document::applyCppFormatting() {
+    // Create a new CppSyntaxHighlighter and apply it to the editor
+    CppSyntaxHighlighter *highlighter = new CppSyntaxHighlighter(editor->document());
+    highlighter->rehighlight(); // Rehighlight the current text in the editor
+}

@@ -21,6 +21,7 @@ public:
     void saveFileAs(const QString &newFilePath);
     bool closeDocument();
     void applySyntaxHighlighter();
+    void applyCppFormatting();
 
 signals:
     void saveError(const QString &error); // Signal for save errors
