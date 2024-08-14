@@ -3,25 +3,28 @@
 
 #include <QMainWindow>
 
-namespace Ui {
-class MainWindow;
-}
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
-    void on_action_Open_triggered();  // Slot for opening a file
-    void on_action_Save_triggered();  // Slot for saving a file
-    void on_actionSave_As_triggered(); // Slot for saving a file as
+    void on_action_Open_triggered();
+    void on_action_Save_triggered();
+    void on_actionSave_As_triggered();
+    void on_documentsTab_tabCloseRequested(int index);
+    void on_action_New_triggered();
+    void on_actionC_3_triggered();
 
 private:
     Ui::MainWindow *ui;
+    void openDocument(const QString &filePath);
 };
 
 #endif // MAINWINDOW_H

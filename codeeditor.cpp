@@ -3,21 +3,17 @@
 #include <QTextBlock>
 
 CodeEditor::CodeEditor(QWidget *parent)
-    : QPlainTextEdit(parent), lineNumberArea(new LineNumberArea(this))
-{
-    // Set text color to black
+    : QPlainTextEdit(parent), lineNumberArea(new LineNumberArea(this)) {
+
     QPalette p = this->palette();
     p.setColor(QPalette::Text, Qt::black);
     this->setPalette(p);
-
-    // Set background color to white
     this->setStyleSheet("QPlainTextEdit { background-color: white; }");
 
-    // Set a monospaced font
     QFont font;
-    font.setFamily("Sans Serif");  // Monospaced font
+    font.setFamily("sans serif");
     font.setFixedPitch(true);
-    font.setPointSize(12);  // Adjust size if necessary
+    font.setPointSize(12);
     this->setFont(font);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
@@ -28,8 +24,7 @@ CodeEditor::CodeEditor(QWidget *parent)
     highlightCurrentLine();
 }
 
-int CodeEditor::lineNumberAreaWidth()
-{
+int CodeEditor::lineNumberAreaWidth() {
     int digits = 1;
     int max = qMax(1, blockCount());
     while (max >= 10) {
@@ -37,19 +32,16 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
-    // Ensure there's enough space for numbers
     int space = 5 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 
     return space;
 }
 
-void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
-{
+void CodeEditor::updateLineNumberAreaWidth(int) {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
-void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
-{
+void CodeEditor::updateLineNumberArea(const QRect &rect, int dy) {
     if (dy)
         lineNumberArea->scroll(0, dy);
     else
@@ -59,23 +51,19 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
         updateLineNumberAreaWidth(0);
 }
 
-void CodeEditor::resizeEvent(QResizeEvent *e)
-{
+void CodeEditor::resizeEvent(QResizeEvent *e) {
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
-void CodeEditor::highlightCurrentLine()
-{
+void CodeEditor::highlightCurrentLine() {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
     if (!isReadOnly()) {
         QTextEdit::ExtraSelection selection;
-
         QColor lineColor = QColor(Qt::yellow).lighter(160);
-
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
         selection.cursor = textCursor();
@@ -86,8 +74,7 @@ void CodeEditor::highlightCurrentLine()
     setExtraSelections(extraSelections);
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
-{
+void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
     QPainter painter(lineNumberArea);
     painter.fillRect(event->rect(), Qt::lightGray);
 
@@ -96,44 +83,45 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
     int bottom = top + static_cast<int>(blockBoundingRect(block).height());
 
-    // Get the current line number
     int currentLineNumber = textCursor().blockNumber();
 
-    // Loop through each block and draw line numbers
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
 
-            // Check if this is the current line
             if (blockNumber == currentLineNumber) {
-                // Set bold font for the current line number
                 QFont boldFont = painter.font();
                 boldFont.setBold(true);
                 painter.setFont(boldFont);
-                painter.setPen(Qt::blue); // Optional: change color for current line number
+                painter.setPen(Qt::blue);
             } else {
-                // Use normal font for other line numbers
                 painter.setFont(QFont());
                 painter.setPen(Qt::black);
             }
 
-            // Draw the line number
             painter.drawText(-5, top, lineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight | Qt::AlignVCenter, number);
 
-            // Check if the block has wrapped lines
             QTextLayout *layout = block.layout();
             for (int i = 0; i < layout->lineCount(); ++i) {
                 QTextLine line = layout->lineAt(i);
-                int lineTop = top + static_cast<int>(line.y());
-                int lineBottom = lineTop + static_cast<int>(line.height());
+                int lineStartPosition = block.position() + line.textStart();
+                int lineEndPosition = lineStartPosition + line.textLength();
 
-                // If the line is within the visible area and it's not the first line, draw a return symbol
-                if (i > 0 && lineTop >= event->rect().top() && lineBottom <= event->rect().bottom()) {
-                    painter.setPen(Qt::black); // Set color to black for the return symbol
-                    painter.drawText(-5, lineTop, lineNumberArea->width(), fontMetrics().height(),
-                                     Qt::AlignRight | Qt::AlignVCenter, "↩");
+                if (textCursor().position() >= lineStartPosition && textCursor().position() <= lineEndPosition) {
+                    painter.setPen(Qt::red);
+                } else {
+                    painter.setPen(Qt::blue);
                 }
+
+                int lineTop = top + static_cast<int>(line.y());
+                int lineBottom = lineTop + fontMetrics().height();
+
+                if (lineBottom > event->rect().bottom()) {
+                    break;
+                }
+
+                painter.drawLine(0, lineBottom, lineNumberArea->width(), lineBottom);
             }
         }
 

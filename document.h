@@ -2,42 +2,48 @@
 #define DOCUMENT_H
 
 #include <QWidget>
-#include <QString>
+#include <QFile>
+#include <QMap>
+#include <QCryptographicHash>
 
-class CodeEditor;
+class CodeEditor; // Forward declaration
+class CppSyntaxHighlighter; // Forward declaration
 
 class Document : public QWidget {
     Q_OBJECT
 
 public:
-    explicit Document(const QString &filePath = "", QWidget *parent = nullptr);
-
-    // Getter for m_filePath
+    Document(const QString &filePath, QWidget *parent = nullptr);
     QString filePath() const;
-
-    // Setter for m_filePath
     void setFilePath(const QString &path);
-
-    // Getter for m_content
-    QString content() const;
-
-    // Setter for m_content
-    void setContent(const QString &content);
-
-    // Function to open a file
     void openFile(const QString &filePath);
-
-    // Function to save the file
     void saveFile();
-
-    // Function to save the file with a new name
     void saveFileAs(const QString &newFilePath);
+    bool closeDocument();
+    void applySyntaxHighlighter();
+
+signals:
+    void saveError(const QString &error); // Signal for save errors
+    void saveCompleted(); // Signal for successful save
 
 private:
-    QString m_filePath;
-    QString m_content;
+    void loadContent();
+    void updatePointers();
+    void trackChanges();
+    QByteArray calculateMD5Stream(QFile *file);
+    QByteArray calculateModifiedMD5();
 
+    QString m_filePath;
+    QString m_fileExtension;
+    QFile m_file;
     CodeEditor *editor;
+    CppSyntaxHighlighter *syntaxHighlighter;
+    qint64 m_fileSize;
+    qint64 m_startPointer;
+    qint64 m_endPointer;
+    QByteArray m_originalHash;
+    QMap<qint64, QString> m_changedSegments; // Store changed segments
+    QString m_currentText; // Store current text in the editor
 };
 
 #endif // DOCUMENT_H

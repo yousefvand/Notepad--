@@ -9,6 +9,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
@@ -45,13 +46,16 @@ else()
             ${PROJECT_SOURCES}
             codeeditor.h codeeditor.cpp
             document.h document.cpp
+            cppsyntaxhighlighter.h cppsyntaxhighlighter.cpp
         )
     endif()
 
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(Notepad-- PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Notepad--
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+            Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Concurrent)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
