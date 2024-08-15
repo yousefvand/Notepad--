@@ -24,6 +24,10 @@ private slots:
     void on_action_Go_to_line_in_text_triggered();
     void on_action_Go_to_line_in_editor_triggered();
 
+    void on_action_Close_triggered();
+
+    void on_actionC_lose_all_triggered();
+
 private:
     Ui::MainWindow *ui;
     void openDocument(const QString &filePath);

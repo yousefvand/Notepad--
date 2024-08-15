@@ -112,7 +112,7 @@ void MainWindow::on_action_Go_to_line_in_editor_triggered()
 }
 
 void MainWindow::on_action_Go_to_line_in_text_triggered() {
-    Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget()); // If using a tab widget to manage documents
+    Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
     if (doc) {
         doc->goToLineNumberInText(this);
     } else {
@@ -120,10 +120,22 @@ void MainWindow::on_action_Go_to_line_in_text_triggered() {
     }
 }
 
+void MainWindow::on_action_Close_triggered()
+{
+    int activeTabIndex = ui->documentsTab->currentIndex();  // Get the index of the active tab
+
+    if (activeTabIndex != -1) {  // Check if there's an active tab
+        on_documentsTab_tabCloseRequested(activeTabIndex);  // Reuse the existing close logic
+    }
+}
 
 
+void MainWindow::on_actionC_lose_all_triggered()
+{
+    int tabCount = ui->documentsTab->count();
 
-
-
-
+    for (int i = tabCount - 1; i >= 0; --i) {
+        on_documentsTab_tabCloseRequested(i);
+    }
+}
 
