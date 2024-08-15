@@ -13,6 +13,7 @@
 #include <QThread>
 #include <QFuture>
 #include <QtConcurrent>
+#include <QInputDialog>
 
 Document::Document(const QString &filePath, QWidget *parent)
     : QWidget(parent), m_filePath(filePath), m_fileSize(0), m_startPointer(0), m_endPointer(0), syntaxHighlighter(nullptr) {
@@ -32,6 +33,20 @@ Document::Document(const QString &filePath, QWidget *parent)
 
     m_changedSegments.clear();
     m_currentText.clear();
+}
+
+// Setter for Language
+void Document::setLanguage(const QString &language) {
+    m_language = language;
+
+    if (language == "C++") {
+        applyCppFormatting();  // Automatically apply C++ formatting when language is set to C++
+    }
+}
+
+// Getter for Language
+QString Document::getLanguage() const {
+    return m_language;
 }
 
 QString Document::filePath() const {
@@ -124,7 +139,9 @@ void Document::saveFile() {
 }
 
 void Document::saveFileAs(const QString &newFilePath) {
-    if (newFilePath.isEmpty()) return;
+    if (newFilePath.isEmpty()) {
+        return; // User canceled the Save As dialog, do nothing
+    }
     m_filePath = newFilePath;
     saveFile();
 }
@@ -150,6 +167,11 @@ QByteArray Document::calculateModifiedMD5() {
 }
 
 bool Document::closeDocument() {
+    // Special case: if the document is empty, allow closing without checking the hash
+    if (editor->toPlainText().isEmpty() && m_filePath.isEmpty()) {
+        return true;
+    }
+
     QByteArray currentHash = calculateModifiedMD5();
 
     if (currentHash != m_originalHash) {
@@ -159,7 +181,11 @@ bool Document::closeDocument() {
                                      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
         if (reply == QMessageBox::Save) {
-            saveFile();
+            QString savePath = QFileDialog::getSaveFileName(this, tr("Save File As"), "", tr("Text Files (*.txt);;All Files (*)"));
+            if (savePath.isEmpty()) {
+                return false; // User canceled the Save As dialog, don't close the document
+            }
+            saveFileAs(savePath);
             return true;
         } else if (reply == QMessageBox::Discard) {
             return true; // Allow closing without saving
@@ -177,7 +203,8 @@ void Document::applySyntaxHighlighter() {
         syntaxHighlighter = nullptr;
     }
 
-    if (m_fileExtension == "cpp" || m_fileExtension == "cxx") {
+    if (m_fileExtension == "cpp" || m_fileExtension == "cxx"
+        || m_fileExtension == "CPP" || m_fileExtension == "CXX") {
         syntaxHighlighter = new CppSyntaxHighlighter(editor->document());
     }
 }
@@ -186,4 +213,48 @@ void Document::applyCppFormatting() {
     // Create a new CppSyntaxHighlighter and apply it to the editor
     CppSyntaxHighlighter *highlighter = new CppSyntaxHighlighter(editor->document());
     highlighter->rehighlight(); // Rehighlight the current text in the editor
+}
+
+void Document::goToLineNumberInEditor() {
+    bool ok;
+    int lineNumber = QInputDialog::getInt(this, tr("Go to Line"),
+                                          tr("Line number:"), 1, 1, INT_MAX, 1, &ok);
+
+    if (ok) {
+        QTextCursor cursor = editor->textCursor();
+        cursor.movePosition(QTextCursor::Start); // Move to the start of the editor
+
+        // Move the cursor down to the desired line number
+        for (int i = 1; i < lineNumber; ++i) {
+            cursor.movePosition(QTextCursor::Down);
+
+            // Check if the cursor has moved to the end of the document
+            if (cursor.atEnd()) {
+                QMessageBox::warning(this, tr("Line Number Out of Bounds"),
+                                     tr("The specified line number is outside the bounds of the file."));
+                return; // Exit if the line number is out of bounds
+            }
+        }
+
+        editor->setTextCursor(cursor);
+        editor->ensureCursorVisible(); // Ensure the cursor is visible after moving
+    }
+}
+
+void Document::goToLineNumberInText(QWidget* parent) {
+    bool ok;
+    int lineNumber = QInputDialog::getInt(parent, tr("Go to Line"),
+                                          tr("Line number:"), 1, 1, INT_MAX, 1, &ok);
+    if (ok) {
+        QTextCursor cursor = editor->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+
+        int currentLineNumber = 0;
+        while (currentLineNumber < lineNumber - 1 && !cursor.atEnd()) {
+            cursor.movePosition(QTextCursor::NextBlock);
+            ++currentLineNumber;
+        }
+
+        editor->setTextCursor(cursor);
+    }
 }

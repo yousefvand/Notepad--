@@ -105,7 +105,8 @@
     <addaction name="actionFind_Next"/>
     <addaction name="actionFind_previoud"/>
     <addaction name="action_Replace"/>
-    <addaction name="action_Go_to_line"/>
+    <addaction name="action_Go_to_line_in_editor"/>
+    <addaction name="action_Go_to_line_in_text"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -401,7 +402,7 @@
   </action>
   <action name="actionFind_previoud">
    <property name="text">
-    <string>Find &amp;previoud</string>
+    <string>Find &amp;previous</string>
    </property>
   </action>
   <action name="action_Replace">
@@ -409,9 +410,9 @@
     <string>&amp;Replace...</string>
    </property>
   </action>
-  <action name="action_Go_to_line">
+  <action name="action_Go_to_line_in_editor">
    <property name="text">
-    <string>&amp;Go to line...</string>
+    <string>&amp;Go to line in editor...</string>
    </property>
   </action>
   <action name="action_Show_Symbol">
@@ -728,6 +729,11 @@
   <action name="actionCython">
    <property name="text">
     <string>Cython</string>
+   </property>
+  </action>
+  <action name="action_Go_to_line_in_text">
+   <property name="text">
+    <string>G&amp;o to line in text...</string>
    </property>
   </action>
  </widget>

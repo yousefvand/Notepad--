@@ -21,6 +21,8 @@ private slots:
     void on_documentsTab_tabCloseRequested(int index);
     void on_action_New_triggered();
     void on_actionC_3_triggered();
+    void on_action_Go_to_line_in_text_triggered();
+    void on_action_Go_to_line_in_editor_triggered();
 
 private:
     Ui::MainWindow *ui;
