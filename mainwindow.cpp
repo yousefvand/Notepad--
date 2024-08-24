@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "document.h"
+#include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -92,15 +93,6 @@ void MainWindow::on_action_New_triggered() {
     ui->documentsTab->setCurrentWidget(newDoc);
 }
 
-void MainWindow::on_actionC_3_triggered() {
-    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
-    if (doc) {
-        doc->setLanguage("C++");  // Set language to C++, which triggers the formatting
-    } else {
-        QMessageBox::warning(this, tr("Error"), tr("No document to format."));
-    }
-}
-
 void MainWindow::on_action_Go_to_line_in_editor_triggered()
 {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
@@ -136,6 +128,27 @@ void MainWindow::on_actionC_lose_all_triggered()
 
     for (int i = tabCount - 1; i >= 0; --i) {
         on_documentsTab_tabCloseRequested(i);
+    }
+}
+
+void MainWindow::on_actionC_3_triggered() {
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+    if (doc) {
+        qDebug() << "Menu action triggered for C++ syntax highlighting";
+        doc->applySyntaxHighlighter("C++");
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("No document to format."));
+    }
+}
+
+void MainWindow::on_actionPython_triggered()
+{
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+    if (doc) {
+        qDebug() << "Menu action triggered for Python syntax highlighting";
+        doc->applySyntaxHighlighter("Python");
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("No document to format."));
     }
 }
 

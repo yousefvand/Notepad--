@@ -16,11 +16,19 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 set(TS_FILES Notepad--_en_GB.ts)
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        ${TS_FILES}
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    document.cpp
+    document.h
+    languages/cppsyntaxhighlighter.cpp
+    languages/cppsyntaxhighlighter.h
+    languages/pythonsyntaxhighlighter.cpp
+    languages/pythonsyntaxhighlighter.h
+    languages/languagemanager.cpp
+    languages/languagemanager.h
+    ${TS_FILES}
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -44,9 +52,9 @@ else()
     else()
         add_executable(Notepad--
             ${PROJECT_SOURCES}
-            codeeditor.h codeeditor.cpp
-            document.h document.cpp
-            cppsyntaxhighlighter.h cppsyntaxhighlighter.cpp
+            codeeditor.h
+            codeeditor.cpp
+            languages/pythonsyntaxhighlighter.h languages/pythonsyntaxhighlighter.cpp
         )
     endif()
 

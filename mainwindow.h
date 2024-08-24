@@ -28,6 +28,8 @@ private slots:
 
     void on_actionC_lose_all_triggered();
 
+    void on_actionPython_triggered();
+
 private:
     Ui::MainWindow *ui;
     void openDocument(const QString &filePath);

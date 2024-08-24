@@ -1,19 +1,11 @@
 #include "document.h"
 #include "codeeditor.h"
-#include "cppsyntaxhighlighter.h"
-#include <QFile>
-#include <QTextStream>
+#include <QInputDialog>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QVBoxLayout>
-#include <QFileInfo>
-#include <QCryptographicHash>
-#include <QScrollBar>
-#include <QDebug>
-#include <QFileDialog>
-#include <QThread>
-#include <QFuture>
 #include <QtConcurrent>
-#include <QInputDialog>
+#include <QScrollBar>
 
 Document::Document(const QString &filePath, QWidget *parent)
     : QWidget(parent), m_filePath(filePath), m_fileSize(0), m_startPointer(0), m_endPointer(0), syntaxHighlighter(nullptr) {
@@ -35,28 +27,40 @@ Document::Document(const QString &filePath, QWidget *parent)
     m_currentText.clear();
 }
 
-// Setter for Language
-void Document::setLanguage(const QString &language) {
-    m_language = language;
-
-    if (language == "C++") {
-        applyCppFormatting();  // Automatically apply C++ formatting when language is set to C++
-    }
-}
-
-// Getter for Language
-QString Document::getLanguage() const {
-    return m_language;
+void Document::setFilePath(const QString &path) {
+    m_filePath = path;
+    m_fileExtension = QFileInfo(path).suffix();
+    qDebug() << "File opened with extension:" << m_fileExtension;
+    QString language = LanguageManager::getLanguageFromExtension(m_fileExtension);
+    qDebug() << "Detected language:" << language;
+    applySyntaxHighlighter(language);
 }
 
 QString Document::filePath() const {
     return m_filePath;
 }
 
-void Document::setFilePath(const QString &path) {
-    m_filePath = path;
-    m_fileExtension = QFileInfo(path).suffix();
-    applySyntaxHighlighter();
+QString Document::getLanguage() const {
+    return m_language;
+}
+
+void Document::applySyntaxHighlighter(const QString &language) {
+    if (syntaxHighlighter) {
+        delete syntaxHighlighter;
+        syntaxHighlighter = nullptr;
+    }
+
+    m_language = language;  // Set the current language based on the argument
+
+    // Use LanguageManager to create the appropriate highlighter based on the language directly
+    syntaxHighlighter = LanguageManager::createHighlighterForExtension(language, editor->document());
+
+    if (syntaxHighlighter) {
+        syntaxHighlighter->rehighlight(); // Rehighlight the current text in the editor
+        qDebug() << "Applied syntax highlighter for language:" << language;
+    } else {
+        qDebug() << "No syntax highlighter found for language:" << language;
+    }
 }
 
 void Document::openFile(const QString &filePath) {
@@ -195,24 +199,6 @@ bool Document::closeDocument() {
     }
 
     return true; // No unsaved changes, allow closing
-}
-
-void Document::applySyntaxHighlighter() {
-    if (syntaxHighlighter) {
-        delete syntaxHighlighter;
-        syntaxHighlighter = nullptr;
-    }
-
-    if (m_fileExtension == "cpp" || m_fileExtension == "cxx"
-        || m_fileExtension == "CPP" || m_fileExtension == "CXX") {
-        syntaxHighlighter = new CppSyntaxHighlighter(editor->document());
-    }
-}
-
-void Document::applyCppFormatting() {
-    // Create a new CppSyntaxHighlighter and apply it to the editor
-    CppSyntaxHighlighter *highlighter = new CppSyntaxHighlighter(editor->document());
-    highlighter->rehighlight(); // Rehighlight the current text in the editor
 }
 
 void Document::goToLineNumberInEditor() {
