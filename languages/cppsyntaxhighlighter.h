@@ -22,7 +22,8 @@ private:
     QVector<HighlightingRule> highlightingRules;
 
     QTextCharFormat keywordFormat;
-    QTextCharFormat classFormat;
+    QTextCharFormat typeFormat;
+    QTextCharFormat preprocessorFormat;
     QTextCharFormat singleLineCommentFormat;
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat quotationFormat;

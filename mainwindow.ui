@@ -105,7 +105,8 @@
     <addaction name="actionFind_Next"/>
     <addaction name="actionFind_previoud"/>
     <addaction name="action_Replace"/>
-    <addaction name="action_Go_to_line"/>
+    <addaction name="action_Go_to_line_in_editor"/>
+    <addaction name="action_Go_to_line_in_text"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -160,28 +161,252 @@
      <addaction name="actionCypher"/>
      <addaction name="actionCython"/>
     </widget>
-    <addaction name="actionA"/>
-    <addaction name="actionB"/>
+    <widget class="QMenu" name="menuA">
+     <property name="title">
+      <string>A</string>
+     </property>
+     <addaction name="actionAPL"/>
+     <addaction name="actionASN_1"/>
+     <addaction name="actionASP_NET"/>
+     <addaction name="actionAsterisk"/>
+    </widget>
+    <widget class="QMenu" name="menuB">
+     <property name="title">
+      <string>B</string>
+     </property>
+     <addaction name="actionBash"/>
+     <addaction name="actionBrainfuck"/>
+    </widget>
+    <widget class="QMenu" name="menuD">
+     <property name="title">
+      <string>D</string>
+     </property>
+     <addaction name="actionD_2"/>
+     <addaction name="actionDart"/>
+     <addaction name="actiondiff"/>
+     <addaction name="actionDjango"/>
+     <addaction name="actionDockerfile"/>
+     <addaction name="actionDTD"/>
+     <addaction name="actionDylaan"/>
+    </widget>
+    <widget class="QMenu" name="menuE">
+     <property name="title">
+      <string>E</string>
+     </property>
+     <addaction name="actionEBNF"/>
+     <addaction name="actionECL"/>
+     <addaction name="actionedn"/>
+     <addaction name="actionEiffel"/>
+     <addaction name="actionEmbedded_Javascript"/>
+     <addaction name="actionElm"/>
+     <addaction name="actionEmbedded_Ruby"/>
+     <addaction name="actionErlang"/>
+    </widget>
+    <widget class="QMenu" name="menuF">
+     <property name="title">
+      <string>F</string>
+     </property>
+     <addaction name="actionFactor"/>
+     <addaction name="actionFCL"/>
+     <addaction name="actionForth"/>
+     <addaction name="actionFortran"/>
+     <addaction name="actionF_2"/>
+    </widget>
+    <widget class="QMenu" name="menuG">
+     <property name="title">
+      <string>G</string>
+     </property>
+     <addaction name="actionGas"/>
+     <addaction name="actionGherkin"/>
+     <addaction name="actionGo"/>
+     <addaction name="actionGroovy"/>
+    </widget>
+    <widget class="QMenu" name="menuH">
+     <property name="title">
+      <string>H</string>
+     </property>
+     <addaction name="actionHAML"/>
+     <addaction name="actionHaskell"/>
+     <addaction name="actionHaskell_Literate"/>
+     <addaction name="actionHaxe"/>
+     <addaction name="actionHTML"/>
+     <addaction name="actionHTTP"/>
+    </widget>
+    <widget class="QMenu" name="menuI">
+     <property name="title">
+      <string>I</string>
+     </property>
+     <addaction name="actionIDL"/>
+    </widget>
+    <widget class="QMenu" name="menuJ">
+     <property name="title">
+      <string>J</string>
+     </property>
+     <addaction name="actionJade"/>
+     <addaction name="actionJava"/>
+     <addaction name="actionJavaScript"/>
+     <addaction name="actionJinja2"/>
+     <addaction name="actionJSON"/>
+     <addaction name="actionJSON_LD"/>
+     <addaction name="actionJavaServer_Pages"/>
+     <addaction name="actionJSX"/>
+     <addaction name="actionJulia"/>
+    </widget>
+    <widget class="QMenu" name="menuK">
+     <property name="title">
+      <string>K</string>
+     </property>
+     <addaction name="actionKotlin"/>
+    </widget>
+    <widget class="QMenu" name="menuL">
+     <property name="title">
+      <string>L</string>
+     </property>
+     <addaction name="actionLaTeX"/>
+     <addaction name="actionLESS"/>
+     <addaction name="actionLivescript"/>
+     <addaction name="actionLua"/>
+    </widget>
+    <widget class="QMenu" name="menuM">
+     <property name="title">
+      <string>M</string>
+     </property>
+     <addaction name="actionm4"/>
+     <addaction name="actionMakefile"/>
+     <addaction name="actionMariaDB"/>
+     <addaction name="actionMarkdown_Github_flavour"/>
+     <addaction name="actionMathematica"/>
+     <addaction name="actionmbox"/>
+     <addaction name="actionmIRC"/>
+     <addaction name="actionModelica"/>
+     <addaction name="actionmscgen"/>
+     <addaction name="actionmsgenny"/>
+     <addaction name="actionMUMPS"/>
+    </widget>
+    <widget class="QMenu" name="menuN">
+     <property name="title">
+      <string>N</string>
+     </property>
+     <addaction name="actionNginx"/>
+     <addaction name="actionNSIS"/>
+     <addaction name="actionNTriples"/>
+    </widget>
+    <widget class="QMenu" name="menuO">
+     <property name="title">
+      <string>O</string>
+     </property>
+     <addaction name="actionObjective_C"/>
+     <addaction name="actionOCaml"/>
+     <addaction name="actionOctave"/>
+     <addaction name="actionOz"/>
+    </widget>
+    <widget class="QMenu" name="menuP">
+     <property name="title">
+      <string>P</string>
+     </property>
+     <addaction name="actionPascal"/>
+     <addaction name="actionPEG_js"/>
+     <addaction name="actionPerl"/>
+     <addaction name="actionPGP"/>
+     <addaction name="actionPHP"/>
+     <addaction name="actionPig"/>
+     <addaction name="actionPLSQL"/>
+     <addaction name="actionPowerShell"/>
+     <addaction name="actionProperties_files"/>
+     <addaction name="actionProtoBuf"/>
+     <addaction name="actionPug"/>
+     <addaction name="actionPuppet"/>
+     <addaction name="actionPython"/>
+    </widget>
+    <widget class="QMenu" name="menuT">
+     <property name="title">
+      <string>T</string>
+     </property>
+     <addaction name="actionText"/>
+     <addaction name="actionTcl"/>
+     <addaction name="actionTextile"/>
+     <addaction name="actionTiddlyWiki"/>
+     <addaction name="actionTiki_wiki"/>
+     <addaction name="actionTOML"/>
+     <addaction name="actionTornado"/>
+     <addaction name="actiontroff"/>
+     <addaction name="actionTTCN"/>
+     <addaction name="actionTTCN_CFG"/>
+     <addaction name="actionTurtle"/>
+     <addaction name="actionTwig"/>
+     <addaction name="actionTypeScript"/>
+    </widget>
+    <widget class="QMenu" name="menuR">
+     <property name="title">
+      <string>R</string>
+     </property>
+     <addaction name="actionR_2"/>
+     <addaction name="actionRPM_Changes"/>
+     <addaction name="actionRPM_Spec"/>
+     <addaction name="actionreStructuredText"/>
+     <addaction name="actionRuby"/>
+     <addaction name="actionRust"/>
+    </widget>
+    <widget class="QMenu" name="menuS">
+     <property name="title">
+      <string>S</string>
+     </property>
+     <addaction name="actionSAS"/>
+     <addaction name="actionSass"/>
+     <addaction name="actionScala"/>
+     <addaction name="actionScheme"/>
+     <addaction name="actionSCSS"/>
+     <addaction name="actionSieve"/>
+     <addaction name="actionSlim"/>
+     <addaction name="actionSmalltalk"/>
+     <addaction name="actionSmarty"/>
+     <addaction name="actionSolr"/>
+     <addaction name="actionSoy"/>
+     <addaction name="actionSPARQL"/>
+     <addaction name="actionSpreadsheet"/>
+     <addaction name="actionSQL"/>
+     <addaction name="actionSquirrel"/>
+     <addaction name="actionsTeX"/>
+     <addaction name="actionSwift"/>
+     <addaction name="actionSysstemVerilog"/>
+    </widget>
+    <widget class="QMenu" name="menuW">
+     <property name="title">
+      <string>W</string>
+     </property>
+     <addaction name="actionWeb_IDL"/>
+    </widget>
+    <widget class="QMenu" name="menuV">
+     <property name="title">
+      <string>V</string>
+     </property>
+     <addaction name="actionVB_NET"/>
+     <addaction name="actionVBScript"/>
+     <addaction name="actionVelocity"/>
+     <addaction name="actionVerilog"/>
+     <addaction name="actionVHDL"/>
+    </widget>
+    <addaction name="menuA"/>
+    <addaction name="menuB"/>
     <addaction name="menuC"/>
-    <addaction name="actionD"/>
-    <addaction name="actionE"/>
-    <addaction name="actionF"/>
-    <addaction name="actionG"/>
-    <addaction name="actionH"/>
-    <addaction name="actionI"/>
-    <addaction name="actionJ"/>
-    <addaction name="actionK"/>
-    <addaction name="actionL"/>
-    <addaction name="actionM"/>
-    <addaction name="actionN"/>
-    <addaction name="actionO"/>
-    <addaction name="actionP"/>
-    <addaction name="actionT"/>
-    <addaction name="actionR"/>
-    <addaction name="actionS"/>
-    <addaction name="actionV"/>
-    <addaction name="actionW"/>
-    <addaction name="actionX"/>
+    <addaction name="menuD"/>
+    <addaction name="menuE"/>
+    <addaction name="menuF"/>
+    <addaction name="menuG"/>
+    <addaction name="menuH"/>
+    <addaction name="menuI"/>
+    <addaction name="menuJ"/>
+    <addaction name="menuK"/>
+    <addaction name="menuL"/>
+    <addaction name="menuM"/>
+    <addaction name="menuN"/>
+    <addaction name="menuO"/>
+    <addaction name="menuP"/>
+    <addaction name="menuR"/>
+    <addaction name="menuS"/>
+    <addaction name="menuT"/>
+    <addaction name="menuV"/>
+    <addaction name="menuW"/>
    </widget>
    <widget class="QMenu" name="menuSettin_gs">
     <property name="title">
@@ -401,7 +626,7 @@
   </action>
   <action name="actionFind_previoud">
    <property name="text">
-    <string>Find &amp;previoud</string>
+    <string>Find &amp;previous</string>
    </property>
   </action>
   <action name="action_Replace">
@@ -409,9 +634,9 @@
     <string>&amp;Replace...</string>
    </property>
   </action>
-  <action name="action_Go_to_line">
+  <action name="action_Go_to_line_in_editor">
    <property name="text">
-    <string>&amp;Go to line...</string>
+    <string>&amp;Go to line in editor...</string>
    </property>
   </action>
   <action name="action_Show_Symbol">
@@ -505,119 +730,6 @@
   <action name="actionC_onvert_to">
    <property name="text">
     <string>C&amp;onvert to...</string>
-   </property>
-  </action>
-  <action name="actionA">
-   <property name="text">
-    <string>A</string>
-   </property>
-  </action>
-  <action name="actionB">
-   <property name="text">
-    <string>B</string>
-   </property>
-  </action>
-  <action name="actionD">
-   <property name="text">
-    <string>D</string>
-   </property>
-  </action>
-  <action name="actionE">
-   <property name="text">
-    <string>E</string>
-   </property>
-  </action>
-  <action name="actionF">
-   <property name="text">
-    <string>F</string>
-   </property>
-  </action>
-  <action name="actionG">
-   <property name="text">
-    <string>G</string>
-   </property>
-  </action>
-  <action name="actionH">
-   <property name="text">
-    <string>H</string>
-   </property>
-  </action>
-  <action name="actionI">
-   <property name="text">
-    <string>I</string>
-   </property>
-  </action>
-  <action name="actionJ">
-   <property name="text">
-    <string>J</string>
-   </property>
-  </action>
-  <action name="actionK">
-   <property name="text">
-    <string>K</string>
-   </property>
-  </action>
-  <action name="actionL">
-   <property name="text">
-    <string>L</string>
-   </property>
-  </action>
-  <action name="actionM">
-   <property name="text">
-    <string>M</string>
-   </property>
-  </action>
-  <action name="actionN">
-   <property name="text">
-    <string>N</string>
-   </property>
-  </action>
-  <action name="actionO">
-   <property name="text">
-    <string>O</string>
-   </property>
-  </action>
-  <action name="actionP">
-   <property name="text">
-    <string>P</string>
-   </property>
-  </action>
-  <action name="actionT">
-   <property name="text">
-    <string>T</string>
-   </property>
-  </action>
-  <action name="actionR">
-   <property name="text">
-    <string>R</string>
-   </property>
-  </action>
-  <action name="actionS">
-   <property name="text">
-    <string>S</string>
-   </property>
-  </action>
-  <action name="actionV">
-   <property name="text">
-    <string>V</string>
-   </property>
-  </action>
-  <action name="actionW">
-   <property name="text">
-    <string>W</string>
-   </property>
-  </action>
-  <action name="actionX">
-   <property name="text">
-    <string>Y</string>
-   </property>
-  </action>
-  <action name="actionZ">
-   <property name="text">
-    <string>Z</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="action_Prefrences">
@@ -728,6 +840,636 @@
   <action name="actionCython">
    <property name="text">
     <string>Cython</string>
+   </property>
+  </action>
+  <action name="action_Go_to_line_in_text">
+   <property name="text">
+    <string>G&amp;o to line in text...</string>
+   </property>
+  </action>
+  <action name="actionAPL">
+   <property name="text">
+    <string>APL</string>
+   </property>
+  </action>
+  <action name="actionASN_1">
+   <property name="text">
+    <string>ASN.1</string>
+   </property>
+  </action>
+  <action name="actionASP_NET">
+   <property name="text">
+    <string>ASP.NET</string>
+   </property>
+  </action>
+  <action name="actionAsterisk">
+   <property name="text">
+    <string>Asterisk</string>
+   </property>
+  </action>
+  <action name="actionBash">
+   <property name="text">
+    <string>Bash</string>
+   </property>
+  </action>
+  <action name="actionBrainfuck">
+   <property name="text">
+    <string>Brainfuck</string>
+   </property>
+  </action>
+  <action name="actionD_2">
+   <property name="text">
+    <string>D</string>
+   </property>
+  </action>
+  <action name="actionDart">
+   <property name="text">
+    <string>Dart</string>
+   </property>
+  </action>
+  <action name="actiondiff">
+   <property name="text">
+    <string>diff</string>
+   </property>
+  </action>
+  <action name="actionDjango">
+   <property name="text">
+    <string>Django</string>
+   </property>
+  </action>
+  <action name="actionDockerfile">
+   <property name="text">
+    <string>Dockerfile</string>
+   </property>
+  </action>
+  <action name="actionDTD">
+   <property name="text">
+    <string>DTD</string>
+   </property>
+  </action>
+  <action name="actionDylaan">
+   <property name="text">
+    <string>Dylaan</string>
+   </property>
+  </action>
+  <action name="actionEBNF">
+   <property name="text">
+    <string>EBNF</string>
+   </property>
+  </action>
+  <action name="actionECL">
+   <property name="text">
+    <string>ECL</string>
+   </property>
+  </action>
+  <action name="actionedn">
+   <property name="text">
+    <string>edn</string>
+   </property>
+  </action>
+  <action name="actionEiffel">
+   <property name="text">
+    <string>Eiffel</string>
+   </property>
+  </action>
+  <action name="actionEmbedded_Javascript">
+   <property name="text">
+    <string>Embedded Javascript</string>
+   </property>
+  </action>
+  <action name="actionElm">
+   <property name="text">
+    <string>Elm</string>
+   </property>
+  </action>
+  <action name="actionEmbedded_Ruby">
+   <property name="text">
+    <string>Embedded Ruby</string>
+   </property>
+  </action>
+  <action name="actionErlang">
+   <property name="text">
+    <string>Erlang</string>
+   </property>
+  </action>
+  <action name="actionFactor">
+   <property name="text">
+    <string>Factor</string>
+   </property>
+  </action>
+  <action name="actionFCL">
+   <property name="text">
+    <string>FCL</string>
+   </property>
+  </action>
+  <action name="actionForth">
+   <property name="text">
+    <string>Forth</string>
+   </property>
+  </action>
+  <action name="actionFortran">
+   <property name="text">
+    <string>Fortran</string>
+   </property>
+  </action>
+  <action name="actionF_2">
+   <property name="text">
+    <string>F#</string>
+   </property>
+  </action>
+  <action name="actionGas">
+   <property name="text">
+    <string>Gas</string>
+   </property>
+  </action>
+  <action name="actionGherkin">
+   <property name="text">
+    <string>Gherkin</string>
+   </property>
+  </action>
+  <action name="actionGo">
+   <property name="text">
+    <string>Go</string>
+   </property>
+  </action>
+  <action name="actionGroovy">
+   <property name="text">
+    <string>Groovy</string>
+   </property>
+  </action>
+  <action name="actionHAML">
+   <property name="text">
+    <string>HAML</string>
+   </property>
+  </action>
+  <action name="actionHaskell">
+   <property name="text">
+    <string>Haskell</string>
+   </property>
+  </action>
+  <action name="actionHaskell_Literate">
+   <property name="text">
+    <string>Haskell (Literate)</string>
+   </property>
+  </action>
+  <action name="actionHaxe">
+   <property name="text">
+    <string>Haxe</string>
+   </property>
+  </action>
+  <action name="actionHTML">
+   <property name="text">
+    <string>HTML</string>
+   </property>
+  </action>
+  <action name="actionHTTP">
+   <property name="text">
+    <string>HTTP</string>
+   </property>
+  </action>
+  <action name="actionIDL">
+   <property name="text">
+    <string>IDL</string>
+   </property>
+  </action>
+  <action name="actionJade">
+   <property name="text">
+    <string>Jade</string>
+   </property>
+  </action>
+  <action name="actionJava">
+   <property name="text">
+    <string>Java</string>
+   </property>
+  </action>
+  <action name="actionJavaScript">
+   <property name="text">
+    <string>JavaScript</string>
+   </property>
+  </action>
+  <action name="actionJinja2">
+   <property name="text">
+    <string>Jinja2</string>
+   </property>
+  </action>
+  <action name="actionJSON">
+   <property name="text">
+    <string>JSON</string>
+   </property>
+  </action>
+  <action name="actionJSON_LD">
+   <property name="text">
+    <string>JSON-LD</string>
+   </property>
+  </action>
+  <action name="actionJavaServer_Pages">
+   <property name="text">
+    <string>JavaServer Pages</string>
+   </property>
+  </action>
+  <action name="actionJSX">
+   <property name="text">
+    <string>JSX</string>
+   </property>
+  </action>
+  <action name="actionJulia">
+   <property name="text">
+    <string>Julia</string>
+   </property>
+  </action>
+  <action name="actionKotlin">
+   <property name="text">
+    <string>Kotlin</string>
+   </property>
+  </action>
+  <action name="actionLaTeX">
+   <property name="text">
+    <string>LaTeX</string>
+   </property>
+  </action>
+  <action name="actionLESS">
+   <property name="text">
+    <string>LESS</string>
+   </property>
+  </action>
+  <action name="actionLivescript">
+   <property name="text">
+    <string>Livescript</string>
+   </property>
+  </action>
+  <action name="actionLua">
+   <property name="text">
+    <string>Lua</string>
+   </property>
+  </action>
+  <action name="actionm4">
+   <property name="text">
+    <string>m4</string>
+   </property>
+  </action>
+  <action name="actionMakefile">
+   <property name="text">
+    <string>Makefile</string>
+   </property>
+  </action>
+  <action name="actionMariaDB">
+   <property name="text">
+    <string>MariaDB</string>
+   </property>
+  </action>
+  <action name="actionMarkdown_Github_flavour">
+   <property name="text">
+    <string>Markdown (GitHub-flavour)</string>
+   </property>
+  </action>
+  <action name="actionMathematica">
+   <property name="text">
+    <string>Mathematica</string>
+   </property>
+  </action>
+  <action name="actionmbox">
+   <property name="text">
+    <string>mbox</string>
+   </property>
+  </action>
+  <action name="actionmIRC">
+   <property name="text">
+    <string>mIRC</string>
+   </property>
+  </action>
+  <action name="actionModelica">
+   <property name="text">
+    <string>Modelica</string>
+   </property>
+  </action>
+  <action name="actionmscgen">
+   <property name="text">
+    <string>mscgen</string>
+   </property>
+  </action>
+  <action name="actionmsgenny">
+   <property name="text">
+    <string>msgenny</string>
+   </property>
+  </action>
+  <action name="actionMUMPS">
+   <property name="text">
+    <string>MUMPS</string>
+   </property>
+  </action>
+  <action name="actionNginx">
+   <property name="text">
+    <string>Nginx</string>
+   </property>
+  </action>
+  <action name="actionNSIS">
+   <property name="text">
+    <string>NSIS</string>
+   </property>
+  </action>
+  <action name="actionNTriples">
+   <property name="text">
+    <string>NTriples</string>
+   </property>
+  </action>
+  <action name="actionObjective_C">
+   <property name="text">
+    <string>Objective C</string>
+   </property>
+  </action>
+  <action name="actionOCaml">
+   <property name="text">
+    <string>OCaml</string>
+   </property>
+  </action>
+  <action name="actionOctave">
+   <property name="text">
+    <string>Octave</string>
+   </property>
+  </action>
+  <action name="actionOz">
+   <property name="text">
+    <string>Oz</string>
+   </property>
+  </action>
+  <action name="actionPascal">
+   <property name="text">
+    <string>Pascal</string>
+   </property>
+  </action>
+  <action name="actionPEG_js">
+   <property name="text">
+    <string>PEG.js</string>
+   </property>
+  </action>
+  <action name="actionPerl">
+   <property name="text">
+    <string>Perl</string>
+   </property>
+  </action>
+  <action name="actionPGP">
+   <property name="text">
+    <string>PGP</string>
+   </property>
+  </action>
+  <action name="actionPHP">
+   <property name="text">
+    <string>PHP</string>
+   </property>
+  </action>
+  <action name="actionPig">
+   <property name="text">
+    <string>Pig</string>
+   </property>
+  </action>
+  <action name="actionPLSQL">
+   <property name="text">
+    <string>PLSQL</string>
+   </property>
+  </action>
+  <action name="actionPowerShell">
+   <property name="text">
+    <string>PowerShell</string>
+   </property>
+  </action>
+  <action name="actionProperties_files">
+   <property name="text">
+    <string>Properties files</string>
+   </property>
+  </action>
+  <action name="actionProtoBuf">
+   <property name="text">
+    <string>ProtoBuf</string>
+   </property>
+  </action>
+  <action name="actionPug">
+   <property name="text">
+    <string>Pug</string>
+   </property>
+  </action>
+  <action name="actionPuppet">
+   <property name="text">
+    <string>Puppet</string>
+   </property>
+  </action>
+  <action name="actionPython">
+   <property name="text">
+    <string>Python</string>
+   </property>
+  </action>
+  <action name="actionText">
+   <property name="text">
+    <string>Text</string>
+   </property>
+  </action>
+  <action name="actionTcl">
+   <property name="text">
+    <string>Tcl</string>
+   </property>
+  </action>
+  <action name="actionTextile">
+   <property name="text">
+    <string>Textile</string>
+   </property>
+  </action>
+  <action name="actionTiddlyWiki">
+   <property name="text">
+    <string>TiddlyWiki</string>
+   </property>
+  </action>
+  <action name="actionTiki_wiki">
+   <property name="text">
+    <string>Tiki wiki</string>
+   </property>
+  </action>
+  <action name="actionTOML">
+   <property name="text">
+    <string>TOML</string>
+   </property>
+  </action>
+  <action name="actionTornado">
+   <property name="text">
+    <string>Tornado</string>
+   </property>
+  </action>
+  <action name="actiontroff">
+   <property name="text">
+    <string>troff</string>
+   </property>
+  </action>
+  <action name="actionTTCN">
+   <property name="text">
+    <string>TTCN</string>
+   </property>
+  </action>
+  <action name="actionTTCN_CFG">
+   <property name="text">
+    <string>TTCN-CFG</string>
+   </property>
+  </action>
+  <action name="actionTurtle">
+   <property name="text">
+    <string>Turtle</string>
+   </property>
+  </action>
+  <action name="actionTwig">
+   <property name="text">
+    <string>Twig</string>
+   </property>
+  </action>
+  <action name="actionTypeScript">
+   <property name="text">
+    <string>TypeScript</string>
+   </property>
+  </action>
+  <action name="actionR_2">
+   <property name="text">
+    <string>R</string>
+   </property>
+  </action>
+  <action name="actionRPM_Changes">
+   <property name="text">
+    <string>RPM Changes</string>
+   </property>
+  </action>
+  <action name="actionRPM_Spec">
+   <property name="text">
+    <string>RPM Spec</string>
+   </property>
+  </action>
+  <action name="actionreStructuredText">
+   <property name="text">
+    <string>reStructuredText</string>
+   </property>
+  </action>
+  <action name="actionRuby">
+   <property name="text">
+    <string>Ruby</string>
+   </property>
+  </action>
+  <action name="actionRust">
+   <property name="text">
+    <string>Rust</string>
+   </property>
+  </action>
+  <action name="actionSAS">
+   <property name="text">
+    <string>SAS</string>
+   </property>
+  </action>
+  <action name="actionSass">
+   <property name="text">
+    <string>Sass</string>
+   </property>
+  </action>
+  <action name="actionScala">
+   <property name="text">
+    <string>Scala</string>
+   </property>
+  </action>
+  <action name="actionScheme">
+   <property name="text">
+    <string>Scheme</string>
+   </property>
+  </action>
+  <action name="actionSCSS">
+   <property name="text">
+    <string>SCSS</string>
+   </property>
+  </action>
+  <action name="actionSieve">
+   <property name="text">
+    <string>Sieve</string>
+   </property>
+  </action>
+  <action name="actionSlim">
+   <property name="text">
+    <string>Slim</string>
+   </property>
+  </action>
+  <action name="actionSmalltalk">
+   <property name="text">
+    <string>Smalltalk</string>
+   </property>
+  </action>
+  <action name="actionSmarty">
+   <property name="text">
+    <string>Smarty</string>
+   </property>
+  </action>
+  <action name="actionSolr">
+   <property name="text">
+    <string>Solr</string>
+   </property>
+  </action>
+  <action name="actionSoy">
+   <property name="text">
+    <string>Soy</string>
+   </property>
+  </action>
+  <action name="actionSPARQL">
+   <property name="text">
+    <string>SPARQL</string>
+   </property>
+  </action>
+  <action name="actionSpreadsheet">
+   <property name="text">
+    <string>Spreadsheet</string>
+   </property>
+  </action>
+  <action name="actionSQL">
+   <property name="text">
+    <string>SQL</string>
+   </property>
+  </action>
+  <action name="actionSquirrel">
+   <property name="text">
+    <string>Squirrel</string>
+   </property>
+  </action>
+  <action name="actionsTeX">
+   <property name="text">
+    <string>sTeX</string>
+   </property>
+  </action>
+  <action name="actionSwift">
+   <property name="text">
+    <string>Swift</string>
+   </property>
+  </action>
+  <action name="actionSysstemVerilog">
+   <property name="text">
+    <string>SysstemVerilog</string>
+   </property>
+  </action>
+  <action name="actionWeb_IDL">
+   <property name="text">
+    <string>Web IDL</string>
+   </property>
+  </action>
+  <action name="actionVB_NET">
+   <property name="text">
+    <string>VB.NET</string>
+   </property>
+  </action>
+  <action name="actionVBScript">
+   <property name="text">
+    <string>VBScript</string>
+   </property>
+  </action>
+  <action name="actionVelocity">
+   <property name="text">
+    <string>Velocity</string>
+   </property>
+  </action>
+  <action name="actionVerilog">
+   <property name="text">
+    <string>Verilog</string>
+   </property>
+  </action>
+  <action name="actionVHDL">
+   <property name="text">
+    <string>VHDL</string>
    </property>
   </action>
  </widget>

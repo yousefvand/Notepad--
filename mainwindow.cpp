@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "document.h"
+#include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -11,20 +12,17 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    // Remove the initial empty tab if it exists
     if (ui->documentsTab->count() > 0) {
-        ui->documentsTab->removeTab(0); // Remove the first tab
+        ui->documentsTab->removeTab(0);
     }
 
-    // Create the initial "Untitled Document" tab
-    Document *firstDoc = new Document("", this); // Pass an empty string for the file path
+    Document *firstDoc = new Document("", this);
     ui->documentsTab->addTab(firstDoc, "Untitled Document");
-    ui->documentsTab->setCurrentWidget(firstDoc); // Set the first tab as current
+    ui->documentsTab->setCurrentWidget(firstDoc);
 
-    // Open files passed as command line arguments
     QStringList filePaths = QCoreApplication::arguments();
     for (const QString &filePath : filePaths) {
-        if (filePath != QCoreApplication::applicationFilePath()) { // Skip the application path
+        if (filePath != QCoreApplication::applicationFilePath()) {
             openDocument(filePath);
         }
     }
@@ -35,18 +33,15 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::openDocument(const QString &filePath) {
-    // Check if there is an empty tab to reuse
     if (ui->documentsTab->count() > 0) {
         Document *existingDoc = qobject_cast<Document *>(ui->documentsTab->widget(0));
         if (existingDoc && existingDoc->filePath().isEmpty()) {
-            // Reuse the existing empty tab
-            existingDoc->openFile(filePath); // Open the file in the existing tab
-            ui->documentsTab->setTabText(0, QFileInfo(filePath).fileName()); // Update the tab title
-            return; // Exit as we've reused the tab
+            existingDoc->openFile(filePath);
+            ui->documentsTab->setTabText(0, QFileInfo(filePath).fileName());
+            return;
         }
     }
 
-    // If no empty tab exists, create a new document tab
     Document *newDoc = new Document(filePath, this);
     ui->documentsTab->addTab(newDoc, QFileInfo(filePath).fileName());
     ui->documentsTab->setCurrentWidget(newDoc);
@@ -62,7 +57,7 @@ void MainWindow::on_action_Open_triggered() {
 void MainWindow::on_action_Save_triggered() {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
-        doc->saveFile(); // Call saveFile method of Document
+        doc->saveFile();
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document to save."));
     }
@@ -73,7 +68,7 @@ void MainWindow::on_actionSave_As_triggered() {
     if (doc) {
         QString filePath = QFileDialog::getSaveFileName(this, tr("Save File As"), "", tr("Text Files (*.txt);;All Files (*)"));
         if (!filePath.isEmpty()) {
-            doc->saveFileAs(filePath); // Call saveFileAs method of Document
+            doc->saveFileAs(filePath);
         }
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document to save."));
@@ -81,31 +76,79 @@ void MainWindow::on_actionSave_As_triggered() {
 }
 
 void MainWindow::on_documentsTab_tabCloseRequested(int index) {
-    // Get the current document from the tab
     Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
 
     if (doc) {
-        // Call the closeDocument method to handle the closing logic
-        bool canClose = doc->closeDocument(); // This method should return true if it's okay to close
+        bool canClose = doc->closeDocument();
 
         if (canClose) {
-            // If the document has been closed, remove the tab
             ui->documentsTab->removeTab(index);
         }
     }
 }
 
 void MainWindow::on_action_New_triggered() {
-    Document *newDoc = new Document("", this); // Pass an empty string for the file path
+    Document *newDoc = new Document("", this);
     ui->documentsTab->addTab(newDoc, "Untitled Document");
     ui->documentsTab->setCurrentWidget(newDoc);
+}
+
+void MainWindow::on_action_Go_to_line_in_editor_triggered()
+{
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+    if (doc) {
+        doc->goToLineNumberInEditor   ();
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("No document open."));
+    }
+}
+
+void MainWindow::on_action_Go_to_line_in_text_triggered() {
+    Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    if (doc) {
+        doc->goToLineNumberInText(this);
+    } else {
+        QMessageBox::warning(this, tr("No Document"), tr("There is no document open."));
+    }
+}
+
+void MainWindow::on_action_Close_triggered()
+{
+    int activeTabIndex = ui->documentsTab->currentIndex();  // Get the index of the active tab
+
+    if (activeTabIndex != -1) {  // Check if there's an active tab
+        on_documentsTab_tabCloseRequested(activeTabIndex);  // Reuse the existing close logic
+    }
+}
+
+
+void MainWindow::on_actionC_lose_all_triggered()
+{
+    int tabCount = ui->documentsTab->count();
+
+    for (int i = tabCount - 1; i >= 0; --i) {
+        on_documentsTab_tabCloseRequested(i);
+    }
 }
 
 void MainWindow::on_actionC_3_triggered() {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
-        doc->applySyntaxHighlighter(); // Now this is public
+        qDebug() << "Menu action triggered for C++ syntax highlighting";
+        doc->applySyntaxHighlighter("C++");
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document to format."));
     }
 }
+
+void MainWindow::on_actionPython_triggered()
+{
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+    if (doc) {
+        qDebug() << "Menu action triggered for Python syntax highlighting";
+        doc->applySyntaxHighlighter("Python");
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("No document to format."));
+    }
+}
+

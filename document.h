@@ -5,9 +5,10 @@
 #include <QFile>
 #include <QMap>
 #include <QCryptographicHash>
+#include <QSyntaxHighlighter>
+#include "languages/languagemanager.h"
 
-class CodeEditor; // Forward declaration
-class CppSyntaxHighlighter; // Forward declaration
+class CodeEditor;
 
 class Document : public QWidget {
     Q_OBJECT
@@ -16,15 +17,18 @@ public:
     Document(const QString &filePath, QWidget *parent = nullptr);
     QString filePath() const;
     void setFilePath(const QString &path);
+    QString getLanguage() const;
     void openFile(const QString &filePath);
     void saveFile();
     void saveFileAs(const QString &newFilePath);
     bool closeDocument();
-    void applySyntaxHighlighter();
+    void goToLineNumberInText(QWidget* parent);
+    void goToLineNumberInEditor();
+    void applySyntaxHighlighter(const QString &language);
 
 signals:
-    void saveError(const QString &error); // Signal for save errors
-    void saveCompleted(); // Signal for successful save
+    void saveError(const QString &error);
+    void saveCompleted();
 
 private:
     void loadContent();
@@ -37,13 +41,14 @@ private:
     QString m_fileExtension;
     QFile m_file;
     CodeEditor *editor;
-    CppSyntaxHighlighter *syntaxHighlighter;
+    QSyntaxHighlighter *syntaxHighlighter;
     qint64 m_fileSize;
     qint64 m_startPointer;
     qint64 m_endPointer;
     QByteArray m_originalHash;
-    QMap<qint64, QString> m_changedSegments; // Store changed segments
-    QString m_currentText; // Store current text in the editor
+    QMap<qint64, QString> m_changedSegments;
+    QString m_currentText;
+    QString m_language;
 };
 
 #endif // DOCUMENT_H
