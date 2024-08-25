@@ -1,16 +1,7 @@
 #!/usr/bin/env bash
 
-file="1GB.txt"
+output_file="1GB.txt"
 
-# Define the size in byte
-s (1 GB) size=$((1 * 1024 * 1024 * 1024))
-
-# Generate the random file < /dev/urandom 
-tr -dc 'a-zA-Z0-9 ' | head -c "$size" > "$file"
+base64 /dev/urandom | head -c 1073741824 > "$output_file"
 
 echo "Done!"
-
-
-
-
-
