@@ -1,6 +1,5 @@
 #include "document.h"
 #include "codeeditor.h"
-#include "languages/languagemanager.h"
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -53,13 +52,12 @@ void Document::applySyntaxHighlighter(const QString &language) {
         syntaxHighlighter = nullptr;
     }
 
-    m_language = language;  // Set the current language based on the argument
+    m_language = language;
 
-    // Use LanguageManager to create the appropriate highlighter based on the language directly
     syntaxHighlighter = LanguageManager::createHighlighterForExtension(language, editor->document());
 
     if (syntaxHighlighter) {
-        syntaxHighlighter->rehighlight(); // Rehighlight the current text in the editor
+        syntaxHighlighter->rehighlight();
         qDebug() << "Applied syntax highlighter for language:" << language;
     } else {
         qDebug() << "No syntax highlighter found for language:" << language;
@@ -76,30 +74,28 @@ void Document::openFile(const QString &filePath) {
     setFilePath(filePath);
 
     m_fileSize = m_file.size();
+    m_startPointer = 0;
+    m_endPointer = qMin(m_fileSize, m_startPointer + 1024 * 1024); // Load first 1MB
 
-    // Load the entire file content for simplicity
-    QByteArray content = m_file.readAll();
-    editor->setPlainText(QString::fromUtf8(content));
-    editor->moveCursor(QTextCursor::Start);
+    loadContent();
 
-    // Calculate the original hash of the file asynchronously
-    QtConcurrent::run([this]() {
-        m_originalHash = calculateMD5Stream(&m_file);
-        qDebug() << "Original MD5 calculated:" << m_originalHash.toHex();
-    });
-
-    m_file.close();
+    // Calculate and store the original hash of the file
+    m_originalHash = calculateModifiedMD5();  // Use the content loaded into the editor
 }
 
-void Document::trackChanges() {
-    // Basic change tracking (full document, for simplicity)
-    m_currentText = editor->toPlainText();
+void Document::loadContent() {
+    if (!m_file.isOpen()) return;
+
+    m_file.seek(m_startPointer);
+    QByteArray content = m_file.read(m_endPointer - m_startPointer);
+    editor->setPlainText(QString::fromUtf8(content));
+    editor->moveCursor(QTextCursor::Start);
 }
 
 void Document::updatePointers() {
     qint64 cursorPos = editor->textCursor().position();
     if (cursorPos < 0 || cursorPos >= editor->toPlainText().length()) {
-        return; // Invalid cursor position
+        return;
     }
 
     qint64 pageSize = m_endPointer - m_startPointer;
@@ -116,33 +112,11 @@ void Document::updatePointers() {
     }
 }
 
-void Document::loadContent() {
-    if (!m_file.isOpen()) {
-        qDebug() << "File is not open, cannot load content.";
-        return;
-    }
+void Document::trackChanges() {
+    qint64 cursorPos = editor->textCursor().position();
+    QString changedText = editor->toPlainText();
 
-    // Calculate the size of the portion to read
-    qint64 bytesToRead = m_endPointer - m_startPointer;
-
-    // Ensure the reading is within bounds
-    if (m_startPointer < 0 || m_startPointer >= m_fileSize || bytesToRead <= 0) {
-        qDebug() << "Invalid pointers or no data to read.";
-        return;
-    }
-
-    m_file.seek(m_startPointer);  // Seek to the start pointer
-
-    QByteArray content = m_file.read(bytesToRead);
-    if (content.isEmpty()) {
-        qDebug() << "No content read from the file.";
-        return;
-    }
-
-    editor->setPlainText(QString::fromUtf8(content));  // Set content to the editor
-    editor->moveCursor(QTextCursor::Start);  // Move cursor to the start of the document
-
-    qDebug() << "File content loaded successfully. Start pointer:" << m_startPointer << ", End pointer:" << m_endPointer;
+    m_changedSegments[m_startPointer + cursorPos] = changedText.mid(cursorPos, changedText.length() - cursorPos);
 }
 
 void Document::saveFile() {
@@ -162,15 +136,13 @@ void Document::saveFile() {
 
     file.close();
 
-    // Recalculate and store the MD5 hash of the saved file
-    m_originalHash = calculateMD5Stream(&file);
-
-    qDebug() << "File saved. New MD5:" << m_originalHash.toHex();
+    // Recalculate and store the new MD5 hash after saving
+    m_originalHash = calculateModifiedMD5();
 }
 
 void Document::saveFileAs(const QString &newFilePath) {
     if (newFilePath.isEmpty()) {
-        return; // User canceled the Save As dialog, do nothing
+        return;
     }
     m_filePath = newFilePath;
     saveFile();
@@ -178,34 +150,21 @@ void Document::saveFileAs(const QString &newFilePath) {
 
 QByteArray Document::calculateMD5Stream(QFile *file) {
     QCryptographicHash hash(QCryptographicHash::Md5);
-    if (!file->isOpen()) {
-        if (!file->open(QIODevice::ReadOnly)) {
-            qDebug() << "Failed to open file for MD5 calculation:" << file->errorString();
-            return QByteArray();
-        }
-    }
-
-    file->seek(0);  // Ensure we start from the beginning of the file
-
-    // Read the entire file content and update the hash
     while (!file->atEnd()) {
-        QByteArray buffer = file->read(1024 * 1024);  // Read in chunks (1MB here)
-        hash.addData(buffer);
+        hash.addData(file->read(1024 * 1024));  // Read in chunks
     }
-
-    file->close();  // Close the file if it was opened here
-    return hash.result();  // Return the calculated MD5 hash
+    return hash.result();
 }
 
 QByteArray Document::calculateModifiedMD5() {
-    QFile file(m_filePath);
-    return calculateMD5Stream(&file);
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(editor->toPlainText().toUtf8());
+    return hash.result();
 }
 
 bool Document::closeDocument() {
+    // Calculate current hash and compare with the original
     QByteArray currentHash = calculateModifiedMD5();
-    qDebug() << "Original MD5:" << m_originalHash.toHex();
-    qDebug() << "Current MD5:" << currentHash.toHex();
 
     if (currentHash != m_originalHash) {
         QMessageBox::StandardButton reply;
@@ -222,8 +181,7 @@ bool Document::closeDocument() {
             return false;
         }
     }
-
-    return true;
+    return true;  // No changes detected, safe to close
 }
 
 void Document::goToLineNumberInEditor() {
@@ -233,7 +191,7 @@ void Document::goToLineNumberInEditor() {
 
     if (ok) {
         QTextCursor cursor = editor->textCursor();
-        cursor.movePosition(QTextCursor::Start); // Move to the start of the editor
+        cursor.movePosition(QTextCursor::Start);
 
         for (int i = 1; i < lineNumber; ++i) {
             cursor.movePosition(QTextCursor::Down);
