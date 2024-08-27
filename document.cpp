@@ -6,7 +6,6 @@
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <QScrollBar>
-#include <QCryptographicHash>
 #include <QDebug>
 
 Document::Document(const QString &filePath, QWidget *parent)
@@ -79,8 +78,8 @@ void Document::openFile(const QString &filePath) {
 
     loadContent();
 
-    // Calculate and store the original hash of the file
-    m_originalHash = calculateModifiedMD5();  // Use the content loaded into the editor
+    // Store the original content of the file
+    m_originalText = editor->toPlainText();
 }
 
 void Document::loadContent() {
@@ -136,8 +135,8 @@ void Document::saveFile() {
 
     file.close();
 
-    // Recalculate and store the new MD5 hash after saving
-    m_originalHash = calculateModifiedMD5();
+    // Store the new content after saving
+    m_originalText = editor->toPlainText();
 }
 
 void Document::saveFileAs(const QString &newFilePath) {
@@ -148,25 +147,25 @@ void Document::saveFileAs(const QString &newFilePath) {
     saveFile();
 }
 
-QByteArray Document::calculateMD5Stream(QFile *file) {
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    while (!file->atEnd()) {
-        hash.addData(file->read(1024 * 1024));  // Read in chunks
+bool Document::compareText(const QString &text1, const QString &text2) {
+    if (text1.length() != text2.length()) {
+        return false; // Different lengths means they are not the same
     }
-    return hash.result();
-}
 
-QByteArray Document::calculateModifiedMD5() {
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    hash.addData(editor->toPlainText().toUtf8());
-    return hash.result();
+    for (int i = 0; i < text1.length(); ++i) {
+        if (text1[i] != text2[i]) {
+            return false; // Early exit on first mismatch
+        }
+    }
+
+    return true; // Texts are identical
 }
 
 bool Document::closeDocument() {
-    // Calculate current hash and compare with the original
-    QByteArray currentHash = calculateModifiedMD5();
+    // Compare current content with the original
+    QString currentText = editor->toPlainText();
 
-    if (currentHash != m_originalHash) {
+    if (!compareText(currentText, m_originalText)) {
         QMessageBox::StandardButton reply;
         reply = QMessageBox::warning(this, tr("Unsaved Changes"),
                                      tr("You have unsaved changes."),
