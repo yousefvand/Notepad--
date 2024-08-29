@@ -112,8 +112,16 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="menu_Zoom">
+     <property name="title">
+      <string>&amp;Zoom</string>
+     </property>
+     <addaction name="actionZoom_In"/>
+     <addaction name="actionoom_Out"/>
+     <addaction name="action_Restore_Default_Zoom"/>
+    </widget>
     <addaction name="action_Show_Symbol"/>
-    <addaction name="action_Zoom"/>
+    <addaction name="menu_Zoom"/>
     <addaction name="action_Move_Clone_current_document"/>
     <addaction name="action_Word_wrap"/>
     <addaction name="actionMath_Rendering"/>
@@ -448,14 +456,51 @@
    <addaction name="menuAbo_ut"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_New"/>
+   <addaction name="action_Open"/>
+   <addaction name="action_Save"/>
+   <addaction name="actionSav_e_all"/>
+   <addaction name="action_Close"/>
+   <addaction name="actionC_lose_all"/>
+   <addaction name="actionCu_t"/>
+   <addaction name="action_Copy"/>
+   <addaction name="action_Paste"/>
+   <addaction name="action_Undo"/>
+   <addaction name="action_Redo"/>
+   <addaction name="actionZoom_In"/>
+   <addaction name="actionoom_Out"/>
+   <addaction name="action_Word_wrap"/>
+  </widget>
   <action name="action_New">
+   <property name="icon">
+    <iconset theme="document-new"/>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="action_Open">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionOpen_Folder">
@@ -472,8 +517,14 @@
    </property>
   </action>
   <action name="action_Save">
+   <property name="icon">
+    <iconset theme="document-save"/>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionSave_As">
@@ -487,8 +538,14 @@
    </property>
   </action>
   <action name="actionSav_e_all">
+   <property name="icon">
+    <iconset theme="document-save-as"/>
+   </property>
    <property name="text">
     <string>Sav&amp;e all</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionRena_me">
@@ -500,11 +557,20 @@
    </property>
   </action>
   <action name="action_Close">
+   <property name="icon">
+    <iconset theme="image-missing"/>
+   </property>
    <property name="text">
     <string>&amp;Close</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
   </action>
   <action name="actionC_lose_all">
+   <property name="icon">
+    <iconset theme="window-close"/>
+   </property>
    <property name="text">
     <string>C&amp;lose all</string>
    </property>
@@ -540,28 +606,58 @@
    </property>
   </action>
   <action name="action_Undo">
+   <property name="icon">
+    <iconset theme="edit-undo"/>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="action_Redo">
+   <property name="icon">
+    <iconset theme="edit-redo"/>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
   </action>
   <action name="actionCu_t">
+   <property name="icon">
+    <iconset theme="edit-cut"/>
+   </property>
    <property name="text">
     <string>Cu&amp;t</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
   </action>
   <action name="action_Copy">
+   <property name="icon">
+    <iconset theme="edit-copy"/>
+   </property>
    <property name="text">
     <string>&amp;Copy</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
   </action>
   <action name="action_Paste">
+   <property name="icon">
+    <iconset theme="edit-paste"/>
+   </property>
    <property name="text">
     <string>&amp;Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
    </property>
   </action>
   <action name="action_Delete">
@@ -644,17 +740,15 @@
     <string>&amp;Show Symbol</string>
    </property>
   </action>
-  <action name="action_Zoom">
-   <property name="text">
-    <string>&amp;Zoom</string>
-   </property>
-  </action>
   <action name="action_Move_Clone_current_document">
    <property name="text">
     <string>&amp;Move/Clone current document</string>
    </property>
   </action>
   <action name="action_Word_wrap">
+   <property name="icon">
+    <iconset theme="media-playlist-repeat"/>
+   </property>
    <property name="text">
     <string>&amp;Word wrap</string>
    </property>
@@ -1470,6 +1564,33 @@
   <action name="actionVHDL">
    <property name="text">
     <string>VHDL</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="icon">
+    <iconset theme="zoom-in"/>
+   </property>
+   <property name="text">
+    <string>Zoom &amp;In</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionoom_Out">
+   <property name="icon">
+    <iconset theme="zoom-out"/>
+   </property>
+   <property name="text">
+    <string>Zoom &amp;Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="action_Restore_Default_Zoom">
+   <property name="text">
+    <string>&amp;Restore Default Zoom</string>
    </property>
   </action>
  </widget>

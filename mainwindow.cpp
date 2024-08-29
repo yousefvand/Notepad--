@@ -163,3 +163,63 @@ void MainWindow::on_actionPython_triggered()
     }
 }
 
+
+void MainWindow::on_actionSav_e_all_triggered()
+{
+    // TODO: Save All
+}
+
+
+void MainWindow::on_actionCu_t_triggered()
+{
+    // TODO: Cut
+}
+
+
+void MainWindow::on_action_Copy_triggered()
+{
+    // TODO: Copy
+}
+
+
+void MainWindow::on_action_Paste_triggered()
+{
+    // TODO: Paste
+}
+
+
+void MainWindow::on_action_Undo_triggered()
+{
+    // TODO: Undo
+}
+
+
+void MainWindow::on_action_Redo_triggered()
+{
+    // TODO: Redo
+}
+
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    // TODO: Zoom In
+}
+
+
+void MainWindow::on_actionoom_Out_triggered()
+{
+    // TODO: Zoom Out
+}
+
+
+void MainWindow::on_action_Restore_Default_Zoom_triggered()
+{
+    // TODO: Restore Default Zoom
+}
+
+
+void MainWindow::on_action_Word_wrap_triggered()
+{
+    // TODO: Word Wrap
+}
+
