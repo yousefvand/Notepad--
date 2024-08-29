@@ -1,10 +1,12 @@
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
 
+#define CHUNK_SIZE (1024 * 1024)
+#define CHUNK_THRESHOLD 1024
+
 #include <QWidget>
 #include <QFile>
 #include <QMap>
-#include <QCryptographicHash>
 #include <QSyntaxHighlighter>
 #include "languages/languagemanager.h"
 
@@ -32,20 +34,25 @@ signals:
 
 private:
     void loadContent();
+    void loadContentAsync();
     void updatePointers();
     void trackChanges();
+    bool promptForSave();
+    bool checkForUnsavedChanges();
+    QMap<qint64, QString> m_originalSegments;
+    bool compareText(const QString &text1, const QString &text2);
     QByteArray calculateMD5Stream(QFile *file);
     QByteArray calculateModifiedMD5();
 
     QString m_filePath;
     QString m_fileExtension;
+    QString m_originalText;
     QFile m_file;
     CodeEditor *editor;
     QSyntaxHighlighter *syntaxHighlighter;
     qint64 m_fileSize;
     qint64 m_startPointer;
     qint64 m_endPointer;
-    QByteArray m_originalHash;
     QMap<qint64, QString> m_changedSegments;
     QString m_currentText;
     QString m_language;

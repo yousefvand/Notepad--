@@ -121,13 +121,24 @@ void MainWindow::on_action_Close_triggered()
     }
 }
 
+void MainWindow::on_actionC_lose_all_triggered() {
+    closeAllDocuments();  // Call the method to close all documents
+}
 
-void MainWindow::on_actionC_lose_all_triggered()
-{
+void MainWindow::closeAllDocuments() {
     int tabCount = ui->documentsTab->count();
 
     for (int i = tabCount - 1; i >= 0; --i) {
-        on_documentsTab_tabCloseRequested(i);
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(i));
+        if (doc) {
+            bool canClose = doc->closeDocument();  // Trigger the unsaved changes check
+            if (canClose) {
+                ui->documentsTab->removeTab(i);
+                delete doc;  // Clean up the document object
+            } else {
+                return;  // Stop closing further documents if the user cancels the close
+            }
+        }
     }
 }
 
