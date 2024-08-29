@@ -1,6 +1,9 @@
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
 
+#define CHUNK_SIZE (1024 * 1024)
+#define CHUNK_THRESHOLD 1024
+
 #include <QWidget>
 #include <QFile>
 #include <QMap>
@@ -31,8 +34,12 @@ signals:
 
 private:
     void loadContent();
+    void loadContentAsync();
     void updatePointers();
     void trackChanges();
+    bool promptForSave();
+    bool checkForUnsavedChanges();
+    QMap<qint64, QString> m_originalSegments;
     bool compareText(const QString &text1, const QString &text2);
     QByteArray calculateMD5Stream(QFile *file);
     QByteArray calculateModifiedMD5();
