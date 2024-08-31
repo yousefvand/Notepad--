@@ -7,16 +7,48 @@
 #include <QMessageBox>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include <QLabel>
+#include <QProgressBar>
+#include <QStatusBar>
+#include <QHBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    // Create the status bar
+    QStatusBar *statusBar = new QStatusBar(this);
+    setStatusBar(statusBar);
+
+    // Create the label for status messages
+    statusBarLabel = new QLabel(this);
+    statusBarLabel->setVisible(false);  // Initially hidden
+
+    // Create the progress bar
+    progressBar = new QProgressBar(this);
+    progressBar->setMinimum(0);
+    progressBar->setMaximum(100);
+    progressBar->setValue(0);
+    progressBar->setVisible(false);  // Initially hidden
+
+    // Create a widget to hold the label and progress bar
+    QWidget *statusWidget = new QWidget(this);
+    QHBoxLayout *statusLayout = new QHBoxLayout(statusWidget);
+    statusLayout->setContentsMargins(0, 0, 0, 0); // Remove margins
+    statusLayout->addWidget(statusBarLabel);
+    statusLayout->addWidget(progressBar, 1); // Stretch factor to make the progress bar full width
+    statusWidget->setLayout(statusLayout);
+
+    // Add the status widget to the status bar
+    statusBar->addWidget(statusWidget, 1); // Add widget with stretch to fill width
 
     if (ui->documentsTab->count() > 0) {
         ui->documentsTab->removeTab(0);
     }
 
     Document *firstDoc = new Document("", this);
+    connect(firstDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
+    connect(firstDoc, &Document::updateProgress, this, &MainWindow::setProgress);
     ui->documentsTab->addTab(firstDoc, "Untitled Document");
     ui->documentsTab->setCurrentWidget(firstDoc);
 
@@ -32,6 +64,22 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
+void MainWindow::setStatusBarText(const QString &text) {
+    statusBarLabel->setText(text);
+    statusBarLabel->setVisible(!text.isEmpty());
+}
+
+void MainWindow::setProgress(int value) {
+    if (value >= 0 && value <= 100) {
+        progressBar->setValue(value);
+        if (value == 100) {
+            progressBar->setVisible(false);
+        } else {
+            progressBar->setVisible(true);
+        }
+    }
+}
+
 void MainWindow::openDocument(const QString &filePath) {
     if (ui->documentsTab->count() > 0) {
         Document *existingDoc = qobject_cast<Document *>(ui->documentsTab->widget(0));
@@ -43,6 +91,8 @@ void MainWindow::openDocument(const QString &filePath) {
     }
 
     Document *newDoc = new Document(filePath, this);
+    connect(newDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
+    connect(newDoc, &Document::updateProgress, this, &MainWindow::setProgress);
     ui->documentsTab->addTab(newDoc, QFileInfo(filePath).fileName());
     ui->documentsTab->setCurrentWidget(newDoc);
 }
@@ -89,6 +139,8 @@ void MainWindow::on_documentsTab_tabCloseRequested(int index) {
 
 void MainWindow::on_action_New_triggered() {
     Document *newDoc = new Document("", this);
+    connect(newDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
+    connect(newDoc, &Document::updateProgress, this, &MainWindow::setProgress);
     ui->documentsTab->addTab(newDoc, "Untitled Document");
     ui->documentsTab->setCurrentWidget(newDoc);
 }
@@ -97,7 +149,7 @@ void MainWindow::on_action_Go_to_line_in_editor_triggered()
 {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
-        doc->goToLineNumberInEditor   ();
+        doc->goToLineNumberInEditor();
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document open."));
     }
@@ -222,4 +274,3 @@ void MainWindow::on_action_Word_wrap_triggered()
 {
     // TODO: Word Wrap
 }
-

@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLabel>
+#include <QProgressBar>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -13,6 +15,10 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+public slots:
+    void setStatusBarText(const QString &text);  // Slot to set the status bar text
+    void setProgress(int value);  // Slot to update the progress bar
 
 private slots:
     void on_action_Open_triggered();
@@ -49,6 +55,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QLabel *statusBarLabel;       // Status bar label
+    QProgressBar *progressBar;    // Progress bar
+
     void openDocument(const QString &filePath);
     void closeAllDocuments();  // Declare closeAllDocuments method here
 };

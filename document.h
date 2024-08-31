@@ -1,9 +1,6 @@
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
 
-#define CHUNK_SIZE (1024 * 1024)
-#define CHUNK_THRESHOLD 1024
-
 #include <QWidget>
 #include <QFile>
 #include <QMap>
@@ -17,6 +14,7 @@ class Document : public QWidget {
 
 public:
     Document(const QString &filePath, QWidget *parent = nullptr);
+    ~Document();  // Destructor to clean up resources
     QString filePath() const;
     void setFilePath(const QString &path);
     QString getLanguage() const;
@@ -29,20 +27,16 @@ public:
     void applySyntaxHighlighter(const QString &language);
 
 signals:
-    void saveError(const QString &error);
-    void saveCompleted();
+    void updateProgress(int value);
+    void updateStatusMessage(const QString &message);
 
 private:
     void loadContent();
-    void loadContentAsync();
-    void updatePointers();
     void trackChanges();
     bool promptForSave();
     bool checkForUnsavedChanges();
     QMap<qint64, QString> m_originalSegments;
     bool compareText(const QString &text1, const QString &text2);
-    QByteArray calculateMD5Stream(QFile *file);
-    QByteArray calculateModifiedMD5();
 
     QString m_filePath;
     QString m_fileExtension;
@@ -51,11 +45,10 @@ private:
     CodeEditor *editor;
     QSyntaxHighlighter *syntaxHighlighter;
     qint64 m_fileSize;
-    qint64 m_startPointer;
-    qint64 m_endPointer;
     QMap<qint64, QString> m_changedSegments;
     QString m_currentText;
     QString m_language;
+    char* m_mmap;  // Memory-mapped file pointer
 };
 
 #endif // DOCUMENT_H
