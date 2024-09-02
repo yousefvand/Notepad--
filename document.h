@@ -34,7 +34,10 @@ private:
     void loadContent();
     void trackChanges();
     bool promptForSave();
+    void applyChangesToMemory();
+    void moveCursorToFirstLine();
     bool checkForUnsavedChanges();
+    void openFileAfterGuiIsReady();
     QMap<qint64, QString> m_originalSegments;
     bool compareText(const QString &text1, const QString &text2);
 

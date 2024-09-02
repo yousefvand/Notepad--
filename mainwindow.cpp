@@ -11,6 +11,7 @@
 #include <QProgressBar>
 #include <QStatusBar>
 #include <QHBoxLayout>
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -42,21 +43,34 @@ MainWindow::MainWindow(QWidget *parent)
     // Add the status widget to the status bar
     statusBar->addWidget(statusWidget, 1); // Add widget with stretch to fill width
 
-    if (ui->documentsTab->count() > 0) {
+    // Explicitly remove any existing tabs
+    while (ui->documentsTab->count() > 0) {
         ui->documentsTab->removeTab(0);
     }
 
-    Document *firstDoc = new Document("", this);
-    connect(firstDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
-    connect(firstDoc, &Document::updateProgress, this, &MainWindow::setProgress);
-    ui->documentsTab->addTab(firstDoc, "Untitled Document");
-    ui->documentsTab->setCurrentWidget(firstDoc);
-
+    // Handle files passed via command line
     QStringList filePaths = QCoreApplication::arguments();
+    bool fileOpened = false;
+
     for (const QString &filePath : filePaths) {
         if (filePath != QCoreApplication::applicationFilePath()) {
             openDocument(filePath);
+            fileOpened = true;
         }
+    }
+
+    // If no files are opened, add a new empty document tab
+    if (!fileOpened) {
+        Document *newDoc = new Document("", this);
+        connect(newDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
+        connect(newDoc, &Document::updateProgress, this, &MainWindow::setProgress);
+        ui->documentsTab->addTab(newDoc, "Untitled Document");
+        ui->documentsTab->setCurrentWidget(newDoc);
+    }
+
+    // After opening documents, check again for any unexpected tabs and remove them
+    while (ui->documentsTab->count() > 1) {
+        ui->documentsTab->removeTab(0);
     }
 }
 
@@ -145,8 +159,7 @@ void MainWindow::on_action_New_triggered() {
     ui->documentsTab->setCurrentWidget(newDoc);
 }
 
-void MainWindow::on_action_Go_to_line_in_editor_triggered()
-{
+void MainWindow::on_action_Go_to_line_in_editor_triggered() {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
         doc->goToLineNumberInEditor();
@@ -156,7 +169,7 @@ void MainWindow::on_action_Go_to_line_in_editor_triggered()
 }
 
 void MainWindow::on_action_Go_to_line_in_text_triggered() {
-    Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
         doc->goToLineNumberInText(this);
     } else {
@@ -164,8 +177,7 @@ void MainWindow::on_action_Go_to_line_in_text_triggered() {
     }
 }
 
-void MainWindow::on_action_Close_triggered()
-{
+void MainWindow::on_action_Close_triggered() {
     int activeTabIndex = ui->documentsTab->currentIndex();  // Get the index of the active tab
 
     if (activeTabIndex != -1) {  // Check if there's an active tab
@@ -204,8 +216,7 @@ void MainWindow::on_actionC_3_triggered() {
     }
 }
 
-void MainWindow::on_actionPython_triggered()
-{
+void MainWindow::on_actionPython_triggered() {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
         qDebug() << "Menu action triggered for Python syntax highlighting";
@@ -215,60 +226,50 @@ void MainWindow::on_actionPython_triggered()
     }
 }
 
-
 void MainWindow::on_actionSav_e_all_triggered()
 {
     // TODO: Save All
 }
-
 
 void MainWindow::on_actionCu_t_triggered()
 {
     // TODO: Cut
 }
 
-
 void MainWindow::on_action_Copy_triggered()
 {
     // TODO: Copy
 }
-
 
 void MainWindow::on_action_Paste_triggered()
 {
     // TODO: Paste
 }
 
-
 void MainWindow::on_action_Undo_triggered()
 {
     // TODO: Undo
 }
-
 
 void MainWindow::on_action_Redo_triggered()
 {
     // TODO: Redo
 }
 
-
 void MainWindow::on_actionZoom_In_triggered()
 {
     // TODO: Zoom In
 }
-
 
 void MainWindow::on_actionoom_Out_triggered()
 {
     // TODO: Zoom Out
 }
 
-
 void MainWindow::on_action_Restore_Default_Zoom_triggered()
 {
     // TODO: Restore Default Zoom
 }
-
 
 void MainWindow::on_action_Word_wrap_triggered()
 {
