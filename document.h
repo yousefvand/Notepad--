@@ -14,7 +14,6 @@ class Document : public QWidget {
 
 public:
     Document(const QString &filePath, QWidget *parent = nullptr);
-    ~Document();  // Destructor to clean up resources
     QString filePath() const;
     void setFilePath(const QString &path);
     QString getLanguage() const;
@@ -27,19 +26,20 @@ public:
     void applySyntaxHighlighter(const QString &language);
 
 signals:
-    void updateProgress(int value);
-    void updateStatusMessage(const QString &message);
+    void saveError(const QString &error);
+    void saveCompleted();
 
 private:
     void loadContent();
+    void loadContentAsync();
     void trackChanges();
     bool promptForSave();
-    void applyChangesToMemory();
-    void moveCursorToFirstLine();
+    void loadEntireFile();
     bool checkForUnsavedChanges();
-    void openFileAfterGuiIsReady();
-    QMap<qint64, QString> m_originalSegments;
     bool compareText(const QString &text1, const QString &text2);
+    void mirrorChangesToMemory(qint64 segmentStart, const QString &text);
+    QByteArray calculateMD5Stream(QFile *file);
+    QByteArray calculateModifiedMD5();
 
     QString m_filePath;
     QString m_fileExtension;
@@ -51,7 +51,6 @@ private:
     QMap<qint64, QString> m_changedSegments;
     QString m_currentText;
     QString m_language;
-    char* m_mmap;  // Memory-mapped file pointer
 };
 
 #endif // DOCUMENT_H

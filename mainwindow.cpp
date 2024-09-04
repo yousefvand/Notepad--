@@ -7,91 +7,30 @@
 #include <QMessageBox>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
-#include <QLabel>
-#include <QProgressBar>
-#include <QStatusBar>
-#include <QHBoxLayout>
-#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-
-    // Create the status bar
-    QStatusBar *statusBar = new QStatusBar(this);
-    setStatusBar(statusBar);
-
-    // Create the label for status messages
-    statusBarLabel = new QLabel(this);
-    statusBarLabel->setVisible(false);  // Initially hidden
-
-    // Create the progress bar
-    progressBar = new QProgressBar(this);
-    progressBar->setMinimum(0);
-    progressBar->setMaximum(100);
-    progressBar->setValue(0);
-    progressBar->setVisible(false);  // Initially hidden
-
-    // Create a widget to hold the label and progress bar
-    QWidget *statusWidget = new QWidget(this);
-    QHBoxLayout *statusLayout = new QHBoxLayout(statusWidget);
-    statusLayout->setContentsMargins(0, 0, 0, 0); // Remove margins
-    statusLayout->addWidget(statusBarLabel);
-    statusLayout->addWidget(progressBar, 1); // Stretch factor to make the progress bar full width
-    statusWidget->setLayout(statusLayout);
-
-    // Add the status widget to the status bar
-    statusBar->addWidget(statusWidget, 1); // Add widget with stretch to fill width
 
     // Explicitly remove any existing tabs
     while (ui->documentsTab->count() > 0) {
         ui->documentsTab->removeTab(0);
     }
 
-    // Handle files passed via command line
-    QStringList filePaths = QCoreApplication::arguments();
-    bool fileOpened = false;
+    Document *firstDoc = new Document("", this);
+    ui->documentsTab->addTab(firstDoc, "Untitled Document");
+    ui->documentsTab->setCurrentWidget(firstDoc);
 
+    QStringList filePaths = QCoreApplication::arguments();
     for (const QString &filePath : filePaths) {
         if (filePath != QCoreApplication::applicationFilePath()) {
             openDocument(filePath);
-            fileOpened = true;
         }
-    }
-
-    // If no files are opened, add a new empty document tab
-    if (!fileOpened) {
-        Document *newDoc = new Document("", this);
-        connect(newDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
-        connect(newDoc, &Document::updateProgress, this, &MainWindow::setProgress);
-        ui->documentsTab->addTab(newDoc, "Untitled Document");
-        ui->documentsTab->setCurrentWidget(newDoc);
-    }
-
-    // After opening documents, check again for any unexpected tabs and remove them
-    while (ui->documentsTab->count() > 1) {
-        ui->documentsTab->removeTab(0);
     }
 }
 
 MainWindow::~MainWindow() {
     delete ui;
-}
-
-void MainWindow::setStatusBarText(const QString &text) {
-    statusBarLabel->setText(text);
-    statusBarLabel->setVisible(!text.isEmpty());
-}
-
-void MainWindow::setProgress(int value) {
-    if (value >= 0 && value <= 100) {
-        progressBar->setValue(value);
-        if (value == 100) {
-            progressBar->setVisible(false);
-        } else {
-            progressBar->setVisible(true);
-        }
-    }
 }
 
 void MainWindow::openDocument(const QString &filePath) {
@@ -105,8 +44,6 @@ void MainWindow::openDocument(const QString &filePath) {
     }
 
     Document *newDoc = new Document(filePath, this);
-    connect(newDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
-    connect(newDoc, &Document::updateProgress, this, &MainWindow::setProgress);
     ui->documentsTab->addTab(newDoc, QFileInfo(filePath).fileName());
     ui->documentsTab->setCurrentWidget(newDoc);
 }
@@ -153,23 +90,22 @@ void MainWindow::on_documentsTab_tabCloseRequested(int index) {
 
 void MainWindow::on_action_New_triggered() {
     Document *newDoc = new Document("", this);
-    connect(newDoc, &Document::updateStatusMessage, this, &MainWindow::setStatusBarText);
-    connect(newDoc, &Document::updateProgress, this, &MainWindow::setProgress);
     ui->documentsTab->addTab(newDoc, "Untitled Document");
     ui->documentsTab->setCurrentWidget(newDoc);
 }
 
-void MainWindow::on_action_Go_to_line_in_editor_triggered() {
+void MainWindow::on_action_Go_to_line_in_editor_triggered()
+{
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
-        doc->goToLineNumberInEditor();
+        doc->goToLineNumberInEditor   ();
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document open."));
     }
 }
 
 void MainWindow::on_action_Go_to_line_in_text_triggered() {
-    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+    Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
     if (doc) {
         doc->goToLineNumberInText(this);
     } else {
@@ -177,7 +113,8 @@ void MainWindow::on_action_Go_to_line_in_text_triggered() {
     }
 }
 
-void MainWindow::on_action_Close_triggered() {
+void MainWindow::on_action_Close_triggered()
+{
     int activeTabIndex = ui->documentsTab->currentIndex();  // Get the index of the active tab
 
     if (activeTabIndex != -1) {  // Check if there's an active tab
@@ -216,7 +153,8 @@ void MainWindow::on_actionC_3_triggered() {
     }
 }
 
-void MainWindow::on_actionPython_triggered() {
+void MainWindow::on_actionPython_triggered()
+{
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
         qDebug() << "Menu action triggered for Python syntax highlighting";
@@ -226,52 +164,63 @@ void MainWindow::on_actionPython_triggered() {
     }
 }
 
+
 void MainWindow::on_actionSav_e_all_triggered()
 {
     // TODO: Save All
 }
+
 
 void MainWindow::on_actionCu_t_triggered()
 {
     // TODO: Cut
 }
 
+
 void MainWindow::on_action_Copy_triggered()
 {
     // TODO: Copy
 }
+
 
 void MainWindow::on_action_Paste_triggered()
 {
     // TODO: Paste
 }
 
+
 void MainWindow::on_action_Undo_triggered()
 {
     // TODO: Undo
 }
+
 
 void MainWindow::on_action_Redo_triggered()
 {
     // TODO: Redo
 }
 
+
 void MainWindow::on_actionZoom_In_triggered()
 {
     // TODO: Zoom In
 }
+
 
 void MainWindow::on_actionoom_Out_triggered()
 {
     // TODO: Zoom Out
 }
 
+
 void MainWindow::on_action_Restore_Default_Zoom_triggered()
 {
     // TODO: Restore Default Zoom
 }
 
+
 void MainWindow::on_action_Word_wrap_triggered()
 {
     // TODO: Word Wrap
 }
+
