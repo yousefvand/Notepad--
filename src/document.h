@@ -28,6 +28,16 @@ public:
 signals:
     void saveError(const QString &error);
     void saveCompleted();
+    void loadingStarted();
+    void loadingProgress(int progress);
+    void loadingFinished();
+
+    void savingStarted();
+    void savingProgress(int progress);
+    void savingFinished();
+
+public slots:
+    void startFileLoadingAfterUIReady();
 
 private:
     void loadContent();

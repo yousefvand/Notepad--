@@ -7,6 +7,10 @@
 #include <QtConcurrent>
 #include <QScrollBar>
 #include <QDebug>
+#include <QApplication>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include <QtConcurrent>
 #include <QtConcurrent/QtConcurrent>
 
 Document::Document(const QString &filePath, QWidget *parent)
@@ -81,76 +85,19 @@ void Document::openFile(const QString &filePath) {
     }
 
     setFilePath(filePath);
-
     m_fileSize = m_file.size();
 
-    // Load the entire content in a separate thread to avoid blocking the UI
-    QFuture<void> future = QtConcurrent::run(this, &Document::loadEntireFile);
+    // Call loadContent instead of loadEntireFile
+    loadContent();
 }
 
-void Document::loadEntireFile() {
-    if (!m_file.isOpen()) {
-        qDebug() << "File not open. Cannot load content.";
-        return;
+void Document::startFileLoadingAfterUIReady() {
+    if (!m_filePath.isEmpty()) {
+        qDebug() << "Starting file loading after UI is ready";
+        openFile(m_filePath);  // Start loading the file
+    } else {
+        qDebug() << "No file path set. Cannot load file.";
     }
-
-    qDebug() << "Loading entire file content into memory. File size:" << m_fileSize;
-
-    // Read the entire file content
-    QByteArray content = m_file.readAll();
-    m_file.close(); // Close the file as it's now fully loaded into memory
-
-    // Store the original content
-    m_originalText = QString::fromUtf8(content);
-
-    // Update the editor content on the UI thread
-    QMetaObject::invokeMethod(this, [this]() {
-        QTextCursor cursor(editor->document());
-        cursor.movePosition(QTextCursor::Start);
-        cursor.insertText(m_originalText);
-
-        qDebug() << "File content loaded and inserted into editor. Document size:" << editor->document()->characterCount();
-
-        // Trigger syntax highlighting if available
-        if (syntaxHighlighter) {
-            syntaxHighlighter->rehighlight();
-        }
-
-        // Move cursor to trigger line highlighting
-        cursor.movePosition(QTextCursor::Start);
-        editor->setTextCursor(cursor);
-    }, Qt::QueuedConnection);
-}
-
-void Document::loadContentAsync() {
-    if (!m_file.isOpen()) {
-        qDebug() << "File not open. Cannot load content.";
-        return;
-    }
-
-    qDebug() << "Loading entire content in background. File size: " << m_file.size();
-
-    // Read the entire file content at once
-    QByteArray content = m_file.readAll();
-    m_file.close(); // Close the file after reading
-
-    // Use a Qt signal to update the editor content on the main thread
-    QMetaObject::invokeMethod(this, [this, content]() {
-        QTextCursor cursor(editor->document());
-        cursor.movePosition(QTextCursor::End);
-        cursor.insertText(QString::fromUtf8(content));
-
-        qDebug() << "Entire content loaded and inserted into editor. Document size: " << editor->document()->characterCount();
-
-        // Trigger syntax highlighting if available
-        if (syntaxHighlighter) {
-            syntaxHighlighter->rehighlight();
-        }
-
-        // Move cursor to the beginning to trigger line highlighting
-        cursor.movePosition(QTextCursor::Start);
-        editor->setTextCursor(cursor);
-    }, Qt::QueuedConnection);
 }
 
 void Document::loadContent() {
@@ -159,31 +106,131 @@ void Document::loadContent() {
         return;
     }
 
-    qDebug() << "Loading entire file content. File size: " << m_file.size();
+    // Reset progress state at the start of the new file load
+    emit loadingProgress(0);  // Start progress at 0%
+    emit loadingStarted();     // Emit that loading has started
+    qDebug() << "Loading started signal emitted";
 
-    // Read the entire file content at once
-    QByteArray content = m_file.readAll();
-    m_file.close(); // Close the file after reading
+    QByteArray content;
+    qint64 fileSize = m_file.size();
+    qint64 bytesRead = 0;
 
-    // Store the original content as a single string
-    m_originalText = QString::fromUtf8(content);
+    const qint64 chunkSize = (fileSize > 1024 * 1024) ? fileSize / 100 : fileSize;  // Dynamic chunk size
 
-    // Insert the text into the editor
-    QTextCursor cursor(editor->document());
-    cursor.movePosition(QTextCursor::End);
-    cursor.insertText(m_originalText);
+    qDebug() << "Loading entire file content. File size: " << fileSize << " Chunk size: " << chunkSize;
 
-    qDebug() << "Entire content loaded and inserted into editor. Document size: " << editor->document()->characterCount();
+    // Reset the editor before new content load
+    editor->clear();
+
+    // Move file loading to a separate thread to avoid blocking the UI
+    QtConcurrent::run([this, fileSize, chunkSize]() {
+        QByteArray content;
+        qint64 bytesRead = 0;
+
+        // Reading file in chunks
+        while (bytesRead < fileSize) {
+            QByteArray chunk = m_file.read(chunkSize);
+            if (chunk.isEmpty()) {
+                qDebug() << "Error reading file.";
+                emit loadingProgress(100);  // Set progress to 100% on error
+                break;
+            }
+
+            content.append(chunk);
+            bytesRead += chunk.size();
+
+            // Use a queued connection to ensure the UI is updated
+            QMetaObject::invokeMethod(QApplication::instance(), []() {
+                QApplication::processEvents();
+            }, Qt::QueuedConnection);
+        }
+
+        m_file.close();
+        m_originalText = QString::fromUtf8(content);
+
+        // Insert text into the editor
+        QMetaObject::invokeMethod(this, [this, fileSize, content]() {
+            QTextCursor cursor(editor->document());
+            qint64 totalSize = m_originalText.size();
+            qint64 insertSize = 0;
+
+            while (insertSize < totalSize) {
+                QString insertChunk = m_originalText.mid(insertSize, fileSize / 100);
+                cursor.movePosition(QTextCursor::End);
+                cursor.insertText(insertChunk);
+                insertSize += insertChunk.size();
+
+                // Calculate progress based on the actual text inserted
+                int progress = static_cast<int>((static_cast<double>(insertSize) / totalSize) * 100);
+                emit loadingProgress(progress);
+                qDebug() << "Loading progress (text insertion): " << progress;
+
+                // Process UI events to ensure progress bar updates smoothly
+                QApplication::processEvents();
+            }
+
+            emit loadingProgress(100);  // Set progress to 100% after insertion
+            emit loadingFinished();  // Emit that loading has finished
+            qDebug() << "Loading finished signal emitted";
+
+            // Move cursor to the beginning of the document
+            cursor.movePosition(QTextCursor::Start);
+            editor->setTextCursor(cursor);
+        }, Qt::QueuedConnection);
+    });
 }
 
-    void Document::saveFile() {
-    // Run the save operation in a background thread
+void Document::loadContentAsync() {
+    if (!m_file.isOpen()) {
+        qDebug() << "File not open. Cannot load content.";
+        return;
+    }
+
+    qDebug() << "Loading entire file content. File size: " << m_file.size();
+    emit loadingStarted();  // Emit signal that loading has started
+
+    QByteArray content;
+    qint64 fileSize = m_file.size();
+    qint64 bytesRead = 0;
+    const qint64 chunkSize = 1024 * 1024;  // Simulate progress in chunks of 1MB
+    while (bytesRead < fileSize) {
+        QByteArray chunk = m_file.read(chunkSize);
+        content.append(chunk);
+        bytesRead += chunk.size();
+        int progress = static_cast<int>((static_cast<double>(bytesRead) / fileSize) * 100);
+        emit loadingProgress(progress);  // Emit progress update signal
+    }
+
+    m_file.close();
+
+    m_originalText = QString::fromUtf8(content);
+
+    // Insert content into the editor
+    QMetaObject::invokeMethod(this, [this, content]() {
+        QTextCursor cursor(editor->document());
+        cursor.movePosition(QTextCursor::End);
+        cursor.insertText(m_originalText);
+
+        if (syntaxHighlighter) {
+            syntaxHighlighter->rehighlight();
+        }
+
+        cursor.movePosition(QTextCursor::Start);
+        editor->setTextCursor(cursor);
+        emit loadingFinished();  // Emit signal that loading is complete
+    }, Qt::QueuedConnection);
+}
+
+void Document::saveFile() {
     QFuture<void> future = QtConcurrent::run([this]() {
         QString currentText = editor->toPlainText();
         if (currentText == m_originalText) {
             qDebug() << "No changes to save.";
-            return; // No changes to save
+            return;  // No changes to save
         }
+
+        emit savingStarted();  // Emit that saving has started
+        qDebug() << "Saving started signal emitted";
 
         QFile file(m_filePath);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -191,14 +238,24 @@ void Document::loadContent() {
             return;
         }
 
-        // Write the entire content back to the file
-        file.write(currentText.toUtf8());
+        qint64 fileSize = currentText.toUtf8().size();
+        qint64 bytesWritten = 0;
+        const qint64 chunkSize = 1024 * 1024;  // Simulate progress in chunks of 1MB
+
+        while (bytesWritten < fileSize) {
+            QByteArray chunk = currentText.toUtf8().mid(bytesWritten, chunkSize);
+            file.write(chunk);
+            bytesWritten += chunk.size();
+            int progress = static_cast<int>((static_cast<double>(bytesWritten) / fileSize) * 100);
+
+            emit savingProgress(progress);  // Emit progress
+            qDebug() << "Saving progress: " << progress;
+        }
+
         file.close();
-
-        // Update the original text after saving
         m_originalText = currentText;
-
-        qDebug() << "File saved successfully.";
+        emit savingFinished();  // Emit that saving has finished
+        qDebug() << "Saving finished signal emitted";
     });
 }
 

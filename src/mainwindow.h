@@ -14,6 +14,15 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+signals:
+    void uiReady();
+
+public slots:
+    void notifyUIReady() {
+        emit uiReady();
+    }
+
+
 private slots:
     void on_action_Open_triggered();
     void on_action_Save_triggered();

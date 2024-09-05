@@ -5,8 +5,15 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QProgressBar>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include "mainwindow.h"
+#include <QLabel>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QLabel>
+#include <QProgressBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -17,16 +24,54 @@ MainWindow::MainWindow(QWidget *parent)
         ui->documentsTab->removeTab(0);
     }
 
+    // Add a label and progress bar to the status bar
+    QLabel *statusLabel = new QLabel(this);
+    statusLabel->setText("");
+    QProgressBar *progressBar = new QProgressBar(this);
+    progressBar->setRange(0, 100);
+    progressBar->setVisible(false);
+    progressBar->setMinimumWidth(ui->statusbar->width());
+
+    ui->statusbar->addWidget(statusLabel);
+    ui->statusbar->addWidget(progressBar, 1);
+
     Document *firstDoc = new Document("", this);
     ui->documentsTab->addTab(firstDoc, "Untitled Document");
     ui->documentsTab->setCurrentWidget(firstDoc);
 
+    // Connect the UI ready signal to the document slot to start file loading
+    connect(this, &MainWindow::uiReady, firstDoc, &Document::startFileLoadingAfterUIReady);
+
+    connect(firstDoc, &Document::loadingStarted, this, [progressBar, statusLabel]() {
+        qDebug() << "Loading started signal received";
+        statusLabel->setText("Loading File...");
+        statusLabel->setVisible(true);
+        progressBar->setVisible(true);
+        progressBar->setValue(0);
+    });
+
+    connect(firstDoc, &Document::loadingProgress, this, [progressBar](int progress) {
+        qDebug() << "Loading progress: " << progress;
+        progressBar->setValue(progress);
+    });
+
+    connect(firstDoc, &Document::loadingFinished, this, [progressBar, statusLabel]() {
+        qDebug() << "Loading finished signal received";
+        progressBar->setValue(100);
+        progressBar->setVisible(false);
+        statusLabel->setVisible(false);
+    });
+
     QStringList filePaths = QCoreApplication::arguments();
     for (const QString &filePath : filePaths) {
         if (filePath != QCoreApplication::applicationFilePath()) {
-            openDocument(filePath);
+            firstDoc->setFilePath(filePath);  // Set the file path but delay the actual loading
         }
     }
+
+    // Signal that UI is fully ready
+    qDebug() << "Emitting uiReady signal";
+    emit uiReady();  // Emit the "UI ready" signal
 }
 
 MainWindow::~MainWindow() {
