@@ -1,5 +1,4 @@
-#ifndef PYTHONSYNTAXHIGHLIGHTER_H
-#define PYTHONSYNTAXHIGHLIGHTER_H
+#pragma once
 
 #include <QSyntaxHighlighter>
 #include <QTextDocument>
@@ -29,4 +28,3 @@ private:
     void highlightMultiLineString(const QString &text, const QString &delimiter, int startIndex);
 };
 
-#endif // PYTHONSYNTAXHIGHLIGHTER_H

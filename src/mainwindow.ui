@@ -32,7 +32,11 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QTextEdit" name="textEdit"/>
+         <widget class="QTextEdit" name="textEdit">
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -394,6 +398,21 @@
      <addaction name="actionVerilog"/>
      <addaction name="actionVHDL"/>
     </widget>
+    <widget class="QMenu" name="menuX">
+     <property name="title">
+      <string>X</string>
+     </property>
+     <addaction name="actionXML"/>
+     <addaction name="actionXQuery"/>
+     <addaction name="actionxu"/>
+    </widget>
+    <widget class="QMenu" name="menuY">
+     <property name="title">
+      <string>Y</string>
+     </property>
+     <addaction name="actionYacas"/>
+     <addaction name="actionYaml"/>
+    </widget>
     <addaction name="menuA"/>
     <addaction name="menuB"/>
     <addaction name="menuC"/>
@@ -415,6 +434,8 @@
     <addaction name="menuT"/>
     <addaction name="menuV"/>
     <addaction name="menuW"/>
+    <addaction name="menuX"/>
+    <addaction name="menuY"/>
    </widget>
    <widget class="QMenu" name="menuSettin_gs">
     <property name="title">
@@ -1591,6 +1612,31 @@
   <action name="action_Restore_Default_Zoom">
    <property name="text">
     <string>&amp;Restore Default Zoom</string>
+   </property>
+  </action>
+  <action name="actionXML">
+   <property name="text">
+    <string>XML</string>
+   </property>
+  </action>
+  <action name="actionXQuery">
+   <property name="text">
+    <string>XQuery</string>
+   </property>
+  </action>
+  <action name="actionxu">
+   <property name="text">
+    <string>xu</string>
+   </property>
+  </action>
+  <action name="actionYacas">
+   <property name="text">
+    <string>Yacas</string>
+   </property>
+  </action>
+  <action name="actionYaml">
+   <property name="text">
+    <string>YAML</string>
    </property>
   </action>
  </widget>

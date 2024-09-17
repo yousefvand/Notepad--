@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 
@@ -18,6 +17,8 @@ signals:
     void uiReady();
 
 public slots:
+    void closeTab(int index);
+
     void notifyUIReady() {
         emit uiReady();
     }
@@ -58,8 +59,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    void initialize();
     void openDocument(const QString &filePath);
     void closeAllDocuments();  // Declare closeAllDocuments method here
 };
 
-#endif // MAINWINDOW_H

@@ -39,6 +39,8 @@ set(PROJECT_SOURCES
 qt_add_executable(Notepad--
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
+    src/fileloaderworker.h src/fileloaderworker.cpp
+
 )
 
 # Link necessary Qt6 libraries

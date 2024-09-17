@@ -1,24 +1,35 @@
-#ifndef DOCUMENT_H
-#define DOCUMENT_H
+#pragma once
 
 #include <QWidget>
+#include <QThread>
 #include <QFile>
+#include <QString>
 #include <QMap>
+#include <QLabel>
+#include <QProgressBar>
 #include <QSyntaxHighlighter>
+#include "fileloaderworker.h"
 #include "languages/languagemanager.h"
 
 class CodeEditor;
+class FileLoaderWorker;
 
 class Document : public QWidget {
     Q_OBJECT
 
 public:
     Document(const QString &filePath, QWidget *parent = nullptr);
+    ~Document();
+
+    void saveDocument();
+    bool promptForSave();
     QString filePath() const;
     void setFilePath(const QString &path);
     QString getLanguage() const;
     void openFile(const QString &filePath);
     void saveFile();
+    void onWorkerTaskCompleted();
+    bool checkForUnsavedChanges();
     void saveFileAs(const QString &newFilePath);
     bool closeDocument();
     void goToLineNumberInText(QWidget* parent);
@@ -26,30 +37,45 @@ public:
     void applySyntaxHighlighter(const QString &language);
 
 signals:
+    void uiReady();
     void saveError(const QString &error);
     void saveCompleted();
     void loadingStarted();
     void loadingProgress(int progress);
     void loadingFinished();
+    void hideProgressBar();
 
     void savingStarted();
     void savingProgress(int progress);
     void savingFinished();
 
 public slots:
-    void startFileLoadingAfterUIReady();
+    void onLoadingStarted();
+    void onLoadingProgress(int progress);
+    void onLoadingFinished();
+    void onSavingFinished();
+    void onLoadingError(const QString &error);
+    void insertContentIntoEditor(const QString &content);
+    void onContentLoaded(const QString &content);
 
 private:
     void loadContent();
     void loadContentAsync();
     void trackChanges();
-    bool promptForSave();
     void loadEntireFile();
-    bool checkForUnsavedChanges();
     bool compareText(const QString &text1, const QString &text2);
     void mirrorChangesToMemory(qint64 segmentStart, const QString &text);
     QByteArray calculateMD5Stream(QFile *file);
     QByteArray calculateModifiedMD5();
+
+    bool m_isLoading;
+    QString m_bufferedContent;
+    bool m_isSaving = false;
+    qint64 m_totalBytesRead;
+    QThread *m_workerThread;
+    FileLoaderWorker *m_fileLoaderWorker;
+    QLabel *m_statusLabel;
+    QProgressBar *m_progressBar;
 
     QString m_filePath;
     QString m_fileExtension;
@@ -63,4 +89,3 @@ private:
     QString m_language;
 };
 
-#endif // DOCUMENT_H
