@@ -44,19 +44,23 @@ signals:
     void loadingProgress(int progress);
     void loadingFinished();
     void hideProgressBar();
-
     void savingStarted();
-    void savingProgress(int progress);
     void savingFinished();
+    void savingProgress(int progress);
 
 public slots:
     void onLoadingStarted();
     void onLoadingProgress(int progress);
     void onLoadingFinished();
-    void onSavingFinished();
     void onLoadingError(const QString &error);
     void insertContentIntoEditor(const QString &content);
-    void onContentLoaded(const QString &content);
+    void onSavingStarted();
+
+private slots:
+    void onContentLoaded(const QString &chunk);
+    void onFileSizeDetermined(qint64 fileSize);
+    void onSavingProgress(int progress);
+    void onSavingFinished();
 
 private:
     void loadContent();
@@ -65,8 +69,8 @@ private:
     void loadEntireFile();
     bool compareText(const QString &text1, const QString &text2);
     void mirrorChangesToMemory(qint64 segmentStart, const QString &text);
-    QByteArray calculateMD5Stream(QFile *file);
-    QByteArray calculateModifiedMD5();
+    QString calculateMD5Stream(QFile *file);
+    QString calculateModifiedMD5();
 
     bool m_isLoading;
     QString m_bufferedContent;
@@ -87,5 +91,8 @@ private:
     QMap<qint64, QString> m_changedSegments;
     QString m_currentText;
     QString m_language;
+    int m_lastProgress;
+    int m_lastSmoothedProgress = 0;
+    int m_smoothProgressUpdateInterval = 1;
 };
 

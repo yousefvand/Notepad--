@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->documentsTab->setTabsClosable(true);
 
-    connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);
+    connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);   
 
     qDebug() << "Tabs cleared, preparing to open files.";
 

@@ -18,15 +18,20 @@ public:
 signals:
     void loadingStarted();
     void loadingProgress(qint64 bytesRead);
+        void savingProgress(qint64 progress);
     void loadingFinished();
+    void savingStarted();
     void savingFinished();
     void errorOccurred(const QString &error);
-    void contentLoaded(const QString &content);
+    void contentLoaded(const QString &chunk);
+    void loadingError(const QString &errorMsg);
+    void fileSizeDetermined(qint64 fileSize);
 
 public slots:
     void startLoading();
 
 private:
+    qint64 m_fileSize;
     Document *document;
     QString m_filePath;
     QFile m_file;

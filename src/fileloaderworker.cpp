@@ -20,14 +20,21 @@ FileLoaderWorker::~FileLoaderWorker() {
 }
 
 qint64 calculateChunkSize(qint64 fileSize) {
-    qint64 chunkSize = 0;
+    qint64 chunkSize = fileSize / 100;  // Default chunk size is 1/100th of the file
 
-    if (fileSize < 1 * 1024 * 1024) {  // Files less than 1MB
-        chunkSize = fileSize;  // Load the entire file in one go
-    } else if (fileSize < 100 * 1024 * 1024) {  // Files between 1MB and 100MB
-        chunkSize = fileSize / 100;  // Divide the file into 100 chunks
-    } else {  // Files larger than 100MB
-        chunkSize = 1 * 1024 * 1024;  // Use 1MB chunks for large files
+    // For small files, read the entire file at once
+    if (fileSize < 1 * 1024 * 1024) {  // Less than 1MB
+        chunkSize = fileSize;
+    }
+
+    // Set a minimum chunk size of 4KB
+    if (chunkSize < 4096) {
+        chunkSize = 4096;  // 4KB minimum
+    }
+
+    // Optionally, set a maximum chunk size of 10MB
+    if (chunkSize > 10 * 1024 * 1024) {  // Cap chunk size at 10MB
+        chunkSize = 10 * 1024 * 1024;  // 10MB maximum
     }
 
     return chunkSize;
@@ -36,38 +43,62 @@ qint64 calculateChunkSize(qint64 fileSize) {
 void FileLoaderWorker::startLoading() {
     QFile file(m_filePath);
     if (!file.open(QIODevice::ReadOnly)) {
-        emit errorOccurred("Failed to open file: " + m_filePath);
+        qDebug() << "Failed to open file:" << m_filePath;
+        emit loadingError("File could not be opened.");
         return;
     }
 
-    qint64 totalBytesRead = 0;
-    qint64 fileSize = file.size();
-    qint64 chunkSize = 1024 * 1024;  // Define your chunk size
+    m_fileSize = file.size();
+    if (m_fileSize <= 0) {
+        emit loadingError("startLoading: File size is invalid!");
+        return;
+    }
 
-    while (!file.atEnd()) {
-        QByteArray chunk = file.read(chunkSize);
+    emit fileSizeDetermined(m_fileSize);
 
-        if (chunk.isEmpty()) {
-            break;  // Stop if nothing more to read
+    // Calculate an appropriate chunk size
+    qint64 chunkSize = calculateChunkSize(m_fileSize);
+
+    // Use QTextStream for reading the file as text
+    QTextStream in(&file);
+    in.setEncoding(QStringConverter::Utf8);
+
+    qint64 bytesRead = 0;
+
+    // Reading loop
+    while (!in.atEnd()) {
+        QString buffer = in.read(chunkSize);  // Read text data as UTF-8
+        qDebug() << "Read chunk of size:" << buffer.size() << "Bytes read so far:" << bytesRead;
+
+        if (buffer.isEmpty()) {
+            qDebug() << "Read an empty buffer. Aborting...";
+            break;
         }
 
-        emit contentLoaded(QString::fromUtf8(chunk));  // Emit content for each chunk
-        totalBytesRead += chunk.size();  // Track actual size of each chunk
+        bytesRead += buffer.toUtf8().size();  // Update bytesRead based on the UTF-8 size
+        qDebug() << "Total bytes read after update:" << bytesRead << "File size:" << m_fileSize;
 
-        int progress = (totalBytesRead * 100) / fileSize;  // Calculate progress
+        emit contentLoaded(buffer);
+
+        // Update progress bar
+        int progress = static_cast<int>((bytesRead * 100) / m_fileSize);
+        qDebug() << "Progress updated to:" << progress << "%";
         emit loadingProgress(progress);
     }
 
-    emit loadingFinished();  // Signal that loading is finished
+    // Finalize the loading process
+    if (bytesRead >= m_fileSize) {
+        qDebug() << "Loading finished, total bytes read:" << bytesRead;
+        emit loadingFinished();
+    } else {
+        qDebug() << "File not fully read. Bytes read:" << bytesRead;
+    }
 }
 
 void FileLoaderWorker::saveFile(const QString &filePath, const QString &fileContent) {
     qDebug() << "Saving file to path: " << filePath;
     QFile file(filePath);
 
-    qDebug() << "Attempting to save file to: " << filePath;
-
-    // Try opening the file for writing
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << "Failed to open file for writing: " << file.errorString();
         emit errorOccurred("Failed to open file for saving.");
@@ -75,50 +106,78 @@ void FileLoaderWorker::saveFile(const QString &filePath, const QString &fileCont
     }
 
     QTextStream out(&file);
-    out << fileContent;
+    out.setEncoding(QStringConverter::Utf8);  // Set encoding
+    qint64 totalBytes = fileContent.toUtf8().size();
+    qint64 bytesWritten = 0;
+    qint64 chunkSize = calculateChunkSize(totalBytes);  // Reuse the same chunk size logic
 
-    // Check for QTextStream status to ensure it wrote correctly
-    if (out.status() != QTextStream::Ok) {
-        qDebug() << "Failed to write file content to: " << filePath;
-        emit errorOccurred("Failed to write to file.");
-    } else {
-        out.flush();
-        file.flush();
+    while (bytesWritten < totalBytes) {
+        QString chunk = fileContent.mid(bytesWritten, chunkSize);  // Write in chunks
+        out << chunk;
+        out.flush();  // Ensure the data is written
+
+        bytesWritten += chunk.toUtf8().size();  // Increment bytes written
+
+        // Emit saving progress
+        int progress = static_cast<int>((bytesWritten * 100) / totalBytes);
+        emit savingProgress(progress);
+
+        // Allow the UI to remain responsive
+        QCoreApplication::processEvents();
+    }
+
+    // Finalize the save operation
+    if (out.status() == QTextStream::Ok) {
         file.close();
-        qDebug() << "File saved successfully to: " << filePath;
         emit savingFinished();
+        qDebug() << "File saved successfully to: " << filePath;
+    } else {
+        emit errorOccurred("Failed to write to file.");
     }
 }
 
 void FileLoaderWorker::loadFile(const QString &filePath) {
-    qDebug() << "Opening file from path: " << filePath;
     QFile file(filePath);
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        emit errorOccurred(QString("Error opening file: %1").arg(filePath));
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open file:" << filePath;
+        emit loadingError("File could not be opened.");
         return;
     }
 
-    qint64 totalBytesRead = 0;
-    const int chunkSize = 1024 * 1024;  // Read in 1MB chunks
-    QByteArray chunk;
+    qint64 fileSize = file.size();
+    qint64 chunkSize = calculateChunkSize(fileSize);  // Calculate optimal chunk size for the file
 
-    while (!file.atEnd()) {
-        chunk = file.read(chunkSize);
-        if (chunk.isEmpty()) {
-            break;
-        }
-
-        totalBytesRead += chunk.size();
-        emit contentLoaded(QString::fromUtf8(chunk));
-
-        // Emit progress every 1MB read
-        if (totalBytesRead % (1024 * 1024) == 0) {
-            emit loadingProgress(totalBytesRead);
-        }
+    if (chunkSize < 4096) {
+        chunkSize = 4096;  // Ensure a minimum chunk size
     }
 
-    // Emit progress one last time to mark the completion
-    emit loadingProgress(totalBytesRead);
-    emit loadingFinished();
+    qint64 bytesRead = 0;
+    QString bufferedContent;
+    QTextStream in(&file);
+
+    while (!in.atEnd()) {
+        QString chunk = in.read(chunkSize);  // Read text in chunks
+        bytesRead += chunk.toUtf8().size();  // Count the number of bytes read (UTF-8)
+
+        bufferedContent += chunk;
+
+        // Emit content when the buffer reaches the chunk size
+        if (bufferedContent.size() >= chunkSize) {
+            emit contentLoaded(bufferedContent);
+            bufferedContent.clear();
+            QCoreApplication::processEvents();  // Keep UI responsive
+        }
+
+        // Emit progress
+        int progress = static_cast<int>((bytesRead * 100) / fileSize);
+        emit loadingProgress(progress);
+    }
+
+    // Emit remaining content in buffer
+    if (!bufferedContent.isEmpty()) {
+        emit contentLoaded(bufferedContent);
+        bufferedContent.clear();
+    }
+
+    emit loadingFinished();  // Notify that the loading is complete
 }
