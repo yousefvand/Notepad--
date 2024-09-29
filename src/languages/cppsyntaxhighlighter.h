@@ -1,5 +1,4 @@
-#ifndef CPPSYNTAXHIGHLIGHTER_H
-#define CPPSYNTAXHIGHLIGHTER_H
+#pragma once
 
 #include <QSyntaxHighlighter>
 #include <QTextDocument>
@@ -32,5 +31,3 @@ private:
     QRegularExpression commentStartExpression;
     QRegularExpression commentEndExpression;
 };
-
-#endif // CPPSYNTAXHIGHLIGHTER_H

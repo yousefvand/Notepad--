@@ -1,5 +1,4 @@
-#ifndef LANGUAGEMANAGER_H
-#define LANGUAGEMANAGER_H
+#pragma once
 
 #include <QString>
 #include <QSyntaxHighlighter>
@@ -11,4 +10,3 @@ public:
     static QString getLanguageFromExtension(const QString &extension);
 };
 
-#endif // LANGUAGEMANAGER_H

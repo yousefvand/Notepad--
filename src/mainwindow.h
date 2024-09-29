@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 
@@ -13,6 +12,17 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+signals:
+    void uiReady();
+
+public slots:
+    void closeTab(int index);
+
+    void notifyUIReady() {
+        emit uiReady();
+    }
+
 
 private slots:
     void on_action_Open_triggered();
@@ -49,8 +59,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    void initialize();
     void openDocument(const QString &filePath);
     void closeAllDocuments();  // Declare closeAllDocuments method here
 };
 
-#endif // MAINWINDOW_H

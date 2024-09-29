@@ -5,47 +5,108 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QProgressBar>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include "mainwindow.h"
+#include <QLabel>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QLabel>
+#include <QProgressBar>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    if (ui->documentsTab->count() > 0) {
+    qDebug() << "Setting up UI and clearing existing tabs.";
+
+    // Explicitly remove any existing tabs
+    while (ui->documentsTab->count() > 0) {
         ui->documentsTab->removeTab(0);
     }
 
-    Document *firstDoc = new Document("", this);
-    ui->documentsTab->addTab(firstDoc, "Untitled Document");
-    ui->documentsTab->setCurrentWidget(firstDoc);
+    ui->documentsTab->setTabsClosable(true);
 
-    QStringList filePaths = QCoreApplication::arguments();
-    for (const QString &filePath : filePaths) {
-        if (filePath != QCoreApplication::applicationFilePath()) {
-            openDocument(filePath);
-        }
+    connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);   
+
+    qDebug() << "Tabs cleared, preparing to open files.";
+
+    // Get arguments from argv and open files
+    QStringList arguments = QCoreApplication::arguments();
+
+    // Debug the list of arguments
+    qDebug() << "Arguments passed:" << arguments;
+
+    for (int i = 1; i < arguments.size(); ++i) {  // Skip argv(0), which is the app name
+        QString filePath = arguments.at(i);
+        qDebug() << "Opening document:" << filePath;
+        openDocument(filePath);  // Open each file in a new tab
     }
+
+    qDebug() << "Initialization complete, emitting uiReady signal.";
+    initialize();  // Initialize UI readiness
 }
 
 MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::openDocument(const QString &filePath) {
-    if (ui->documentsTab->count() > 0) {
-        Document *existingDoc = qobject_cast<Document *>(ui->documentsTab->widget(0));
-        if (existingDoc && existingDoc->filePath().isEmpty()) {
-            existingDoc->openFile(filePath);
-            ui->documentsTab->setTabText(0, QFileInfo(filePath).fileName());
-            return;
+void MainWindow::initialize() {
+    QTimer::singleShot(100, this, [this]() {
+        qDebug() << "Emitting uiReady signal after 100ms delay";
+        qDebug() << "About to emit uiReady signal...";
+        emit uiReady();
+    });
+}
+
+void MainWindow::closeTab(int index) {
+    if (ui->documentsTab->count() == 1) {
+        // Close the last tab logic if needed
+        QWidget *currentTab = ui->documentsTab->widget(index);
+        if (currentTab) {
+            Document *doc = qobject_cast<Document *>(currentTab);
+            if (doc && !doc->closeDocument()) {
+                // If the document has unsaved changes, stop closing the tab
+                return;
+            }
         }
+
+        // Remove the tab
+        ui->documentsTab->removeTab(index);
+    } else {
+        // Handle closing tabs when there are multiple tabs
+        QWidget *currentTab = ui->documentsTab->widget(index);
+        if (currentTab) {
+            Document *doc = qobject_cast<Document *>(currentTab);
+            if (doc && !doc->closeDocument()) {
+                // If the document has unsaved changes, stop closing the tab
+                return;
+            }
+        }
+
+        // Remove the tab
+        ui->documentsTab->removeTab(index);
+    }
+}
+
+void MainWindow::openDocument(const QString &filePath) {
+    if (!QFile::exists(filePath)) {
+        qDebug() << "Error: File does not exist: " << filePath;
+        return;  // Prevent trying to open a non-existent file
     }
 
+    QString fileName = QFileInfo(filePath).fileName();
+    qDebug() << "Opening file:" << filePath;
+
     Document *newDoc = new Document(filePath, this);
-    ui->documentsTab->addTab(newDoc, QFileInfo(filePath).fileName());
+    ui->documentsTab->addTab(newDoc, fileName);  // Set the tab title to the file name
     ui->documentsTab->setCurrentWidget(newDoc);
+
+    qDebug() << "Document added with file path:" << filePath << " and file name:" << fileName;
 }
+
 
 void MainWindow::on_action_Open_triggered() {
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("Text Files (*.txt);;All Files (*)"));
@@ -76,13 +137,17 @@ void MainWindow::on_actionSave_As_triggered() {
 }
 
 void MainWindow::on_documentsTab_tabCloseRequested(int index) {
-    Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
-
-    if (doc) {
-        bool canClose = doc->closeDocument();
-
-        if (canClose) {
-            ui->documentsTab->removeTab(index);
+    if (ui->documentsTab->count() > 0) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
+        if (doc) {
+            bool canClose = doc->closeDocument();
+            if (canClose) {
+                ui->documentsTab->removeTab(index);  // Remove the tab from the widget
+                delete doc;  // Clean up the document object
+                qDebug() << "Closed tab at index:" << index << ". Remaining tabs:" << ui->documentsTab->count();
+            } else {
+                qDebug() << "User canceled closing tab at index:" << index;
+            }
         }
     }
 }
@@ -127,19 +192,24 @@ void MainWindow::on_actionC_lose_all_triggered() {
 
 void MainWindow::closeAllDocuments() {
     int tabCount = ui->documentsTab->count();
+    qDebug() << "Attempting to close all tabs. Current tab count:" << tabCount;
 
     for (int i = tabCount - 1; i >= 0; --i) {
         Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(i));
         if (doc) {
-            bool canClose = doc->closeDocument();  // Trigger the unsaved changes check
+            bool canClose = doc->closeDocument();
             if (canClose) {
                 ui->documentsTab->removeTab(i);
-                delete doc;  // Clean up the document object
+                delete doc;
+                qDebug() << "Tab at index" << i << "closed.";
             } else {
-                return;  // Stop closing further documents if the user cancels the close
+                qDebug() << "User canceled closing tab at index" << i;
+                return;  // Stop closing if the user cancels
             }
         }
     }
+
+    qDebug() << "Remaining tabs after close all:" << ui->documentsTab->count();
 }
 
 void MainWindow::on_actionC_3_triggered() {
