@@ -53,7 +53,6 @@ public slots:
     void onLoadingProgress(int progress);
     void onLoadingFinished();
     void onLoadingError(const QString &error);
-    void insertContentIntoEditor(const QString &content);
     void onSavingStarted();
 
 private slots:
@@ -83,7 +82,6 @@ private:
 
     QString m_filePath;
     QString m_fileExtension;
-    QString m_originalText;
     QFile m_file;
     CodeEditor *editor;
     QSyntaxHighlighter *syntaxHighlighter;
@@ -91,8 +89,9 @@ private:
     QMap<qint64, QString> m_changedSegments;
     QString m_currentText;
     QString m_language;
-    int m_lastProgress;
+    int m_lastProgress = 0;
     int m_lastSmoothedProgress = 0;
     int m_smoothProgressUpdateInterval = 1;
+    qint64 m_totalBytesInserted = 0;
 };
 
