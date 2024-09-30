@@ -38,11 +38,8 @@ Document::Document(const QString &filePath, QWidget *parent)
 
     // Connect worker signals
     connect(m_fileLoaderWorker, &FileLoaderWorker::loadingStarted, this, &Document::onLoadingStarted);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, &Document::onLoadingProgress);
     connect(m_fileLoaderWorker, &FileLoaderWorker::errorOccurred, this, &Document::onLoadingError);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::contentLoaded, this, &Document::insertContentIntoEditor);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::contentLoaded, this, &Document::onContentLoaded);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, &Document::onLoadingProgress, Qt::UniqueConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::contentLoaded, this, &Document::onContentLoaded, Qt::UniqueConnection);
     connect(m_fileLoaderWorker, &FileLoaderWorker::fileSizeDetermined, this, &Document::onFileSizeDetermined);
 
     connect(m_fileLoaderWorker, &FileLoaderWorker::savingStarted, this, &Document::onSavingStarted);
@@ -50,9 +47,12 @@ Document::Document(const QString &filePath, QWidget *parent)
     connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished);
     connect(this, &Document::savingProgress, m_progressBar, &QProgressBar::setValue);
 
+    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, &Document::onLoadingProgress, Qt::UniqueConnection);
+    /*
     connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, [this](int progress) {
         QMetaObject::invokeMethod(m_progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));
     });
+    */
 
     connect(m_fileLoaderWorker, &FileLoaderWorker::loadingFinished, this, &Document::onLoadingFinished);
     connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished);
@@ -109,12 +109,16 @@ Document::~Document() {
 }
 
 void Document::onLoadingStarted() {
+    m_totalBytesInserted = 0;  // Reset bytes inserted when loading starts
+    m_totalBytesRead = 0;      // Reset bytes read
+    m_lastSmoothedProgress = 0; // Reset progress tracking
     qDebug() << "Loading started for document:" << m_filePath;
     m_statusLabel->setText("Loading File...");
     m_progressBar->setValue(0);
     m_progressBar->setVisible(true);
     m_statusLabel->setVisible(true);
 }
+
 
 void Document::onSavingStarted() {
     m_isSaving = true;
@@ -126,9 +130,8 @@ void Document::onSavingStarted() {
 void Document::onLoadingProgress(int progress) {
     if (progress - m_lastSmoothedProgress >= m_smoothProgressUpdateInterval || progress == 100) {
         m_lastSmoothedProgress = progress;
-        m_progressBar->setValue(progress);
-
-        qDebug() << "Smooth progress updated to:" << progress;
+        QMetaObject::invokeMethod(m_progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));
+        qDebug() << "Progress bar updated with progress: " << progress;
     }
 
     if (progress == 100) {
@@ -147,8 +150,14 @@ void Document::onSavingProgress(int progress) {
 
 void Document::onLoadingFinished() {
     m_isLoading = false;
-    emit loadingProgress(100);
+    emit loadingProgress(100);  // Ensure progress is 100%
     emit hideProgressBar();     // Hide the progress bar when loading finishes
+
+    // Move the cursor to the first line after file is loaded
+    editor->moveCursor(QTextCursor::Start);
+    editor->ensureCursorVisible();  // Ensure the cursor is visible
+    qDebug() << "Cursor moved to the first line after file loaded";
+
     qDebug() << "Loading finished, m_isLoading = " << m_isLoading;
 }
 
@@ -161,15 +170,6 @@ void Document::onSavingFinished() {
 void Document::onLoadingError(const QString &error) {
     qDebug() << "Error loading document:" << m_filePath << " Error:" << error;
     m_statusLabel->setText("Error: " + error);
-}
-
-void Document::insertContentIntoEditor(const QString &content) {
-    if (m_totalBytesRead == 0) {
-        qDebug() << "Inserting initial content into the editor...";
-        editor->clear();  // Clear existing content if any
-    }
-    editor->insertPlainText(content);
-    m_originalText = content;  // Save the original content for comparison
 }
 
 void Document::setFilePath(const QString &path) {
@@ -223,11 +223,6 @@ void Document::saveFileAs(const QString &newFilePath) {
 
     // Now call saveFile to save the content to the new file path
     saveFile();
-}
-
-bool Document::checkForUnsavedChanges() {
-    QString currentText = editor->toPlainText();  // Get the current text in the editor
-    return !compareText(currentText, m_originalText);  // Compare current text with the original text
 }
 
 bool Document::closeDocument() {
@@ -365,49 +360,56 @@ void Document::onFileSizeDetermined(qint64 fileSize) {
     qDebug() << "File size set in Document: " << m_fileSize;
 }
 
+// onContentLoaded (handles content loading and progress updates)
 void Document::onContentLoaded(const QString &chunk) {
     if (m_fileSize <= 0) {
         qDebug() << "onContentLoaded: Invalid file size!";
         return;
     }
 
-    m_totalBytesRead += chunk.size();
-
-    // Buffer more content before updating the editor
-    m_bufferedContent += chunk;
-
-    // Calculate a dynamic buffer size (e.g., 1% of file size or 1MB minimum)
-    qint64 dynamicBufferSize = std::max(m_fileSize / 100, static_cast<qint64>(1 * 1024 * 1024));
-
-    if (m_bufferedContent.size() >= dynamicBufferSize) {
+    // For small files, insert content directly
+    if (m_fileSize < 4096) {  // For files smaller than 4KB, insert directly
         editor->moveCursor(QTextCursor::End);
-        qDebug() << "Buffered content size before inserting: " << m_bufferedContent.size();
-
-        // Insert content with proper line breaks
-        editor->insertPlainText(m_bufferedContent);
-        m_bufferedContent.clear();  // Clear buffer after insertion
-
-        QCoreApplication::processEvents();  // Keep UI responsive
+        editor->insertPlainText(chunk);
+        m_totalBytesInserted += chunk.size();
+        emit loadingProgress(100);  // Mark progress as 100% for small files
+        emit loadingFinished();
+        return;
     }
 
-    // Update progress bar
-    emit loadingProgress(static_cast<int>((m_totalBytesRead * 100) / m_fileSize));
+    // Buffer for large files
+    m_totalBytesRead += chunk.size();  // Track bytes read
+    m_bufferedContent += chunk;        // Add to the buffer
 
-    // Handle loading finished
+    // Use a dynamic buffer size (1% of file size or at least 4KB)
+    qint64 dynamicBufferSize = std::max(m_fileSize / 100, static_cast<qint64>(4096));
+
+    // Insert content when buffered size reaches the threshold
+    if (m_bufferedContent.size() >= dynamicBufferSize) {
+        QMetaObject::invokeMethod(this, [this]() {
+            editor->moveCursor(QTextCursor::End);
+            editor->insertPlainText(m_bufferedContent);  // Insert buffered content
+            m_totalBytesInserted += m_bufferedContent.size();  // Track bytes inserted
+            m_bufferedContent.clear();  // Clear the buffer
+        }, Qt::QueuedConnection);
+    }
+
+    // Update progress based on inserted content
+    int progress = static_cast<int>((m_totalBytesInserted * 100) / m_fileSize);
+    if (progress > m_lastSmoothedProgress || progress == 100) {
+        emit loadingProgress(progress);
+        m_lastSmoothedProgress = progress;
+    }
+
+    // Handle finished loading case
     if (m_totalBytesRead >= m_fileSize) {
         emit loadingFinished();
-
-        // Insert remaining buffered content
         if (!m_bufferedContent.isEmpty()) {
             editor->moveCursor(QTextCursor::End);
             editor->insertPlainText(m_bufferedContent);
+            m_totalBytesInserted += m_bufferedContent.size();
             m_bufferedContent.clear();
         }
-
-        // Move cursor to the first line after loading completes
-        editor->moveCursor(QTextCursor::Start);
-
-        // Clear status label after loading completes
-        m_statusLabel->setText("");
+        emit hideProgressBar();
     }
 }

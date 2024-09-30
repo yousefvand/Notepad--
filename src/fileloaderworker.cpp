@@ -43,55 +43,33 @@ qint64 calculateChunkSize(qint64 fileSize) {
 void FileLoaderWorker::startLoading() {
     QFile file(m_filePath);
     if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open file:" << m_filePath;
         emit loadingError("File could not be opened.");
         return;
     }
 
     m_fileSize = file.size();
-    if (m_fileSize <= 0) {
-        emit loadingError("startLoading: File size is invalid!");
-        return;
-    }
-
     emit fileSizeDetermined(m_fileSize);
 
-    // Calculate an appropriate chunk size
     qint64 chunkSize = calculateChunkSize(m_fileSize);
-
-    // Use QTextStream for reading the file as text
     QTextStream in(&file);
     in.setEncoding(QStringConverter::Utf8);
 
     qint64 bytesRead = 0;
-
-    // Reading loop
     while (!in.atEnd()) {
-        QString buffer = in.read(chunkSize);  // Read text data as UTF-8
-        qDebug() << "Read chunk of size:" << buffer.size() << "Bytes read so far:" << bytesRead;
+        QString buffer = in.read(chunkSize);
+        if (buffer.isEmpty()) break;
 
-        if (buffer.isEmpty()) {
-            qDebug() << "Read an empty buffer. Aborting...";
-            break;
-        }
+        bytesRead += buffer.toUtf8().size();
+        emit contentLoaded(buffer);  // Emit content after every chunk is read
 
-        bytesRead += buffer.toUtf8().size();  // Update bytesRead based on the UTF-8 size
-        qDebug() << "Total bytes read after update:" << bytesRead << "File size:" << m_fileSize;
-
-        emit contentLoaded(buffer);
-
-        // Update progress bar
         int progress = static_cast<int>((bytesRead * 100) / m_fileSize);
-        qDebug() << "Progress updated to:" << progress << "%";
-        emit loadingProgress(progress);
+        emit loadingProgress(progress);  // Update progress based on bytes read so far
+
+        QCoreApplication::processEvents();  // Keep the UI responsive
     }
 
-    // Finalize the loading process
     if (bytesRead >= m_fileSize) {
-        qDebug() << "Loading finished, total bytes read:" << bytesRead;
         emit loadingFinished();
-    } else {
-        qDebug() << "File not fully read. Bytes read:" << bytesRead;
     }
 }
 
@@ -156,20 +134,20 @@ void FileLoaderWorker::loadFile(const QString &filePath) {
     QTextStream in(&file);
 
     while (!in.atEnd()) {
-        QString chunk = in.read(chunkSize);  // Read text in chunks
-        bytesRead += chunk.toUtf8().size();  // Count the number of bytes read (UTF-8)
-
-        bufferedContent += chunk;
-
-        // Emit content when the buffer reaches the chunk size
-        if (bufferedContent.size() >= chunkSize) {
-            emit contentLoaded(bufferedContent);
-            bufferedContent.clear();
-            QCoreApplication::processEvents();  // Keep UI responsive
+        QString buffer = in.read(chunkSize);  // Read the file chunk
+        if (buffer.isEmpty()) {
+            qDebug() << "Read an empty buffer. Stopping at bytesRead: " << bytesRead;
+            break;
         }
 
-        // Emit progress
-        int progress = static_cast<int>((bytesRead * 100) / fileSize);
+        bytesRead += buffer.toUtf8().size();  // Update the total bytes read
+        qDebug() << "Read chunk of size: " << buffer.size() << " Total bytesRead: " << bytesRead;
+
+        emit contentLoaded(buffer);
+
+        // Update progress bar
+        int progress = static_cast<int>((bytesRead * 100) / m_fileSize);
+        qDebug() << "Updated progress: " << progress << "%";
         emit loadingProgress(progress);
     }
 
