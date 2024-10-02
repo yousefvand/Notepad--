@@ -27,11 +27,6 @@ jobs:
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
 
     steps:
     - uses: actions/checkout@v4
@@ -65,17 +60,17 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }} \
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+        -DCMAKE_BUILD_TYPE=Release \
         -G "Ninja" \
         -S ${{ github.workspace }}
 
     # Build the project
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     # Run tests
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       env:
         DISPLAY: ':0' # Necessary for GUI tests on Ubuntu
-      run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
+      run: ctest --output-on-failure --build-config Release
