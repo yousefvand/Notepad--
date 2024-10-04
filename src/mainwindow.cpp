@@ -15,10 +15,22 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QTimer>
+#include <QActionGroup>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    QActionGroup *group = new QActionGroup(this);
+    group->setExclusive(true);  // Ensure only one action is checked at a time
+
+    // Add actions to the group
+    group->addAction(ui->actionWindows_Format);
+    group->addAction(ui->action_Unix_OS_X_Format);
+    group->addAction(ui->action_Old_Mac_Format);
+
+    // Optionally, set a default action checked
+    ui->action_Unix_OS_X_Format->setChecked(true);
 
     qDebug() << "Setting up UI and clearing existing tabs.";
 

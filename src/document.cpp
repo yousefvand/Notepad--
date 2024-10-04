@@ -374,12 +374,13 @@ void Document::onContentLoaded(const QString &chunk) {
         m_totalBytesInserted += chunk.size();
         emit loadingProgress(100);  // Mark progress as 100% for small files
         emit loadingFinished();
+        editor->moveCursor(QTextCursor::Start);  // Move cursor to the start after loading
         return;
     }
 
-    // Buffer for large files
-    m_totalBytesRead += chunk.size();  // Track bytes read
-    m_bufferedContent += chunk;        // Add to the buffer
+    // Track bytes read
+    m_totalBytesRead += chunk.size();
+    m_bufferedContent += chunk;  // Add to the buffer
 
     // Use a dynamic buffer size (1% of file size or at least 4KB)
     qint64 dynamicBufferSize = std::max(m_fileSize / 100, static_cast<qint64>(4096));
@@ -387,29 +388,41 @@ void Document::onContentLoaded(const QString &chunk) {
     // Insert content when buffered size reaches the threshold
     if (m_bufferedContent.size() >= dynamicBufferSize) {
         QMetaObject::invokeMethod(this, [this]() {
-            editor->moveCursor(QTextCursor::End);
+            editor->moveCursor(QTextCursor::End);  // Move cursor to the end before inserting
             editor->insertPlainText(m_bufferedContent);  // Insert buffered content
             m_totalBytesInserted += m_bufferedContent.size();  // Track bytes inserted
             m_bufferedContent.clear();  // Clear the buffer
-        }, Qt::QueuedConnection);
-    }
 
-    // Update progress based on inserted content
-    int progress = static_cast<int>((m_totalBytesInserted * 100) / m_fileSize);
-    if (progress > m_lastSmoothedProgress || progress == 100) {
-        emit loadingProgress(progress);
-        m_lastSmoothedProgress = progress;
+            // Update progress based on inserted content
+            int progress = static_cast<int>((m_totalBytesInserted * 100) / m_fileSize);
+            if (progress > m_lastSmoothedProgress || progress == 100) {
+                emit loadingProgress(progress);  // Emit progress for the progress bar
+                m_lastSmoothedProgress = progress;
+            }
+
+            QCoreApplication::processEvents();  // Allow the UI to process events
+
+        }, Qt::QueuedConnection);
     }
 
     // Handle finished loading case
     if (m_totalBytesRead >= m_fileSize) {
         emit loadingFinished();
+
+        // Insert remaining buffered content if any
         if (!m_bufferedContent.isEmpty()) {
             editor->moveCursor(QTextCursor::End);
             editor->insertPlainText(m_bufferedContent);
             m_totalBytesInserted += m_bufferedContent.size();
             m_bufferedContent.clear();
         }
+
+        // Move cursor to the first line after loading completes
+        editor->moveCursor(QTextCursor::Start);
+
+        // Hide the progress bar once loading finishes
         emit hideProgressBar();
+
+        QCoreApplication::processEvents();  // Allow the UI to process final updates
     }
 }

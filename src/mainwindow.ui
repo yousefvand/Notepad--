@@ -83,6 +83,60 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <widget class="QMenu" name="menuC_opy_to_clipboard">
+     <property name="title">
+      <string>C&amp;opy to Clipboard</string>
+     </property>
+     <addaction name="actionCopy_Full_Path_to_Clipboard"/>
+     <addaction name="actionCopy_File_Name_to_Clipboard"/>
+     <addaction name="actionCopy_Directory_to_Clipboard"/>
+    </widget>
+    <widget class="QMenu" name="menuCo_nvert_case_to">
+     <property name="title">
+      <string>Co&amp;nvert Case to</string>
+     </property>
+     <addaction name="action_UPPERCASE"/>
+     <addaction name="action_lowercase"/>
+    </widget>
+    <widget class="QMenu" name="menu_Line_Operations">
+     <property name="title">
+      <string>&amp;Line Operations</string>
+     </property>
+     <addaction name="actionDuplicate_Current_Line"/>
+     <addaction name="actionDelete_Current_Line"/>
+     <addaction name="action_Move_Line_Up"/>
+     <addaction name="actionMove_Line_Down"/>
+    </widget>
+    <widget class="QMenu" name="menu_End_of_line">
+     <property name="title">
+      <string>&amp;End of Line</string>
+     </property>
+     <addaction name="actionWindows_Format"/>
+     <addaction name="action_Unix_OS_X_Format"/>
+     <addaction name="action_Old_Mac_Format"/>
+    </widget>
+    <widget class="QMenu" name="menu_Blank_Operations">
+     <property name="title">
+      <string>&amp;Blank Operations</string>
+     </property>
+     <addaction name="action_Trim_Trailing_Space"/>
+     <addaction name="actionTrim_Leading_Space"/>
+     <addaction name="actionTrim_Leading_and_Trailing_Space"/>
+     <addaction name="action_EOL_to_Space"/>
+     <addaction name="separator"/>
+     <addaction name="actionTab_to_Space"/>
+     <addaction name="action_Space_to_TAB_all"/>
+     <addaction name="actionS_pace_to_Tab_Leading"/>
+    </widget>
+    <widget class="QMenu" name="menu_Indentation">
+     <property name="title">
+      <string>&amp;Indentation</string>
+     </property>
+     <addaction name="action_Default_Setting"/>
+     <addaction name="action_Custom"/>
+     <addaction name="separator"/>
+     <addaction name="action_Enable_Smart_Indent"/>
+    </widget>
     <addaction name="action_Undo"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
@@ -93,12 +147,12 @@
     <addaction name="action_Delete"/>
     <addaction name="actionSelect_All"/>
     <addaction name="actionBegin_End_Select"/>
-    <addaction name="actionC_opy_to_clipboard"/>
-    <addaction name="actionCo_nvert_case_to"/>
-    <addaction name="action_Line_Operations"/>
-    <addaction name="action_End_of_line"/>
-    <addaction name="action_Blank_Operations"/>
-    <addaction name="action_Indentation"/>
+    <addaction name="menuC_opy_to_clipboard"/>
+    <addaction name="menuCo_nvert_case_to"/>
+    <addaction name="menu_Line_Operations"/>
+    <addaction name="menu_End_of_line"/>
+    <addaction name="menu_Blank_Operations"/>
+    <addaction name="menu_Indentation"/>
    </widget>
    <widget class="QMenu" name="menu_Search">
     <property name="title">
@@ -108,7 +162,9 @@
     <addaction name="action_Advanced_sEarch"/>
     <addaction name="actionFind_Next"/>
     <addaction name="actionFind_previoud"/>
+    <addaction name="separator"/>
     <addaction name="action_Replace"/>
+    <addaction name="separator"/>
     <addaction name="action_Go_to_line_in_editor"/>
     <addaction name="action_Go_to_line_in_text"/>
    </widget>
@@ -124,12 +180,33 @@
      <addaction name="actionoom_Out"/>
      <addaction name="action_Restore_Default_Zoom"/>
     </widget>
-    <addaction name="action_Show_Symbol"/>
+    <widget class="QMenu" name="menu_Show_Symbol">
+     <property name="title">
+      <string>&amp;Show Symbol</string>
+     </property>
+     <addaction name="action_Show_Tabs"/>
+     <addaction name="actionShow_Spaces"/>
+     <addaction name="actionShoe_End_of_Lines"/>
+     <addaction name="actionShow_All_Characters"/>
+     <addaction name="separator"/>
+     <addaction name="actionShow_Indent_Guide"/>
+     <addaction name="actionShow_Wrap_Symbol"/>
+    </widget>
+    <widget class="QMenu" name="menu_Move_Clone_current_document">
+     <property name="title">
+      <string>&amp;Move/Clone Current Document</string>
+     </property>
+     <addaction name="action_Move_to_Other_View"/>
+     <addaction name="actionMove_to_a_New_View"/>
+     <addaction name="action_Open_in_a_New_Window"/>
+    </widget>
+    <addaction name="menu_Show_Symbol"/>
     <addaction name="menu_Zoom"/>
-    <addaction name="action_Move_Clone_current_document"/>
+    <addaction name="menu_Move_Clone_current_document"/>
     <addaction name="action_Word_wrap"/>
     <addaction name="actionMath_Rendering"/>
     <addaction name="actionToggle_to_Former_Tab"/>
+    <addaction name="separator"/>
     <addaction name="action_Full_Screen"/>
    </widget>
    <widget class="QMenu" name="menuEn_coding">
@@ -552,10 +629,13 @@
    <property name="text">
     <string>Save &amp;As...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+S</string>
+   </property>
   </action>
   <action name="actionSa_ve_a_copy_as">
    <property name="text">
-    <string>Sa&amp;ve a copy as...</string>
+    <string>Sa&amp;ve a Copy as...</string>
    </property>
   </action>
   <action name="actionSav_e_all">
@@ -563,7 +643,7 @@
     <iconset theme="document-save-as"/>
    </property>
    <property name="text">
-    <string>Sav&amp;e all</string>
+    <string>Sav&amp;e All</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
@@ -598,22 +678,25 @@
   </action>
   <action name="actionClose_all_BUT_current_document">
    <property name="text">
-    <string>Close all &amp;BUT current document</string>
+    <string>Close all &amp;BUT Current Document</string>
    </property>
   </action>
   <action name="actionLoad_session">
    <property name="text">
-    <string>Load session...</string>
+    <string>Load Session...</string>
    </property>
   </action>
   <action name="actionSave_session">
    <property name="text">
-    <string>Save session...</string>
+    <string>Save Session...</string>
    </property>
   </action>
   <action name="action_Print">
    <property name="text">
     <string>&amp;Print</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="actionRecent_Files">
@@ -624,6 +707,9 @@
   <action name="actionE_xit">
    <property name="text">
     <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="action_Undo">
@@ -685,48 +771,30 @@
    <property name="text">
     <string>&amp;Delete</string>
    </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
   </action>
   <action name="actionSelect_All">
    <property name="text">
     <string>Select &amp;All</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
   </action>
   <action name="actionBegin_End_Select">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Begin/End Select</string>
    </property>
   </action>
-  <action name="actionC_opy_to_clipboard">
-   <property name="text">
-    <string>C&amp;opy to clipboard</string>
-   </property>
-  </action>
-  <action name="actionCo_nvert_case_to">
-   <property name="text">
-    <string>Co&amp;nvert case to</string>
-   </property>
-  </action>
-  <action name="action_Line_Operations">
-   <property name="text">
-    <string>&amp;Line Operations</string>
-   </property>
-  </action>
-  <action name="action_End_of_line">
-   <property name="text">
-    <string>&amp;End of line</string>
-   </property>
-  </action>
-  <action name="action_Blank_Operations">
-   <property name="text">
-    <string>&amp;Blank Operations</string>
-   </property>
-  </action>
-  <action name="action_Indentation">
-   <property name="text">
-    <string>&amp;Indentation</string>
-   </property>
-  </action>
   <action name="action_Find">
+   <property name="icon">
+    <iconset theme="edit-find"/>
+   </property>
    <property name="text">
     <string>&amp;Find...</string>
    </property>
@@ -737,13 +805,19 @@
    </property>
   </action>
   <action name="actionFind_Next">
+   <property name="icon">
+    <iconset theme="go-next"/>
+   </property>
    <property name="text">
     <string>Find &amp;Next</string>
    </property>
   </action>
   <action name="actionFind_previoud">
+   <property name="icon">
+    <iconset theme="go-previous"/>
+   </property>
    <property name="text">
-    <string>Find &amp;previous</string>
+    <string>Find &amp;Previous</string>
    </property>
   </action>
   <action name="action_Replace">
@@ -753,28 +827,21 @@
   </action>
   <action name="action_Go_to_line_in_editor">
    <property name="text">
-    <string>&amp;Go to line in editor...</string>
-   </property>
-  </action>
-  <action name="action_Show_Symbol">
-   <property name="text">
-    <string>&amp;Show Symbol</string>
-   </property>
-  </action>
-  <action name="action_Move_Clone_current_document">
-   <property name="text">
-    <string>&amp;Move/Clone current document</string>
+    <string>&amp;Go to Line in Editor...</string>
    </property>
   </action>
   <action name="action_Word_wrap">
-   <property name="icon">
-    <iconset theme="media-playlist-repeat"/>
+   <property name="checkable">
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Word wrap</string>
    </property>
   </action>
   <action name="actionMath_Rendering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Math Rendering</string>
    </property>
@@ -783,10 +850,19 @@
    <property name="text">
     <string>Toggle to Former Tab</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
   </action>
   <action name="action_Full_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Full Screen</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
   <action name="action_Interpret_as_UTF_8">
@@ -959,7 +1035,7 @@
   </action>
   <action name="action_Go_to_line_in_text">
    <property name="text">
-    <string>G&amp;o to line in text...</string>
+    <string>G&amp;o to Line in Text...</string>
    </property>
   </action>
   <action name="actionAPL">
@@ -1610,8 +1686,14 @@
    </property>
   </action>
   <action name="action_Restore_Default_Zoom">
+   <property name="icon">
+    <iconset theme="zoom-original"/>
+   </property>
    <property name="text">
     <string>&amp;Restore Default Zoom</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
   <action name="actionXML">
@@ -1637,6 +1719,215 @@
   <action name="actionYaml">
    <property name="text">
     <string>YAML</string>
+   </property>
+  </action>
+  <action name="actionCopy_Full_Path_to_Clipboard">
+   <property name="text">
+    <string>Copy Full Path to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopy_File_Name_to_Clipboard">
+   <property name="text">
+    <string>Copy Filename to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopy_Directory_to_Clipboard">
+   <property name="text">
+    <string>Copy Directory to Clipboard</string>
+   </property>
+  </action>
+  <action name="action_UPPERCASE">
+   <property name="text">
+    <string>&amp;UPPERCASE</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+U</string>
+   </property>
+  </action>
+  <action name="action_lowercase">
+   <property name="text">
+    <string>&amp;lowercase</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
+   </property>
+  </action>
+  <action name="actionDuplicate_Current_Line">
+   <property name="text">
+    <string>&amp;Duplicate Current Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionDelete_Current_Line">
+   <property name="text">
+    <string>Delete &amp;Current Line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="action_Move_Line_Up">
+   <property name="text">
+    <string>&amp;Move Line Up</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Up</string>
+   </property>
+  </action>
+  <action name="actionMove_Line_Down">
+   <property name="text">
+    <string>Move &amp;Line Down</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Down</string>
+   </property>
+  </action>
+  <action name="actionWindows_Format">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Windows Format</string>
+   </property>
+  </action>
+  <action name="action_Unix_OS_X_Format">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Unix / OS X Format</string>
+   </property>
+  </action>
+  <action name="action_Old_Mac_Format">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Old Mac Format</string>
+   </property>
+  </action>
+  <action name="action_Trim_Trailing_Space">
+   <property name="text">
+    <string>&amp;Trim Trailing Space</string>
+   </property>
+  </action>
+  <action name="actionTrim_Leading_Space">
+   <property name="text">
+    <string>Trim &amp;Leading Space</string>
+   </property>
+  </action>
+  <action name="actionTrim_Leading_and_Trailing_Space">
+   <property name="text">
+    <string>T&amp;rim Leading and Trailing Space</string>
+   </property>
+  </action>
+  <action name="action_EOL_to_Space">
+   <property name="text">
+    <string>&amp;EOL to Space</string>
+   </property>
+  </action>
+  <action name="actionTab_to_Space">
+   <property name="text">
+    <string>TA&amp;B to Space</string>
+   </property>
+  </action>
+  <action name="action_Space_to_TAB_all">
+   <property name="text">
+    <string>&amp;Space to TAB (All)</string>
+   </property>
+  </action>
+  <action name="actionS_pace_to_Tab_Leading">
+   <property name="text">
+    <string>S&amp;pace to TAB (Leading)</string>
+   </property>
+  </action>
+  <action name="action_Default_Setting">
+   <property name="text">
+    <string>&amp;Default Settings</string>
+   </property>
+  </action>
+  <action name="action_Custom">
+   <property name="text">
+    <string>&amp;Custom...</string>
+   </property>
+  </action>
+  <action name="action_Enable_Smart_Indent">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Enable Smart Indent</string>
+   </property>
+  </action>
+  <action name="action_Show_Tabs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Show Tabs</string>
+   </property>
+  </action>
+  <action name="actionShow_Spaces">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>S&amp;how Spaces</string>
+   </property>
+  </action>
+  <action name="actionShoe_End_of_Lines">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;End of Lines</string>
+   </property>
+  </action>
+  <action name="actionShow_All_Characters">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show All &amp;Characters</string>
+   </property>
+  </action>
+  <action name="actionShow_Indent_Guide">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;Indent Guide</string>
+   </property>
+  </action>
+  <action name="actionShow_Wrap_Symbol">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;Wrap Symbol</string>
+   </property>
+  </action>
+  <action name="action_Move_to_Other_View">
+   <property name="text">
+    <string>&amp;Move to Other View</string>
+   </property>
+  </action>
+  <action name="actionMove_to_a_New_View">
+   <property name="text">
+    <string>Move to a &amp;New View</string>
+   </property>
+  </action>
+  <action name="action_Open_in_a_New_Window">
+   <property name="text">
+    <string>&amp;Open in a New Window</string>
    </property>
   </action>
  </widget>
