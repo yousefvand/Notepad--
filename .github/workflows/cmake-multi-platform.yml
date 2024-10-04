@@ -34,19 +34,22 @@ jobs:
     # Install dependencies for Ubuntu
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev ninja-build
+      run: |
+        sudo apt-get update 
+        sudo apt-get install -y libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev ninja-build qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5" >> $GITHUB_ENV
 
     # Install dependencies for macOS
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
-      run: brew install ninja
+      run: |
+        brew install ninja qt
+        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
     # Set up MSVC on Windows
     - name: Set up MSVC (Windows)
       if: matrix.os == 'windows-latest'
-      shell: cmd
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+      uses: actions/setup-msbuild@v1
 
     # Set reusable strings
     - name: Set reusable strings
