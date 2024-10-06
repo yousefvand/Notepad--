@@ -21,6 +21,13 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
+    QMenu *menuLanguage = ui->menu_Language;
+    QMenu *menuZ = new QMenu("z", this);
+    QAction *actionZ80 = new QAction("Z80", this);
+    menuZ->addAction(actionZ80);
+    menuLanguage->addMenu(menuZ);
+    connect(actionZ80, &QAction::triggered, this, &MainWindow::onActionZ80Triggered);
+
     QActionGroup *group = new QActionGroup(this);
     group->setExclusive(true);  // Ensure only one action is checked at a time
 
@@ -303,5 +310,21 @@ void MainWindow::on_action_Restore_Default_Zoom_triggered()
 void MainWindow::on_action_Word_wrap_triggered()
 {
     // TODO: Word Wrap
+}
+
+void MainWindow::onActionZ80Triggered()
+{
+    qDebug() << "Z80 action triggered!";
+}
+
+void MainWindow::on_actionAbout_Qt_triggered()
+{
+    QApplication::aboutQt();
+}
+
+
+void MainWindow::on_action_About_Notepad_triggered()
+{
+    // TODO: About Remisa Yousefvand
 }
 
