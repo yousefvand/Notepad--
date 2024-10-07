@@ -84,7 +84,7 @@ private:
     QString m_fileExtension;
     QFile m_file;
     CodeEditor *editor;
-    QSyntaxHighlighter *syntaxHighlighter;
+    std::unique_ptr<QSyntaxHighlighter> syntaxHighlighter;
     qint64 m_fileSize;
     QMap<qint64, QString> m_changedSegments;
     QString m_currentText;

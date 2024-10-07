@@ -219,7 +219,6 @@
     <addaction name="actionInterpret_as_UTF_16BE_UCS_2_Big_Endian"/>
     <addaction name="actionInterpret_As"/>
     <addaction name="separator"/>
-    <addaction name="separator"/>
     <addaction name="action_Reload_file_interpreted_as"/>
     <addaction name="actionConvert_to_UTF_8"/>
     <addaction name="actionConvert_to_UTF_8_without_BOM"/>
@@ -519,6 +518,7 @@
      <string>Settin&amp;gs</string>
     </property>
     <addaction name="action_Prefrences"/>
+    <addaction name="separator"/>
     <addaction name="action_Show_menu_bar"/>
     <addaction name="actionS_how_Toolbar"/>
    </widget>
@@ -834,6 +834,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="media-playlist-repeat"/>
+   </property>
    <property name="text">
     <string>&amp;Word wrap</string>
    </property>
@@ -900,7 +903,7 @@
   </action>
   <action name="actionConvert_to_UTF_8">
    <property name="text">
-    <string>Convert to UTF-8</string>
+    <string>&amp;Convert to UTF-8</string>
    </property>
   </action>
   <action name="actionConvert_to_UTF_8_without_BOM">
@@ -929,11 +932,23 @@
    </property>
   </action>
   <action name="action_Show_menu_bar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Show Menubar</string>
    </property>
   </action>
   <action name="actionS_how_Toolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>S&amp;how Toolbar</string>
    </property>
@@ -949,6 +964,9 @@
    </property>
   </action>
   <action name="action_Open_a_new_window">
+   <property name="icon">
+    <iconset theme="window-new"/>
+   </property>
    <property name="text">
     <string>&amp;Open a new window</string>
    </property>

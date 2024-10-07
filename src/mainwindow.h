@@ -36,6 +36,7 @@ private slots:
     void on_actionC_lose_all_triggered();
     void on_actionC_3_triggered();
     void on_actionPython_triggered();
+    void onActionZ80Triggered();
 
     void on_actionSav_e_all_triggered();
 
@@ -56,6 +57,10 @@ private slots:
     void on_action_Restore_Default_Zoom_triggered();
 
     void on_action_Word_wrap_triggered();
+
+    void on_actionAbout_Qt_triggered();
+
+    void on_action_About_Notepad_triggered();
 
 private:
     Ui::MainWindow *ui;
