@@ -56,7 +56,7 @@ jobs:
         echo "VS_PATH=$vs_path" >> $GITHUB_ENV
         echo "CMAKE_CXX_COMPILER=cl" >> $GITHUB_ENV
         echo "CMAKE_C_COMPILER=cl" >> $GITHUB_ENV
-        & "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
+        echo "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" >> $GITHUB_ENV
 
     # Set reusable strings
     - name: Set reusable strings
