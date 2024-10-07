@@ -36,26 +36,17 @@ Document::Document(const QString &filePath, QWidget *parent)
     m_fileLoaderWorker = new FileLoaderWorker(m_filePath, this);
     m_fileLoaderWorker->moveToThread(m_workerThread);
 
-    // Connect worker signals
-    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingStarted, this, &Document::onLoadingStarted);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::errorOccurred, this, &Document::onLoadingError);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::contentLoaded, this, &Document::onContentLoaded, Qt::UniqueConnection);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::fileSizeDetermined, this, &Document::onFileSizeDetermined);
-
-    connect(m_fileLoaderWorker, &FileLoaderWorker::savingStarted, this, &Document::onSavingStarted);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::savingProgress, this, &Document::onSavingProgress);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished);
-    connect(this, &Document::savingProgress, m_progressBar, &QProgressBar::setValue);
-
-    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, &Document::onLoadingProgress, Qt::UniqueConnection);
-    /*
-    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, [this](int progress) {
-        QMetaObject::invokeMethod(m_progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));
-    });
-    */
-
-    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingFinished, this, &Document::onLoadingFinished);
-    connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingStarted, this, &Document::onLoadingStarted, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::errorOccurred, this, &Document::onLoadingError, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::contentLoaded, this, &Document::onContentLoaded, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::fileSizeDetermined, this, &Document::onFileSizeDetermined, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::savingStarted, this, &Document::onSavingStarted, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::savingProgress, this, &Document::onSavingProgress, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, &Document::onLoadingProgress, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingFinished, this, &Document::onLoadingFinished, Qt::QueuedConnection);
+    connect(this, &Document::savingProgress, m_progressBar, &QProgressBar::setValue, Qt::QueuedConnection);
+    connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished, Qt::QueuedConnection);
 
     // Start worker thread
     m_workerThread->start();
@@ -183,7 +174,9 @@ QString Document::filePath() const {
 
 void Document::openFile(const QString &filePath) {
     m_filePath = filePath;
-    qDebug() << "Opening file:" << m_filePath;
+    qDebug() << "Opening file: " << m_filePath;
+    m_fileExtension = QFileInfo(filePath).suffix();
+    qDebug() << "file extension is: " << m_filePath;
 
     qDebug() << "About to emit uiReady signal from openFile...";
     // Emit the signal to start loading the file in the worker thread
@@ -304,15 +297,14 @@ void Document::goToLineNumberInText(QWidget* parent) {
 void Document::applySyntaxHighlighter(const QString &language) {
     qDebug() << "Applying syntax highlighter for language:" << language;
 
-    if (syntaxHighlighter) {
-        delete syntaxHighlighter;
-        syntaxHighlighter = nullptr;
-    }
+    // Automatically replaces and deletes the old syntax highlighter if it exists
+    syntaxHighlighter = nullptr;
 
     // Assuming LanguageManager handles creating syntax highlighters for specific languages
-    syntaxHighlighter = LanguageManager::createHighlighterForExtension(language, editor->document());
+    syntaxHighlighter = std::unique_ptr<QSyntaxHighlighter>(LanguageManager::createHighlighterForExtension(language, editor->document()));
 
     if (syntaxHighlighter) {
+        qDebug() << "Rehighlighting document...";
         syntaxHighlighter->rehighlight();
         qDebug() << "Syntax highlighter applied for language:" << language;
     } else {
