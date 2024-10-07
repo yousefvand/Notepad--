@@ -46,14 +46,17 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Set up MSVC for Windows without setup-msbuild action
-    - name: Set up MSVC (Windows)
+    # Set up Python for Windows (to install Chocolatey)
+    - name: Set up Python (Windows)
       if: matrix.os == 'windows-latest'
-      uses: actions/setup-python@v4  # This ensures Python is available
+      uses: actions/setup-python@v4
+
+    # Install Visual Studio Build Tools and Ninja for Windows
+    - name: Install Visual Studio Build Tools (Windows)
+      if: matrix.os == 'windows-latest'
       run: |
         choco install visualstudio2019buildtools -y
         choco install ninja -y
-        echo "Installing Visual Studio Build Tools"
         echo "::add-path::C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
 
     # Configure CMake
