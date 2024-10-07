@@ -46,14 +46,15 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Set up Visual Studio Build Tools (Windows) - Updated Windows part
+    # Set up Visual Studio Build Tools (Windows)
     - name: Set up Visual Studio Build Tools (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         choco install visualstudio2019buildtools -y
         choco install ninja -y
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    # Set up MSVC environment for Windows - Updated Windows part
+    # Set up MSVC environment for Windows
     - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
@@ -61,6 +62,7 @@ jobs:
         "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -products * -latest -property installationPath > vs_path.txt
         set /p vs_path=<vs_path.txt
         call "%vs_path%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        echo "VS_PATH=%vs_path%" >> $GITHUB_ENV
         echo "CMAKE_CXX_COMPILER=cl" >> $GITHUB_ENV
         echo "CMAKE_C_COMPILER=cl" >> $GITHUB_ENV
 
