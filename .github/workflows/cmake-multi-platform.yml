@@ -31,68 +31,54 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Install dependencies for Ubuntu (preserved from working version)
+    # Install dependencies for Ubuntu
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools
+        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    # Install dependencies for macOS (preserved from working version)
+    # Install dependencies for macOS
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Install MSVC, Ninja, and dependencies for Windows
-    - name: Install dependencies (Windows)
+    # Set up Visual Studio Build Tools (Windows)
+    - name: Set up Visual Studio Build Tools (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install visualstudio2019buildtools -y --version=16.11.7
+        choco install visualstudio2019buildtools -y
         choco install ninja -y
-        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-
-    # Set up MSVC environment for Windows
-    - name: Set up MSVC (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
         $vs_path = (vswhere -products * -latest -property installationPath)
-        echo "VS_PATH=$vs_path" >> $GITHUB_ENV
-        call "$vs_path\VC\Auxiliary\Build\vcvars64.bat"
-      shell: powershell
+        echo "$vs_path\MSBuild\Current\Bin" >> $GITHUB_ENV
+        echo "CMAKE_CXX_COMPILER=cl" >> $GITHUB_ENV
+        echo "CMAKE_C_COMPILER=cl" >> $GITHUB_ENV
+        & "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
 
-    # Configure CMake for Linux/macOS
-    - name: Configure CMake (Linux/macOS)
-      if: matrix.os != 'windows-latest'
+    # Set reusable strings
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    # Configure CMake for all platforms
+    - name: Configure CMake
       run: |
-        cmake -B ${{ github.workspace }}/build \
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
         -DCMAKE_BUILD_TYPE=Release \
         -G "Ninja" \
         -S ${{ github.workspace }}
 
-    # Configure CMake for Windows
-    - name: Configure CMake (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        cmake -B ${{ github.workspace }}/build \
-        -DCMAKE_CXX_COMPILER=cl \
-        -DCMAKE_C_COMPILER=cl \
-        -DCMAKE_BUILD_TYPE=Release \
-        -G "Ninja" \
-        -S ${{ github.workspace }}
-      shell: cmd
-
     # Build the project
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build --config Release
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     # Run tests
     - name: Test
-      working-directory: ${{ github.workspace }}/build
-      env:
-        DISPLAY: ':0' # Necessary for GUI tests on Ubuntu
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --output-on-failure --build-config Release
