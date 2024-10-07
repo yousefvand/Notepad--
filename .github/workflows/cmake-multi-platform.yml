@@ -36,7 +36,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools
+        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
     # Install dependencies for macOS
@@ -46,7 +46,7 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Set up MSVC on Windows
+    # Set up Visual Studio Build Tools (Windows)
     - name: Set up Visual Studio Build Tools (Windows)
       if: matrix.os == 'windows-latest'
       run: |
@@ -56,7 +56,7 @@ jobs:
         echo "$vs_path\MSBuild\Current\Bin" >> $GITHUB_ENV
         echo "CMAKE_CXX_COMPILER=cl" >> $GITHUB_ENV
         echo "CMAKE_C_COMPILER=cl" >> $GITHUB_ENV
-        call "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
+        & "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
 
     # Set reusable strings
     - name: Set reusable strings
