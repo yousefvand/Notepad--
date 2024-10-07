@@ -36,11 +36,8 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build
-        sudo add-apt-repository ppa:beineri/opt-qt-6.5.2-jammy -y
-        sudo apt-get update
-        sudo apt-get install -y qt6-base-dev qt6-base-dev-tools
-        echo "CMAKE_PREFIX_PATH=/opt/qt6.5.2/lib/cmake" >> $GITHUB_ENV
+        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools qt6-qmake
+        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
     # Install dependencies for macOS
     - name: Install dependencies (macOS)
@@ -49,42 +46,33 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Set up MSVC on Windows
+    # Set up MSVC for Windows without setup-msbuild action
     - name: Set up MSVC (Windows)
       if: matrix.os == 'windows-latest'
-      uses: actions/setup-msbuild@v1
-
-    # Set up Visual Studio environment for CMake on Windows
-    - name: Set up Visual Studio (Windows)
-      if: matrix.os == 'windows-latest'
+      uses: actions/setup-python@v4  # This ensures Python is available
       run: |
-        vswhere -products * -latest -property installationPath
-        $vsPath = vswhere -products * -latest -property installationPath
-        echo "VS path: $vsPath"
-        echo "CMAKE_PREFIX_PATH=$vsPath" >> $GITHUB_ENV
+        choco install visualstudio2019buildtools -y
+        choco install ninja -y
+        echo "Installing Visual Studio Build Tools"
+        echo "::add-path::C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin"
 
     # Configure CMake
     - name: Configure CMake
       run: |
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+        cmake -B ${{ github.workspace }}/build \
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
         -DCMAKE_BUILD_TYPE=Release \
         -G "Ninja" \
         -S ${{ github.workspace }}
-      shell: |
-        if: matrix.os == 'windows-latest'
-          pwsh
-        else
-          bash
 
     # Build the project
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+      run: cmake --build ${{ github.workspace }}/build --config Release
 
     # Run tests
     - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      working-directory: ${{ github.workspace }}/build
       env:
         DISPLAY: ':0' # Necessary for GUI tests on Ubuntu
       run: ctest --output-on-failure --build-config Release
