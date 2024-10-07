@@ -53,9 +53,9 @@ jobs:
         choco install visualstudio2019buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        $vs_path = (vswhere -products * -latest -property installationPath)
+        set vs_path=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools
         echo "VS_PATH=$vs_path" >> $GITHUB_ENV
-        call "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
+        call "%vs_path%\VC\Auxiliary\Build\vcvarsall.bat" x64
       shell: cmd
 
     # Set reusable strings
