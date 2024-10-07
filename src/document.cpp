@@ -45,29 +45,22 @@ Document::Document(const QString &filePath, QWidget *parent)
     connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished, Qt::QueuedConnection);
     connect(m_fileLoaderWorker, &FileLoaderWorker::loadingProgress, this, &Document::onLoadingProgress, Qt::QueuedConnection);
     connect(m_fileLoaderWorker, &FileLoaderWorker::loadingFinished, this, &Document::onLoadingFinished, Qt::QueuedConnection);
-    connect(this, &Document::savingProgress, m_progressBar, &QProgressBar::setValue, Qt::QueuedConnection);
     connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished, Qt::QueuedConnection);
+    connect(this, &Document::savingProgress, m_progressBar, &QProgressBar::setValue, Qt::QueuedConnection);
+    connect(this, &Document::uiReady, m_fileLoaderWorker, &FileLoaderWorker::startLoading);
+    connect(this, &Document::hideProgressBar, this, [this]() {
+        m_progressBar->setVisible(false);  // Hide progress bar when loading/saving is done
+        m_statusLabel->setText("");
+    });
 
     // Start worker thread
     m_workerThread->start();
     qDebug() << "Worker thread running:" << m_workerThread->isRunning();
 
-    // Connect uiReady signal to start loading in the worker thread
-    connect(this, &Document::uiReady, m_fileLoaderWorker, &FileLoaderWorker::startLoading);
-
     // Use QTimer::singleShot to emit uiReady signal after a delay
     QTimer::singleShot(100, this, [this]() {
         qDebug() << "Emitting uiReady signal after ensuring UI is ready...";
         emit uiReady();
-    });
-
-    // Set up status label and progress bar
-    m_statusLabel->setText("Loading File...");
-    m_progressBar->setVisible(true);
-    // Connect signals for progress updates
-    connect(this, &Document::hideProgressBar, this, [this]() {
-        m_progressBar->setVisible(false);  // Hide progress bar when loading/saving is done
-        m_statusLabel->setText("");
     });
 
     qDebug() << "Document and thread initialized for file:" << m_filePath;
@@ -113,6 +106,7 @@ void Document::onLoadingStarted() {
 
 void Document::onSavingStarted() {
     m_isSaving = true;
+    m_statusLabel->setVisible(true);
     m_statusLabel->setText("Saving File...");
     m_progressBar->setVisible(true);
     m_progressBar->setValue(0);
@@ -141,21 +135,24 @@ void Document::onSavingProgress(int progress) {
 
 void Document::onLoadingFinished() {
     m_isLoading = false;
-    emit loadingProgress(100);  // Ensure progress is 100%
-    emit hideProgressBar();     // Hide the progress bar when loading finishes
+    emit loadingProgress(100);
+    emit hideProgressBar();
 
-    // Move the cursor to the first line after file is loaded
-    editor->moveCursor(QTextCursor::Start);
-    editor->ensureCursorVisible();  // Ensure the cursor is visible
-    qDebug() << "Cursor moved to the first line after file loaded";
+    // Detect file extension and apply syntax highlighter
+    QString fileExtension = QFileInfo(m_filePath).suffix();
+    QString language = LanguageManager::getLanguageFromExtension(fileExtension);
+    qDebug() << "Detected file extension: " << fileExtension << " Language: " << language;
 
-    qDebug() << "Loading finished, m_isLoading = " << m_isLoading;
+    // Apply syntax highlighter based on the language detected
+    applySyntaxHighlighter(language);
+
+    qDebug() << "File loading finished, syntax highlighter applied.";
 }
 
 void Document::onSavingFinished() {
     m_isSaving = false;
-    m_statusLabel->setText("");  // Clear the label after saving
-    m_progressBar->setVisible(false);  // Hide the progress bar when saving is finished
+    m_statusLabel->setText("");
+    m_progressBar->setVisible(false);
 }
 
 void Document::onLoadingError(const QString &error) {
@@ -165,6 +162,7 @@ void Document::onLoadingError(const QString &error) {
 
 void Document::setFilePath(const QString &path) {
     m_filePath = path;
+    m_fileExtension = QFileInfo(m_filePath).suffix();
     qDebug() << "File path set to:" << m_filePath;
 }
 
@@ -173,14 +171,24 @@ QString Document::filePath() const {
 }
 
 void Document::openFile(const QString &filePath) {
-    m_filePath = filePath;
-    qDebug() << "Opening file: " << m_filePath;
+    QFile file(filePath);
     m_fileExtension = QFileInfo(filePath).suffix();
-    qDebug() << "file extension is: " << m_filePath;
+    qDebug() << "File extension extracted: " << m_fileExtension;
 
-    qDebug() << "About to emit uiReady signal from openFile...";
-    // Emit the signal to start loading the file in the worker thread
-    emit uiReady();
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        editor->setPlainText(in.readAll());  // Set the content to the editor
+        file.close();
+
+        QString language = LanguageManager::getLanguageFromExtension(m_fileExtension);
+        qDebug() << "Detected file extension:" << m_fileExtension << "Detected language:" << language;
+
+        qDebug() << "Calling applySyntaxHighlighter for file:" << m_filePath;
+        // Apply the correct syntax highlighter based on the file extension
+        applySyntaxHighlighter(language);
+    } else {
+        qDebug() << "Error: Could not open file:" << filePath;
+    }
 }
 
 void Document::saveFile() {
@@ -213,8 +221,6 @@ void Document::saveFileAs(const QString &newFilePath) {
 
     // Set the new file path
     m_filePath = newFilePath;
-
-    // Now call saveFile to save the content to the new file path
     saveFile();
 }
 
@@ -295,20 +301,20 @@ void Document::goToLineNumberInText(QWidget* parent) {
 }
 
 void Document::applySyntaxHighlighter(const QString &language) {
-    qDebug() << "Applying syntax highlighter for language:" << language;
-
-    // Automatically replaces and deletes the old syntax highlighter if it exists
-    syntaxHighlighter = nullptr;
-
-    // Assuming LanguageManager handles creating syntax highlighters for specific languages
-    syntaxHighlighter = std::unique_ptr<QSyntaxHighlighter>(LanguageManager::createHighlighterForExtension(language, editor->document()));
+    qDebug() << "Applying syntax highlighter for language: " << language;
 
     if (syntaxHighlighter) {
-        qDebug() << "Rehighlighting document...";
-        syntaxHighlighter->rehighlight();
-        qDebug() << "Syntax highlighter applied for language:" << language;
+        qDebug() << "Deleting existing syntax highlighter";
+        syntaxHighlighter.reset();  // Safely reset unique_ptr
+    }
+
+    // Create highlighter based on the language
+    syntaxHighlighter = std::unique_ptr<QSyntaxHighlighter>(LanguageManager::createHighlighterForExtension(language, editor->document()));
+    if (syntaxHighlighter) {
+        qDebug() << "Syntax highlighter created for language: " << language;
+        syntaxHighlighter->rehighlight();  // Rehighlight to apply
     } else {
-        qDebug() << "No syntax highlighter found for language:" << language;
+        qDebug() << "Failed to create syntax highlighter for language: " << language;
     }
 }
 
@@ -336,12 +342,13 @@ bool Document::compareText(const QString &text1, const QString &text2) {
 
 void Document::saveDocument() {
     QString filePath = m_filePath;  // Get the file path
-    QString fileContent = editor->toPlainText();  // Get the current content from the editor
 
     if (filePath.isEmpty()) {
         qDebug() << "File path is empty. Save operation aborted.";
         return;
     }
+
+    QString fileContent = editor->toPlainText();  // Get the current content from the editor
 
     // Call the worker to save the file content
     m_fileLoaderWorker->saveFile(filePath, fileContent);
