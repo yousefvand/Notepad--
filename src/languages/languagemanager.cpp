@@ -4,20 +4,14 @@
 
 QSyntaxHighlighter* LanguageManager::createHighlighterForExtension(const QString &identifier, QTextDocument *document) {
     qDebug() << "Creating highlighter for language:" << identifier << "with document:" << document;
-    if (document == nullptr) {
-        qDebug() << "Error: document is nullptr";
-        return nullptr;
-    }
 
-    // Create highlighter based on language identifier
     if (identifier == "C++") {
         auto* highlighter = new CppSyntaxHighlighter(document);
         qDebug() << "Created C++ syntax highlighter at:" << highlighter;
         return highlighter;
     }
 
-    // Return nullptr if no matching highlighter is found
-    qDebug() << "Error: No matching highlighter found for language:" << identifier;
+    qDebug() << "No highlighter found for language: " << identifier;
     return nullptr;
 }
 
