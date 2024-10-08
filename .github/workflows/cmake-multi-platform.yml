@@ -53,7 +53,7 @@ jobs:
         choco install visualstudio2019buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        $vs_path = (vswhere -products * -latest -property installationPath)
+        $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
         echo "VS_PATH=$vs_path" >> $GITHUB_ENV
         & "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
       shell: powershell
