@@ -55,7 +55,7 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
         echo "VS_PATH=$vs_path" >> $GITHUB_ENV
-        & "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
+        echo "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64 >> $GITHUB_ENV
       shell: powershell
 
     # Set reusable strings
@@ -67,18 +67,21 @@ jobs:
     # Configure CMake for all platforms
     - name: Configure CMake
       run: |
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+        cmake -B "${{ steps.strings.outputs.build-output-dir }}" \
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
         -DCMAKE_BUILD_TYPE=Release \
         -G "Ninja" \
-        -S ${{ github.workspace }}
+        -S "${{ github.workspace }}"
+      shell: bash
 
     # Build the project
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+      run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config Release
+      shell: bash
 
     # Run tests
     - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      working-directory: "${{ steps.strings.outputs.build-output-dir }}"
       run: ctest --output-on-failure --build-config Release
+      shell: bash

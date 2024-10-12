@@ -19,6 +19,7 @@
 Document::Document(const QString &filePath, QWidget *parent)
     : QWidget(parent), m_filePath(filePath), m_totalBytesRead(0), m_workerThread(new QThread(this)) {
 
+    qDebug() << "Document created for file: " << filePath;
     // Initialize the code editor and layout
     editor = new CodeEditor(this);
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -107,12 +108,12 @@ void Document::onLoadingStarted() {
 void Document::onSavingStarted() {
     m_isSaving = true;
     m_statusLabel->setVisible(true);
-    m_statusLabel->setText("Saving File...");
     m_progressBar->setVisible(true);
     m_progressBar->setValue(0);
 }
 
 void Document::onLoadingProgress(int progress) {
+    m_statusLabel->setText("Loading File...");
     if (progress - m_lastSmoothedProgress >= m_smoothProgressUpdateInterval || progress == 100) {
         m_lastSmoothedProgress = progress;
         QMetaObject::invokeMethod(m_progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));
@@ -170,6 +171,10 @@ QString Document::filePath() const {
     return m_filePath;
 }
 
+QString Document::getEditorContent() const {
+    return editor->toPlainText();  // Safely access the editor content
+}
+
 void Document::openFile(const QString &filePath) {
     QFile file(filePath);
     m_fileExtension = QFileInfo(filePath).suffix();
@@ -177,7 +182,8 @@ void Document::openFile(const QString &filePath) {
 
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
-        editor->setPlainText(in.readAll());  // Set the content to the editor
+        originalFileContent = in.readAll();
+        editor->setPlainText(originalFileContent);
         file.close();
 
         QString language = LanguageManager::getLanguageFromExtension(m_fileExtension);
@@ -262,17 +268,16 @@ void Document::goToLineNumberInEditor() {
 }
 
 bool Document::promptForSave() {
-    // Your implementation
     QMessageBox::StandardButton reply;
     reply = QMessageBox::warning(this, tr("Unsaved Changes"),
                                  tr("You have unsaved changes."),
                                  QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
     if (reply == QMessageBox::Save) {
-        saveFile();  // Assuming saveFile() exists in the class
-        return true;
+        saveFile();  // Save the file before closing
+        return true;  // Proceed with closing the tab
     } else if (reply == QMessageBox::Discard) {
-        return true;
+        return true;  // Proceed with closing the tab
     } else {
         return false;  // Cancel closing
     }

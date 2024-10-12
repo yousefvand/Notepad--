@@ -18,7 +18,7 @@ class Document : public QWidget {
     Q_OBJECT
 
 public:
-    Document(const QString &filePath, QWidget *parent = nullptr);
+    explicit Document(const QString &filePath, QWidget *parent = nullptr);
     ~Document();
 
     void saveDocument();
@@ -35,6 +35,10 @@ public:
     void goToLineNumberInText(QWidget* parent);
     void goToLineNumberInEditor();
     void applySyntaxHighlighter(const QString &language);
+    QString getEditorContent() const;
+    bool compareText(const QString &text1, const QString &text2);
+
+    QString originalFileContent;  // Changed from QString& to QString (regular value)
 
 signals:
     void uiReady();
@@ -66,7 +70,6 @@ private:
     void loadContentAsync();
     void trackChanges();
     void loadEntireFile();
-    bool compareText(const QString &text1, const QString &text2);
     void mirrorChangesToMemory(qint64 segmentStart, const QString &text);
     QString calculateMD5Stream(QFile *file);
     QString calculateModifiedMD5();
@@ -94,4 +97,3 @@ private:
     int m_smoothProgressUpdateInterval = 1;
     qint64 m_totalBytesInserted = 0;
 };
-

@@ -17,8 +17,6 @@ signals:
     void uiReady();
 
 public slots:
-    void closeTab(int index);
-
     void notifyUIReady() {
         emit uiReady();
     }

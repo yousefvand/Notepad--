@@ -20,6 +20,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    qDebug() << "Tab widget pointer: " << ui->documentsTab;
+    ui->documentsTab->setTabsClosable(true);
 
     QMenu *menuLanguage = ui->menu_Language;
     QMenu *menuZ = new QMenu("z", this);
@@ -48,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->documentsTab->setTabsClosable(true);
 
-    connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);   
+    connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::on_documentsTab_tabCloseRequested);
 
     qDebug() << "Tabs cleared, preparing to open files.";
 
@@ -80,50 +82,36 @@ void MainWindow::initialize() {
     });
 }
 
-void MainWindow::closeTab(int index) {
-    if (ui->documentsTab->count() == 1) {
-        // Close the last tab logic if needed
-        QWidget *currentTab = ui->documentsTab->widget(index);
-        if (currentTab) {
-            Document *doc = qobject_cast<Document *>(currentTab);
-            if (doc && !doc->closeDocument()) {
-                // If the document has unsaved changes, stop closing the tab
-                return;
-            }
-        }
-
-        // Remove the tab
-        ui->documentsTab->removeTab(index);
-    } else {
-        // Handle closing tabs when there are multiple tabs
-        QWidget *currentTab = ui->documentsTab->widget(index);
-        if (currentTab) {
-            Document *doc = qobject_cast<Document *>(currentTab);
-            if (doc && !doc->closeDocument()) {
-                // If the document has unsaved changes, stop closing the tab
-                return;
-            }
-        }
-
-        // Remove the tab
-        ui->documentsTab->removeTab(index);
-    }
-}
-
 void MainWindow::openDocument(const QString &filePath) {
     if (!QFile::exists(filePath)) {
         qDebug() << "Error: File does not exist: " << filePath;
-        return;  // Prevent trying to open a non-existent file
+        return;
     }
 
     QString fileName = QFileInfo(filePath).fileName();
     qDebug() << "Opening file:" << filePath;
 
+    // Create a new Document instance
     Document *newDoc = new Document(filePath, this);
-    ui->documentsTab->addTab(newDoc, fileName);  // Set the tab title to the file name
+
+    // Check if the document was created
+    if (!newDoc) {
+        qDebug() << "Failed to create Document.";
+        return;
+    }
+
+    // Check if the tab widget exists before adding the tab
+    if (!ui->documentsTab) {
+        qDebug() << "Tab widget is nullptr!";
+        return;
+    }
+
+    // Add the new document to the tab widget
+    int tabIndex = ui->documentsTab->addTab(newDoc, fileName);
     ui->documentsTab->setCurrentWidget(newDoc);
 
-    qDebug() << "Document added with file path:" << filePath << " and file name:" << fileName;
+    qDebug() << "Document added at index: " << tabIndex << " with file name: " << fileName;
+    qDebug() << "Tab count after adding document: " << ui->documentsTab->count();
 }
 
 
@@ -156,19 +144,50 @@ void MainWindow::on_actionSave_As_triggered() {
 }
 
 void MainWindow::on_documentsTab_tabCloseRequested(int index) {
-    if (ui->documentsTab->count() > 0) {
-        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
-        if (doc) {
-            bool canClose = doc->closeDocument();
-            if (canClose) {
-                ui->documentsTab->removeTab(index);  // Remove the tab from the widget
-                delete doc;  // Clean up the document object
-                qDebug() << "Closed tab at index:" << index << ". Remaining tabs:" << ui->documentsTab->count();
-            } else {
-                qDebug() << "User canceled closing tab at index:" << index;
-            }
-        }
+    qDebug() << "Attempting to close tab at index: " << index;
+
+    // Retrieve the widget at the given index
+    QWidget *widget = ui->documentsTab->widget(index);
+
+    if (!widget) {
+        qDebug() << "No widget found at index " << index;
+        return;
     }
+
+    // Cast the widget to a Document
+    Document *doc = qobject_cast<Document *>(widget);
+
+    if (!doc) {
+        qDebug() << "Failed to cast widget to Document at index " << index;
+        return;
+    }
+
+    // Get the current content of the editor
+    QString editorContent = doc->getEditorContent();
+    qDebug() << "Editor content length: " << editorContent.length();
+
+    // Compare current editor content with the original file content
+    if (!doc->compareText(editorContent, doc->originalFileContent)) {
+        // If the content is different, prompt the user to save, discard, or cancel
+        qDebug() << "Unsaved changes detected in the document.";
+        if (doc->promptForSave()) {
+            // User decided to save or discard changes
+            qDebug() << "User decided to save or discard. Closing tab.";
+            ui->documentsTab->removeTab(index);  // Remove the tab only after handling unsaved changes
+            delete doc;  // Clean up the document object
+        } else {
+            // User canceled the close operation
+            qDebug() << "User canceled closing the tab.";
+            return;
+        }
+    } else {
+        // No unsaved changes, close the tab directly
+        qDebug() << "No unsaved changes. Closing tab.";
+        ui->documentsTab->removeTab(index);
+        delete doc;  // Clean up the document object
+    }
+
+    qDebug() << "Tab closed. Remaining tabs: " << ui->documentsTab->count();
 }
 
 void MainWindow::on_action_New_triggered() {
