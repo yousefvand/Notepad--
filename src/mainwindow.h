@@ -60,6 +60,8 @@ private slots:
 
     void on_action_About_Notepad_triggered();
 
+    void on_actionOpen_Folder_triggered();
+
 private:
     Ui::MainWindow *ui;
     void initialize();
