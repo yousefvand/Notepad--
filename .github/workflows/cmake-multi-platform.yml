@@ -1,11 +1,3 @@
-name: CMake on multiple platforms
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -55,8 +47,15 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
         echo "VS_PATH=$vs_path" >> $GITHUB_ENV
-        & "$vs_path\VC\Auxiliary\Build\vcvarsall.bat" x64
+        echo "VS_VARS_CMD=$vs_path\VC\Auxiliary\Build\vcvars64.bat" >> $GITHUB_ENV
       shell: powershell
+
+    # Run vcvarsall.bat to set up the environment variables for MSVC
+    - name: Initialize MSVC environment
+      if: matrix.os == 'windows-latest'
+      run: |
+        call "${{ env.VS_VARS_CMD }}"
+      shell: cmd
 
     # Set reusable strings
     - name: Set reusable strings
@@ -73,6 +72,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release \
         -G "Ninja" \
         -S ${{ github.workspace }}
+      shell: bash
 
     # Build the project
     - name: Build
