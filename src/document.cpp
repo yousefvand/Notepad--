@@ -17,8 +17,9 @@
 #include "codeeditor.h"
 
 Document::Document(const QString &filePath, QWidget *parent)
-    : QWidget(parent), m_filePath(filePath), m_totalBytesRead(0), m_workerThread(new QThread(this)) {
+    : QWidget(parent), m_filePath(filePath), m_isModified(false), m_totalBytesRead(0), m_workerThread(new QThread(this)) {
 
+    qDebug() << "Document created for file: " << filePath;
     // Initialize the code editor and layout
     editor = new CodeEditor(this);
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -51,6 +52,13 @@ Document::Document(const QString &filePath, QWidget *parent)
     connect(this, &Document::hideProgressBar, this, [this]() {
         m_progressBar->setVisible(false);  // Hide progress bar when loading/saving is done
         m_statusLabel->setText("");
+    });
+    // Connect the editor's textChanged signal, but ensure changes are only registered after loading is complete
+    connect(editor, &QPlainTextEdit::textChanged, this, [this]() {
+        if (!m_isLoading) {
+            qDebug() << "Text changed for document: " << m_filePath << ", setting modified flag.";
+            this->setModified(true);
+        }
     });
 
     // Start worker thread
@@ -107,12 +115,12 @@ void Document::onLoadingStarted() {
 void Document::onSavingStarted() {
     m_isSaving = true;
     m_statusLabel->setVisible(true);
-    m_statusLabel->setText("Saving File...");
     m_progressBar->setVisible(true);
     m_progressBar->setValue(0);
 }
 
 void Document::onLoadingProgress(int progress) {
+    m_statusLabel->setText("Loading File...");
     if (progress - m_lastSmoothedProgress >= m_smoothProgressUpdateInterval || progress == 100) {
         m_lastSmoothedProgress = progress;
         QMetaObject::invokeMethod(m_progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));
@@ -135,15 +143,16 @@ void Document::onSavingProgress(int progress) {
 
 void Document::onLoadingFinished() {
     m_isLoading = false;
+    setModified(false);  // Ensure the document starts as unmodified
+    qDebug() << "Document loading finished for: " << m_filePath;
+
     emit loadingProgress(100);
     emit hideProgressBar();
 
     // Detect file extension and apply syntax highlighter
     QString fileExtension = QFileInfo(m_filePath).suffix();
     QString language = LanguageManager::getLanguageFromExtension(fileExtension);
-    qDebug() << "Detected file extension: " << fileExtension << " Language: " << language;
 
-    // Apply syntax highlighter based on the language detected
     applySyntaxHighlighter(language);
 
     qDebug() << "File loading finished, syntax highlighter applied.";
@@ -170,24 +179,51 @@ QString Document::filePath() const {
     return m_filePath;
 }
 
+QString Document::getEditorContent() const {
+    return editor->toPlainText();  // Safely access the editor content
+}
+
+bool Document::isModified() const {
+    qDebug() << "Checking if document is modified for file: " << m_filePath << " - Modified: " << m_isModified;
+    return m_isModified;
+}
+
+void Document::setModified(bool modified) {
+    m_isModified = modified;
+    qDebug() << "Document modification state changed for file: " << m_filePath << " to: " << m_isModified;
+}
+
+void Document::startLoading() {
+    m_isLoading = true;  // Document is in loading state
+}
+
+void Document::finishLoading() {
+    m_isLoading = false;  // Loading is done
+}
+
 void Document::openFile(const QString &filePath) {
     QFile file(filePath);
     m_fileExtension = QFileInfo(filePath).suffix();
-    qDebug() << "File extension extracted: " << m_fileExtension;
+    qDebug() << "Opening file:" << filePath;
 
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
-        editor->setPlainText(in.readAll());  // Set the content to the editor
+        originalFileContent = in.readAll();
+
+        m_isLoading = true;  // Set the loading flag
+
+        editor->setPlainText(originalFileContent);  // Set content into editor
+
+        m_isLoading = false;  // Reset loading flag after content is loaded
+        setModified(false);  // Mark the document as not modified after loading
         file.close();
 
         QString language = LanguageManager::getLanguageFromExtension(m_fileExtension);
-        qDebug() << "Detected file extension:" << m_fileExtension << "Detected language:" << language;
-
-        qDebug() << "Calling applySyntaxHighlighter for file:" << m_filePath;
-        // Apply the correct syntax highlighter based on the file extension
         applySyntaxHighlighter(language);
+
+        qDebug() << "File loading finished for: " << filePath;
     } else {
-        qDebug() << "Error: Could not open file:" << filePath;
+        qDebug() << "Error: Could not open file: " << filePath;
     }
 }
 
@@ -213,6 +249,7 @@ void Document::saveFile() {
     // Start the save operation in the worker thread
     m_isSaving = true;
     m_fileLoaderWorker->saveFile(filePath, currentText);
+    m_isModified = false;
     qDebug() << "Save operation started for file:" << filePath;
 }
 
@@ -226,11 +263,30 @@ void Document::saveFileAs(const QString &newFilePath) {
 
 bool Document::closeDocument() {
     qDebug() << "Checking document close: isLoading=" << m_isLoading << ", isSaving=" << m_isSaving;
+
     if (m_isLoading || m_isSaving) {
         qDebug() << "Document still loading or saving, cannot close.";
         return false;
     }
-    // Proceed with closing the document
+
+    if (isModified()) {
+        // Document has unsaved changes, so prompt the user
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::warning(this, tr("Unsaved Changes"),
+                                     tr("The document has unsaved changes. Do you want to save your changes?"),
+                                     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+        if (reply == QMessageBox::Save) {
+            saveFile();  // Save the document
+            return true;  // After saving, allow closing the tab
+        } else if (reply == QMessageBox::Discard) {
+            return true;  // Discard changes and close the document
+        } else {
+            return false;  // Cancel the closing operation
+        }
+    }
+
+    // Proceed with closing the document since no unsaved changes
     return true;
 }
 
@@ -262,17 +318,16 @@ void Document::goToLineNumberInEditor() {
 }
 
 bool Document::promptForSave() {
-    // Your implementation
     QMessageBox::StandardButton reply;
     reply = QMessageBox::warning(this, tr("Unsaved Changes"),
                                  tr("You have unsaved changes."),
                                  QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
     if (reply == QMessageBox::Save) {
-        saveFile();  // Assuming saveFile() exists in the class
-        return true;
+        saveFile();  // Save the file before closing
+        return true;  // Proceed with closing the tab
     } else if (reply == QMessageBox::Discard) {
-        return true;
+        return true;  // Proceed with closing the tab
     } else {
         return false;  // Cancel closing
     }
@@ -359,69 +414,26 @@ void Document::onFileSizeDetermined(qint64 fileSize) {
     qDebug() << "File size set in Document: " << m_fileSize;
 }
 
-// onContentLoaded (handles content loading and progress updates)
 void Document::onContentLoaded(const QString &chunk) {
     if (m_fileSize <= 0) {
-        qDebug() << "onContentLoaded: Invalid file size!";
+        qDebug() << "Error: Invalid file size!";
         return;
     }
 
-    // For small files, insert content directly
-    if (m_fileSize < 4096) {  // For files smaller than 4KB, insert directly
-        editor->moveCursor(QTextCursor::End);
-        editor->insertPlainText(chunk);
-        m_totalBytesInserted += chunk.size();
-        emit loadingProgress(100);  // Mark progress as 100% for small files
-        emit loadingFinished();
-        editor->moveCursor(QTextCursor::Start);  // Move cursor to the start after loading
-        return;
-    }
+    // Block signals during content loading
+    editor->blockSignals(true);
+    editor->insertPlainText(chunk);
+    editor->blockSignals(false);
 
-    // Track bytes read
     m_totalBytesRead += chunk.size();
-    m_bufferedContent += chunk;  // Add to the buffer
 
-    // Use a dynamic buffer size (1% of file size or at least 4KB)
-    qint64 dynamicBufferSize = std::max(m_fileSize / 100, static_cast<qint64>(4096));
-
-    // Insert content when buffered size reaches the threshold
-    if (m_bufferedContent.size() >= dynamicBufferSize) {
-        QMetaObject::invokeMethod(this, [this]() {
-            editor->moveCursor(QTextCursor::End);  // Move cursor to the end before inserting
-            editor->insertPlainText(m_bufferedContent);  // Insert buffered content
-            m_totalBytesInserted += m_bufferedContent.size();  // Track bytes inserted
-            m_bufferedContent.clear();  // Clear the buffer
-
-            // Update progress based on inserted content
-            int progress = static_cast<int>((m_totalBytesInserted * 100) / m_fileSize);
-            if (progress > m_lastSmoothedProgress || progress == 100) {
-                emit loadingProgress(progress);  // Emit progress for the progress bar
-                m_lastSmoothedProgress = progress;
-            }
-
-            QCoreApplication::processEvents();  // Allow the UI to process events
-
-        }, Qt::QueuedConnection);
-    }
-
-    // Handle finished loading case
+    // Check if loading is complete
     if (m_totalBytesRead >= m_fileSize) {
+        qDebug() << "Document loading finished for: " << m_filePath;
+        m_isLoading = false;  // Mark loading as complete
+        setModified(false);  // Reset the modified flag
         emit loadingFinished();
-
-        // Insert remaining buffered content if any
-        if (!m_bufferedContent.isEmpty()) {
-            editor->moveCursor(QTextCursor::End);
-            editor->insertPlainText(m_bufferedContent);
-            m_totalBytesInserted += m_bufferedContent.size();
-            m_bufferedContent.clear();
-        }
-
-        // Move cursor to the first line after loading completes
-        editor->moveCursor(QTextCursor::Start);
-
-        // Hide the progress bar once loading finishes
-        emit hideProgressBar();
-
-        QCoreApplication::processEvents();  // Allow the UI to process final updates
     }
 }
+
+
