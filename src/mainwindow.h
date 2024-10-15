@@ -64,6 +64,7 @@ private:
     Ui::MainWindow *ui;
     void initialize();
     void openDocument(const QString &filePath);
-    void closeAllDocuments();  // Declare closeAllDocuments method here
+    void closeAllDocuments();
+    void removeTabSafely(int index);
 };
 

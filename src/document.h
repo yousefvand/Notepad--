@@ -37,6 +37,10 @@ public:
     void applySyntaxHighlighter(const QString &language);
     QString getEditorContent() const;
     bool compareText(const QString &text1, const QString &text2);
+    bool isModified() const;
+    void setModified(bool modified);
+    void startLoading();
+    void finishLoading();
 
     QString originalFileContent;  // Changed from QString& to QString (regular value)
 
@@ -96,4 +100,5 @@ private:
     int m_lastSmoothedProgress = 0;
     int m_smoothProgressUpdateInterval = 1;
     qint64 m_totalBytesInserted = 0;
+    bool m_isModified;
 };
