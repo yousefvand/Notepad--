@@ -16,6 +16,9 @@
 #include <QProgressBar>
 #include <QTimer>
 #include <QActionGroup>
+#include <QMimeDatabase>
+#include <QMimeType>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -337,4 +340,50 @@ void MainWindow::on_action_About_Notepad_triggered()
 {
     // TODO: About Remisa Yousefvand
 }
+
+void MainWindow::on_actionOpen_Folder_triggered() {
+    // Step 1: Open a folder selection dialog
+    QString folderPath = QFileDialog::getExistingDirectory(this, tr("Select Folder"), QString(),
+                                                           QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (folderPath.isEmpty()) {
+        qDebug() << "No folder selected.";
+        return;
+    }
+
+    // Step 2: Get all files from the selected folder
+    QDir directory(folderPath);
+    QStringList fileList = directory.entryList(QDir::Files);
+
+    if (fileList.isEmpty()) {
+        QMessageBox::information(this, tr("No Files Found"), tr("No files were found in the selected folder."));
+        return;
+    }
+
+    // Step 3: Use QMimeDatabase to check MIME types and open text files
+    QMimeDatabase mimeDatabase;
+    bool textFilesFound = false;
+
+    for (const QString &fileName : fileList) {
+        QString filePath = directory.absoluteFilePath(fileName);
+
+        // Get the MIME type of the file
+        QMimeType mimeType = mimeDatabase.mimeTypeForFile(filePath);
+
+        // Check if the MIME type is text/plain (or another text-related MIME type)
+        if (mimeType.name().startsWith("text/")) {
+            qDebug() << "Opening file with MIME type:" << mimeType.name();
+            openDocument(filePath);  // This function opens the document in a new tab
+            textFilesFound = true;
+        } else {
+            qDebug() << "Skipping file with MIME type:" << mimeType.name();
+        }
+    }
+
+    if (!textFilesFound) {
+        QMessageBox::information(this, tr("No Text Files Found"), tr("No text files were found in the selected folder based on MIME types."));
+    }
+}
+
+
 
