@@ -2,18 +2,14 @@
 #include "ui_mainwindow.h"
 #include "document.h"
 #include <QDebug>
-#include <QFileDialog>
+#include <QFile>
 #include <QFileInfo>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
-#include "mainwindow.h"
 #include <QLabel>
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include <QLabel>
-#include <QProgressBar>
 #include <QTimer>
 #include <QActionGroup>
 #include <QMimeDatabase>
@@ -385,5 +381,8 @@ void MainWindow::on_actionOpen_Folder_triggered() {
     }
 }
 
-
+void MainWindow::on_actionSa_ve_a_copy_as_triggered() {
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
+    doc->saveAcopyAs();
+}
 

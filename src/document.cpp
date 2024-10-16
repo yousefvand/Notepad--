@@ -30,6 +30,7 @@ Document::Document(const QString &filePath, QWidget *parent)
     m_statusLabel = new QLabel(this);
     m_progressBar = new QProgressBar(this);
     m_progressBar->setRange(0, 100);
+    m_progressBar->setVisible(false);
     layout->addWidget(m_statusLabel);
     layout->addWidget(m_progressBar);
 
@@ -259,6 +260,32 @@ void Document::saveFileAs(const QString &newFilePath) {
     // Set the new file path
     m_filePath = newFilePath;
     saveFile();
+}
+
+void Document::saveAcopyAs() {
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Save a Copy As"), QString(),
+                                                    tr("Text Files (*.txt);;All Files (*)"));
+
+    if (filePath.isEmpty())
+        return;
+
+    if (!m_fileLoaderWorker) {
+        qDebug() << "No file loader worker initialized. Cannot save file.";
+        return;
+    }
+
+    QString currentText = editor->toPlainText();
+
+    // Reset progress bar and show it
+    m_progressBar->setValue(0);
+    m_progressBar->setVisible(true);
+    m_statusLabel->setText("Saving Copy of File...");
+
+    // Start the save operation in the worker thread
+    m_isSaving = true;
+    m_fileLoaderWorker->saveFile(filePath, currentText);
+    m_isModified = false;
+    qDebug() << "Save operation started for file:" << filePath;
 }
 
 bool Document::closeDocument() {

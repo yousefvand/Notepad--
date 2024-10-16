@@ -144,6 +144,7 @@ void FileLoaderWorker::loadFile(const QString &filePath) {
         qDebug() << "Read chunk of size: " << buffer.size() << " Total bytesRead: " << bytesRead;
 
         emit contentLoaded(buffer);
+        QCoreApplication::processEvents();
 
         // Update progress bar
         int progress = static_cast<int>((bytesRead * 100) / m_fileSize);

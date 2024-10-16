@@ -31,6 +31,7 @@ public:
     void onWorkerTaskCompleted();
     bool checkForUnsavedChanges();
     void saveFileAs(const QString &newFilePath);
+    void saveAcopyAs();
     bool closeDocument();
     void goToLineNumberInText(QWidget* parent);
     void goToLineNumberInEditor();

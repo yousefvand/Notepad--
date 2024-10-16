@@ -62,6 +62,8 @@ private slots:
 
     void on_actionOpen_Folder_triggered();
 
+    void on_actionSa_ve_a_copy_as_triggered();
+
 private:
     Ui::MainWindow *ui;
     void initialize();
