@@ -70,5 +70,6 @@ private:
     void openDocument(const QString &filePath);
     void closeAllDocuments();
     void removeTabSafely(int index);
+    int findUntitledDocumentIndex();
 };
 

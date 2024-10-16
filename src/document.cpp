@@ -202,32 +202,6 @@ void Document::finishLoading() {
     m_isLoading = false;  // Loading is done
 }
 
-void Document::openFile(const QString &filePath) {
-    QFile file(filePath);
-    m_fileExtension = QFileInfo(filePath).suffix();
-    qDebug() << "Opening file:" << filePath;
-
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&file);
-        originalFileContent = in.readAll();
-
-        m_isLoading = true;  // Set the loading flag
-
-        editor->setPlainText(originalFileContent);  // Set content into editor
-
-        m_isLoading = false;  // Reset loading flag after content is loaded
-        setModified(false);  // Mark the document as not modified after loading
-        file.close();
-
-        QString language = LanguageManager::getLanguageFromExtension(m_fileExtension);
-        applySyntaxHighlighter(language);
-
-        qDebug() << "File loading finished for: " << filePath;
-    } else {
-        qDebug() << "Error: Could not open file: " << filePath;
-    }
-}
-
 void Document::saveFile() {
     if (!m_fileLoaderWorker) {
         qDebug() << "No file loader worker initialized. Cannot save file.";
@@ -462,5 +436,4 @@ void Document::onContentLoaded(const QString &chunk) {
         emit loadingFinished();
     }
 }
-
 

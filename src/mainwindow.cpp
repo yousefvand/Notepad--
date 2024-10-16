@@ -97,20 +97,37 @@ void MainWindow::openDocument(const QString &filePath) {
     QString fileName = QFileInfo(filePath).fileName();
     qDebug() << "Opening file:" << filePath;
 
-    Document *newDoc = new Document(filePath, this);
-
-    // Simulate loading the file (replace this with actual file loading logic)
     QFile file(filePath);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&file);
-        QString fileContent = in.readAll();
-        newDoc->openFile(fileContent);  // Load file content into the document
+        if (filePath.isEmpty()) return;
+        int untitledIndex = findUntitledDocumentIndex();
+        qDebug() << "untitled index: " << untitledIndex;
+        if (untitledIndex != -1) {
+            Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(untitledIndex));
+            if (doc && doc->getEditorContent() == "") {
+                // Remove the "Untitled Document" tab
+                ui->documentsTab->removeTab(untitledIndex);
+                delete doc;
+            }
+        }
     }
 
+    Document *newDoc = new Document(filePath, this);
     ui->documentsTab->addTab(newDoc, fileName);
     ui->documentsTab->setCurrentWidget(newDoc);
 
     qDebug() << "Document added with file path:" << filePath << " and file name:" << fileName;
+}
+
+// Helper function to find the index of the "Untitled Document" tab
+int MainWindow::findUntitledDocumentIndex() {
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        QString title = ui->documentsTab->tabText(i);
+        if (title.trimmed() == "Untitled &Document") {
+            return i;
+        }
+    }
+    return -1; // Not found
 }
 
 void MainWindow::on_action_Open_triggered() {
