@@ -17,6 +17,7 @@
 #include <QMimeType>
 #include <QDir>
 #include <QTabBar>
+#include <QRegularExpression>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -61,20 +62,19 @@ MainWindow::MainWindow(QWidget *parent)
     if (arguments.size() <=1) {
         Document *newDoc = new Document("", this);  // Empty file path for untitled document
         ui->documentsTab->addTab(newDoc, "Untitled Document");
+        connectSignals(newDoc);
         ui->documentsTab->setCurrentWidget(newDoc);
 
         qDebug() << "Untitled Document created";
     } else {
-        qDebug() << "Arguments passed:" << arguments;
+        qDebug() << "Arguments passed: " << arguments;
 
         for (int i = 1; i < arguments.size(); ++i) {  // Skip argv(0), which is the app name
             QString filePath = arguments.at(i);
-            qDebug() << "Opening document:" << filePath;
+            qDebug() << "Opening document: " << filePath;
             openDocument(filePath);  // Open each file in a new tab
         }
     }
-
-
 
     // Set up signal connections for all existing tabs/documents
     for (int i = 0; i < ui->documentsTab->count(); ++i) {
@@ -84,8 +84,6 @@ MainWindow::MainWindow(QWidget *parent)
             connectSignals(doc);  // Connect signals to each document
         }
     }
-
-
 
     qDebug() << "Initialization complete, emitting uiReady signal.";
     initialize();  // Initialize UI readiness
@@ -110,19 +108,18 @@ void MainWindow::openDocument(const QString &filePath) {
     }
 
     QString fileName = QFileInfo(filePath).fileName();
-    qDebug() << "Opening file:" << filePath;
+    qDebug() << "Opening file: " << filePath;
 
     QFile file(filePath);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         if (filePath.isEmpty()) return;
-        int untitledIndex = findUntitledDocumentIndex();
-        qDebug() << "untitled index: " << untitledIndex;
-        if (untitledIndex != -1) {
-            Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(untitledIndex));
-            connectSignals(doc);
-            if (doc && doc->getEditorContent() == "") {
-                // Remove the "Untitled Document" tab
-                ui->documentsTab->removeTab(untitledIndex);
+        //qDebug() << "untitled index: " << untitledIndex;
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(0));
+        connectSignals(doc);
+        if (doc && doc->getEditorContent() == "") {
+            QString title = ui->documentsTab->tabText(0);
+            if ((title == "Untitled &Document") || (title == "Untitled Document")) {
+                ui->documentsTab->removeTab(0);
                 delete doc;
             }
         }
@@ -133,18 +130,7 @@ void MainWindow::openDocument(const QString &filePath) {
     connectSignals(newDoc);
     ui->documentsTab->setCurrentWidget(newDoc);
 
-    qDebug() << "Document added with file path:" << filePath << " and file name:" << fileName;
-}
-
-// Helper function to find the index of the "Untitled Document" tab
-int MainWindow::findUntitledDocumentIndex() {
-    for (int i = 0; i < ui->documentsTab->count(); ++i) {
-        QString title = ui->documentsTab->tabText(i);
-        if (title.trimmed() == "Untitled &Document") {
-            return i;
-        }
-    }
-    return -1; // Not found
+    qDebug() << "Document added with file path: " << filePath << " and file name: " << fileName;
 }
 
 void MainWindow::on_action_Open_triggered() {
@@ -154,9 +140,34 @@ void MainWindow::on_action_Open_triggered() {
     }
 }
 
+bool MainWindow::isUntitledDocument(const QString &title) {
+    // Static QRegularExpression to avoid repeated creation
+    static const QRegularExpression regex(
+        R"((?:&?U&?n&?t&?i&?t&?l&?e&?d&?) (?:&?D&?o&?c&?u&?m&?e&?n&?t))");
+
+    // Perform the regex match
+    return regex.match(title).hasMatch();
+}
+
 void MainWindow::on_action_Save_triggered() {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
     if (doc) {
+        int currentIndex = ui->documentsTab->currentIndex();
+        if (currentIndex != -1) {
+            QString title = ui->documentsTab->tabText(currentIndex);
+            qDebug() << "Command save for Untitled Document, title is: " << title;
+            if (isUntitledDocument(title)) {
+                qDebug() << "Save As dialog for Untitled Document Save command, title is: " << title;
+                QString filePath = QFileDialog::getSaveFileName(this, tr("Save File As"), QString(),
+                                                                tr("Text Files (*.txt);;All Files (*)"));
+
+                if (filePath.isEmpty()) return;
+                doc->saveFileAs(filePath);
+                return;
+            }
+        } else {
+            return;
+        }
         doc->saveFile();
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document to save."));
@@ -169,6 +180,10 @@ void MainWindow::on_actionSave_As_triggered() {
         QString filePath = QFileDialog::getSaveFileName(this, tr("Save File As"), "", tr("Text Files (*.txt);;All Files (*)"));
         if (!filePath.isEmpty()) {
             doc->saveFileAs(filePath);
+            int tabIndex = ui->documentsTab->indexOf(doc);
+            if (tabIndex != -1) {
+                ui->documentsTab->setTabText(tabIndex, doc->fileName());
+            }
         }
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document to save."));
@@ -178,28 +193,45 @@ void MainWindow::on_actionSave_As_triggered() {
 void MainWindow::on_documentsTab_tabCloseRequested(int index) {
     qDebug() << "Tab close requested for index:" << index;
 
+    // Ensure the index is valid before proceeding
     if (index < 0 || index >= ui->documentsTab->count()) {
-        qDebug() << "Invalid index for closing tab:" << index;
+        qDebug() << "Invalid index for closing tab: " << index;
         return;
     }
 
+    // Retrieve the document object from the tab widget
     Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
-    if (doc) {
-        QString tabTitle = ui->documentsTab->tabText(index);
-        bool isUntitledAndEmpty = (tabTitle == "Untitled &Document") && doc->getEditorContent().isEmpty();
+    if (!doc) {
+        qDebug() << "No document found at index: " << index;
+        return;
+    }
 
-        // Close if the document is untitled and empty or if it can be closed normally
-        if (isUntitledAndEmpty || doc->closeDocument()) {
-            qDebug() << "Closing tab at index:" << index;
+    // Check if the document is modified
+    if (doc->isModified()) {
+        QMessageBox::StandardButton reply = QMessageBox::warning(
+            this, tr("Unsaved Changes"),
+            tr("The document has unsaved changes. Do you want to save your changes?"),
+            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
-            ui->documentsTab->removeTab(index);
-            delete doc;
-
-            qDebug() << "Closed tab at index:" << index << ". Remaining tabs:" << ui->documentsTab->count();
-        } else {
-            qDebug() << "User canceled closing tab at index:" << index;
+        if (reply == QMessageBox::Save) {
+            doc->saveFile();
+        } else if (reply == QMessageBox::Cancel) {
+            qDebug() << "User canceled closing tab at index: " << index;
+            return;
         }
     }
+
+    // Remove the tab safely and delay deletion
+    qDebug() << "Closing tab at index: " << index;
+    ui->documentsTab->removeTab(index);
+
+    // Use QTimer to safely delete the document after a brief delay
+    QTimer::singleShot(0, this, [doc]() {
+        qDebug() << "Deleting document after tab closure.";
+        doc->deleteLater();  // Defer deletion to avoid immediate issues
+    });
+
+    qDebug() << "Closed tab at index: " << index << ". Remaining tabs: " << ui->documentsTab->count();
 }
 
 void MainWindow::removeTabSafely(int index) {

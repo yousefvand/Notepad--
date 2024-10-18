@@ -13,6 +13,7 @@
 #include <QFutureWatcher>
 #include <QtConcurrent>
 #include <QtConcurrent/QtConcurrent>
+#include <QFileInfo>
 #include "document.h"
 #include "fileloaderworker.h"
 #include "codeeditor.h"
@@ -27,6 +28,8 @@ Document::Document(const QString &filePath, QWidget *parent)
     layout->addWidget(m_editor);
     setLayout(layout);
 
+    QFileInfo fileInfo(m_filePath);
+    m_fileName = fileInfo.fileName();
     // Initialize status label and progress bar
     m_statusLabel = new QLabel("", this);
     m_progressBar = new QProgressBar(this);
@@ -184,6 +187,10 @@ QString Document::filePath() const {
     return m_filePath;
 }
 
+QString Document::fileName() const {
+    return m_fileName;
+}
+
 QString Document::getEditorContent() const {
     return m_editor->toPlainText();  // Safely access the editor content
 }
@@ -237,10 +244,11 @@ void Document::saveFile() {
 }
 
 void Document::saveFileAs(const QString &newFilePath) {
-    qDebug() << "Saving file as:" << newFilePath;
+    qDebug() << "Saving file as: " << newFilePath;
 
-    // Set the new file path
     m_filePath = newFilePath;
+    m_fileName = QFileInfo(newFilePath).fileName();
+
     saveFile();
 }
 
@@ -398,7 +406,7 @@ void Document::saveDocument() {
     QString filePath = m_filePath;  // Get the file path
 
     if (filePath.isEmpty()) {
-        qDebug() << "File path is empty. Save operation aborted.";
+        qDebug() << "File path is empty. Save operation aborted!";
         return;
     }
 

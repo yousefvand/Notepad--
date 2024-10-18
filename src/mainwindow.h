@@ -74,5 +74,6 @@ private:
     int findUntitledDocumentIndex();
     void setTabColor(int index, const QString& color);
     void connectSignals(Document* doc);
+    bool isUntitledDocument(const QString &title);
 };
 

@@ -24,6 +24,7 @@ public:
     void saveDocument();
     bool promptForSave();
     QString filePath() const;
+    QString fileName() const;
     void setFilePath(const QString &path);
     QString getLanguage() const;
     void openFile(const QString &filePath);
@@ -93,6 +94,7 @@ private:
     QProgressBar *m_progressBar;
 
     QString m_filePath;
+    QString m_fileName;
     QString m_fileExtension;
     QFile m_file;
     CodeEditor *m_editor;
