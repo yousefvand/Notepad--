@@ -1,5 +1,6 @@
 #pragma once
 
+#include "document.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -71,5 +72,7 @@ private:
     void closeAllDocuments();
     void removeTabSafely(int index);
     int findUntitledDocumentIndex();
+    void setTabColor(int index, const QString& color);
+    void connectSignals(Document* doc);
 };
 

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "codeeditor.h"
 #include "ui_mainwindow.h"
 #include "document.h"
 #include <QDebug>
@@ -15,6 +16,7 @@
 #include <QMimeDatabase>
 #include <QMimeType>
 #include <QDir>
+#include <QTabBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -72,6 +74,19 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
+
+
+    // Set up signal connections for all existing tabs/documents
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(i));
+        if (doc) {
+            qDebug() << "Connecting signals for document at tab index:" << i;
+            connectSignals(doc);  // Connect signals to each document
+        }
+    }
+
+
+
     qDebug() << "Initialization complete, emitting uiReady signal.";
     initialize();  // Initialize UI readiness
 }
@@ -104,6 +119,7 @@ void MainWindow::openDocument(const QString &filePath) {
         qDebug() << "untitled index: " << untitledIndex;
         if (untitledIndex != -1) {
             Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(untitledIndex));
+            connectSignals(doc);
             if (doc && doc->getEditorContent() == "") {
                 // Remove the "Untitled Document" tab
                 ui->documentsTab->removeTab(untitledIndex);
@@ -114,6 +130,7 @@ void MainWindow::openDocument(const QString &filePath) {
 
     Document *newDoc = new Document(filePath, this);
     ui->documentsTab->addTab(newDoc, fileName);
+    connectSignals(newDoc);
     ui->documentsTab->setCurrentWidget(newDoc);
 
     qDebug() << "Document added with file path:" << filePath << " and file name:" << fileName;
@@ -159,6 +176,8 @@ void MainWindow::on_actionSave_As_triggered() {
 }
 
 void MainWindow::on_documentsTab_tabCloseRequested(int index) {
+    qDebug() << "Tab close requested for index:" << index;
+
     if (index < 0 || index >= ui->documentsTab->count()) {
         qDebug() << "Invalid index for closing tab:" << index;
         return;
@@ -166,23 +185,17 @@ void MainWindow::on_documentsTab_tabCloseRequested(int index) {
 
     Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
     if (doc) {
-        // Check if the document has unsaved changes
-        bool canClose = doc->closeDocument();  // Assuming closeDocument() checks for unsaved changes
+        QString tabTitle = ui->documentsTab->tabText(index);
+        bool isUntitledAndEmpty = (tabTitle == "Untitled &Document") && doc->getEditorContent().isEmpty();
 
-        if (canClose) {
-            // Disconnect signals before removing the tab to avoid cascading actions
-            disconnect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::on_documentsTab_tabCloseRequested);
+        // Close if the document is untitled and empty or if it can be closed normally
+        if (isUntitledAndEmpty || doc->closeDocument()) {
+            qDebug() << "Closing tab at index:" << index;
 
-            // Now safely remove the tab
             ui->documentsTab->removeTab(index);
-
-            // Delete the document after the tab is removed
             delete doc;
 
             qDebug() << "Closed tab at index:" << index << ". Remaining tabs:" << ui->documentsTab->count();
-
-            // Reconnect the signal after tab removal to avoid duplicate triggering
-            connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::on_documentsTab_tabCloseRequested);
         } else {
             qDebug() << "User canceled closing tab at index:" << index;
         }
@@ -211,6 +224,7 @@ void MainWindow::removeTabSafely(int index) {
 void MainWindow::on_action_New_triggered() {
     Document *newDoc = new Document("", this);
     ui->documentsTab->addTab(newDoc, "Untitled Document");
+    connectSignals(newDoc);
     ui->documentsTab->setCurrentWidget(newDoc);
 }
 
@@ -278,12 +292,49 @@ void MainWindow::on_actionPython_triggered()
     }
 }
 
+void MainWindow::on_actionSav_e_all_triggered() {
+    int tabCount = ui->documentsTab->count();
+    qDebug() << "Save All triggered. Total open tabs:" << tabCount;
 
-void MainWindow::on_actionSav_e_all_triggered()
-{
-    // TODO: Save All
+    // Iterate over all open tabs
+    for (int i = 0; i < tabCount; ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc && doc->isModified()) {
+            qDebug() << "Saving modified document in tab:" << i;
+
+            QString filePath = doc->filePath();
+
+            // If the document doesn't have a file path, prompt the user to save it
+            if (filePath.isEmpty()) {
+                QString title = ui->documentsTab->tabText(i);  // Get the current tab title
+
+                QString savePath = QFileDialog::getSaveFileName(
+                    this,
+                    tr("Save %1").arg(title),  // Dialog title with current tab title
+                    QString(),                // Default path
+                    tr("Text Files (*.txt);;All Files (*)")
+                    );
+
+                if (savePath.isEmpty()) {
+                    qDebug() << "User canceled save for tab:" << i;
+                    continue;  // Skip saving this document
+                }
+
+                // Update the document's file path
+                doc->setFilePath(savePath);
+
+                // Directly set the tab title to the new file name
+                ui->documentsTab->setTabText(i, QFileInfo(savePath).fileName());
+                qDebug() << "Updated tab title to:" << QFileInfo(savePath).fileName();
+            }
+
+            // Save the document
+            doc->saveFile();
+        }
+    }
+
+    qDebug() << "Save All completed.";
 }
-
 
 void MainWindow::on_actionCu_t_triggered()
 {
@@ -403,3 +454,37 @@ void MainWindow::on_actionSa_ve_a_copy_as_triggered() {
     doc->saveAcopyAs();
 }
 
+void MainWindow::setTabColor(int index, const QString &color) {
+    if (index < 0 || index >= ui->documentsTab->count()) return;
+
+    ui->documentsTab->tabBar()->setTabTextColor(index, QColor(color));
+    ui->documentsTab->tabBar()->update();  // Force repaint
+    qDebug() << "Set tab color to" << color << "for tab at index:" << index;
+}
+
+void MainWindow::connectSignals(Document *doc) {
+    // Connect to the editor's modificationChanged signal
+    connect(doc->editor(), &QPlainTextEdit::modificationChanged, this, [this, doc](bool changed) {
+        int index = ui->documentsTab->indexOf(doc);
+        if (index != -1) {
+            if (changed) {
+                setTabColor(index, "red");
+            } else {
+                setTabColor(index, "green");
+            }
+        }
+    });
+
+    // Connect to the worker's savingFinished signal
+    connect(doc->worker(), &FileLoaderWorker::savingFinished, this, [this, doc]() {
+        int index = ui->documentsTab->indexOf(doc);
+        if (index != -1) {
+            qDebug() << "Saving finished for tab at index:" << index;
+            // Temporarily block signals to avoid unnecessary modifications
+            doc->editor()->blockSignals(true);
+            doc->editor()->document()->setModified(false);  // Reset modified state
+            setTabColor(index, "green");
+            doc->editor()->blockSignals(false);
+        }
+    });
+}
