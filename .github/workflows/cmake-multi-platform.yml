@@ -1,11 +1,18 @@
-name: Build and Test
+name: CI Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
+    
     strategy:
       fail-fast: false
       matrix:
@@ -17,6 +24,9 @@ jobs:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
@@ -39,34 +49,40 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Install Visual Studio Build Tools on Windows
+    # Install and configure Visual Studio Build Tools on Windows
     - name: Set up Visual Studio Build Tools and MSVC (Windows)
       if: matrix.os == 'windows-latest'
+      shell: powershell
       run: |
         choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-        # Locate Visual Studio installation
+        # Locate Visual Studio installation using vswhere
         $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
           -latest -products * `
           -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
           -property installationPath
 
         if (-not $vs_path) {
-          echo "Visual Studio Build Tools not found!" 
+          Write-Host "Visual Studio Build Tools not found!"
           exit 1
         }
 
         $vs_vars_cmd = "$vs_path\VC\Auxiliary\Build\vcvars64.bat"
 
+        if (-not (Test-Path $vs_vars_cmd)) {
+          Write-Host "vcvars64.bat not found at: $vs_vars_cmd"
+          exit 1
+        }
+
+        Write-Host "Found vcvars64.bat at: $vs_vars_cmd"
         echo "VS_VARS_CMD=$vs_vars_cmd" >> $GITHUB_ENV
-        echo "Found vcvars64.bat at: $vs_vars_cmd"
-      shell: powershell
 
     # Initialize MSVC environment for Windows
     - name: Initialize MSVC environment
       if: matrix.os == 'windows-latest'
+      shell: cmd
       run: |
         echo Using vcvars64.bat from: %VS_VARS_CMD%
         if not exist "%VS_VARS_CMD%" (
@@ -74,31 +90,29 @@ jobs:
           exit 1
         )
         call "%VS_VARS_CMD%"
-      shell: cmd
 
-    # Set reusable build directory
+    # Set reusable build output path
     - name: Set reusable strings
       id: strings
+      shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    # Configure CMake
+    # Configure CMake for all platforms
     - name: Configure CMake
       run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S ${{ github.workspace }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -G "Ninja" \
+        -S ${{ github.workspace }}
       shell: bash
 
     # Build the project
     - name: Build
-      run: |
-        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     # Run tests
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: |
-        ctest --output-on-failure --build-config Release
+      run: ctest --output-on-failure --build-config Release
