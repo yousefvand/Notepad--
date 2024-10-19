@@ -49,8 +49,8 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Set up Visual Studio Build Tools and MSVC on Windows
-    - name: Set up Visual Studio Build Tools and MSVC (Windows)
+    # Install Visual Studio Build Tools on Windows
+    - name: Install Visual Studio Build Tools (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
@@ -58,56 +58,42 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-        # Locate Visual Studio installation using vswhere
-        $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
-          -latest -products * `
-          -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
-          -property installationPath
-
-        if (-not $vs_path) {
-          Write-Host "Visual Studio Build Tools not found!"
-          exit 1
-        }
-
-        $vs_vars_cmd = "$vs_path\VC\Auxiliary\Build\vcvars64.bat"
-
-        if (-not (Test-Path $vs_vars_cmd)) {
-          Write-Host "vcvars64.bat not found at: $vs_vars_cmd"
-          exit 1
-        }
-
-        Write-Host "Found vcvars64.bat at: $vs_vars_cmd"
-        echo "VS_VARS_CMD=$vs_vars_cmd" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8
-
-    - name: Initialize MSVC environment
+    # Set up MSVC environment for CMake on Windows
+    - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        echo Using vcvars64.bat from: %VS_VARS_CMD%
-        if not exist "%VS_VARS_CMD%" (
-          echo Error: vcvars64.bat not found!
-          exit 1
+        echo Setting up MSVC environment...
+        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
+          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
+        IF NOT DEFINED VS_PATH (
+          echo Visual Studio Build Tools not found!
+          exit /b 1
         )
+        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+        echo Using vcvars64.bat from: %VS_VARS_CMD%
         call "%VS_VARS_CMD%"
 
-    - name: Set reusable build output path
-      id: strings
-      shell: bash
-      run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        # Export path to environment for next steps
+        echo "::add-path::%VS_PATH%\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64" >> $GITHUB_ENV
+        echo "::add-path::%VS_PATH%\Common7\IDE" >> $GITHUB_ENV
 
+    # Configure CMake
     - name: Configure CMake
+      shell: bash
       run: |
-        cmake -B "${{ steps.strings.outputs.build-output-dir }}" \
+        cmake -B "${{ github.workspace }}/build" \
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
         -DCMAKE_BUILD_TYPE=Release \
         -G "Ninja" \
         -S "${{ github.workspace }}"
-      shell: bash
 
+    # Build the project
     - name: Build
-      run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config Release
+      run: cmake --build "${{ github.workspace }}/build" --config Release
 
+    # Run tests
     - name: Test
-      working-directory: "${{ steps.strings.outputs.build-output-dir }}"
+      working-directory: "${{ github.workspace }}/build"
       run: ctest --output-on-failure --build-config Release
