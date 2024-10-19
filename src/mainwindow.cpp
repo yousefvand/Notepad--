@@ -18,6 +18,7 @@
 #include <QDir>
 #include <QTabBar>
 #include <QRegularExpression>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -110,22 +111,26 @@ void MainWindow::openDocument(const QString &filePath) {
     QString fileName = QFileInfo(filePath).fileName();
     qDebug() << "Opening file: " << filePath;
 
+    // Ensure the file can be opened
     QFile file(filePath);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (filePath.isEmpty()) return;
-        //qDebug() << "untitled index: " << untitledIndex;
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Error: Unable to open file: " << filePath;
+        QMessageBox::warning(this, tr("Error"), tr("Failed to open the file."));
+        return;
+    }
+
+    // Check if the first tab is "Untitled Document" and delete it if present
+    if (ui->documentsTab->count() > 0) {
         Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(0));
-        connectSignals(doc);
-        if (doc && doc->getEditorContent() == "") {
-            QString title = ui->documentsTab->tabText(0);
-            if ((title == "Untitled &Document") || (title == "Untitled Document")) {
-                ui->documentsTab->removeTab(0);
-                delete doc;
-            }
+        if (doc && isUntitledDocument(ui->documentsTab->tabText(0))) {
+            qDebug() << "Closing untitled document.";
+            ui->documentsTab->removeTab(0);
+            doc->deleteLater();  // Schedule safe deletion
         }
     }
 
-    Document *newDoc = new Document(filePath, this);
+    // Create a new document and add it as a tab
+    Document* newDoc = new Document(filePath, this);
     ui->documentsTab->addTab(newDoc, fileName);
     connectSignals(newDoc);
     ui->documentsTab->setCurrentWidget(newDoc);
@@ -187,69 +192,6 @@ void MainWindow::on_actionSave_As_triggered() {
         }
     } else {
         QMessageBox::warning(this, tr("Error"), tr("No document to save."));
-    }
-}
-
-void MainWindow::on_documentsTab_tabCloseRequested(int index) {
-    qDebug() << "Tab close requested for index:" << index;
-
-    // Ensure the index is valid before proceeding
-    if (index < 0 || index >= ui->documentsTab->count()) {
-        qDebug() << "Invalid index for closing tab: " << index;
-        return;
-    }
-
-    // Retrieve the document object from the tab widget
-    Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
-    if (!doc) {
-        qDebug() << "No document found at index: " << index;
-        return;
-    }
-
-    // Check if the document is modified
-    if (doc->isModified()) {
-        QMessageBox::StandardButton reply = QMessageBox::warning(
-            this, tr("Unsaved Changes"),
-            tr("The document has unsaved changes. Do you want to save your changes?"),
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-
-        if (reply == QMessageBox::Save) {
-            doc->saveFile();
-        } else if (reply == QMessageBox::Cancel) {
-            qDebug() << "User canceled closing tab at index: " << index;
-            return;
-        }
-    }
-
-    // Remove the tab safely and delay deletion
-    qDebug() << "Closing tab at index: " << index;
-    ui->documentsTab->removeTab(index);
-
-    // Use QTimer to safely delete the document after a brief delay
-    QTimer::singleShot(0, this, [doc]() {
-        qDebug() << "Deleting document after tab closure.";
-        doc->deleteLater();  // Defer deletion to avoid immediate issues
-    });
-
-    qDebug() << "Closed tab at index: " << index << ". Remaining tabs: " << ui->documentsTab->count();
-}
-
-void MainWindow::removeTabSafely(int index) {
-    if (index < 0 || index >= ui->documentsTab->count()) {
-        qDebug() << "Cannot remove tab, invalid index:" << index;
-        return;
-    }
-
-    qDebug() << "Removing tab at index:" << index;
-
-    // Safely remove the tab
-    Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
-    if (doc) {
-        ui->documentsTab->removeTab(index);  // Remove the tab from the QTabWidget
-        delete doc;  // Delete the document object
-        qDebug() << "Tab removed and document deleted at index:" << index;
-    } else {
-        qDebug() << "Failed to remove tab at index:" << index;
     }
 }
 
@@ -495,6 +437,10 @@ void MainWindow::setTabColor(int index, const QString &color) {
 }
 
 void MainWindow::connectSignals(Document *doc) {
+    if (!doc) {
+        qDebug() << "Error: Document is null in connectSignals()";
+        return;
+    }
     // Connect to the editor's modificationChanged signal
     connect(doc->editor(), &QPlainTextEdit::modificationChanged, this, [this, doc](bool changed) {
         int index = ui->documentsTab->indexOf(doc);
@@ -518,5 +464,63 @@ void MainWindow::connectSignals(Document *doc) {
             setTabColor(index, "green");
             doc->editor()->blockSignals(false);
         }
+    });
+}
+
+void MainWindow::removeTabSafely(int index) {
+    qDebug() << "Removing tab safely at index:" << index;
+
+    // Ensure the index is still valid after any potential shifts
+    if (index < 0 || index >= ui->documentsTab->count()) {
+        qDebug() << "Cannot remove tab, invalid index: " << index;
+        return;
+    }
+
+    // Get the document from the current index
+    Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(index));
+    if (!doc) {
+        qDebug() << "No document found at index:" << index << " for removal.";
+        return;
+    }
+
+    // Remove the tab and schedule the document for safe deletion
+    ui->documentsTab->removeTab(index);
+
+    QTimer::singleShot(0, this, [doc]() {
+        qDebug() << "Deleting document after tab closure.";
+        doc->deleteLater();  // Safely delete the document
+    });
+
+    qDebug() << "Tab at index:" << index << " removed. Remaining tabs:" << ui->documentsTab->count();
+}
+
+void MainWindow::on_documentsTab_tabCloseRequested(int index) {
+    static bool closingInProgress = false;  // Prevent double closing
+
+    if (closingInProgress) {
+        qDebug() << "Tab close already in progress. Ignoring.";
+        return;
+    }
+
+    closingInProgress = true;
+
+    // Use 'this' as the context object to ensure proper signal management.
+    QTimer::singleShot(0, this, [this, index]() {
+        if (index >= ui->documentsTab->count()) {
+            qDebug() << "Invalid tab index: " << index;
+            closingInProgress = false;
+            return;
+        }
+
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(index));
+        if (doc && doc->closeDocument()) {
+            qDebug() << "Closing tab at index:" << index;
+            ui->documentsTab->removeTab(index);
+            doc->deleteLater();
+        } else {
+            qDebug() << "Tab close canceled.";
+        }
+
+        closingInProgress = false;
     });
 }
