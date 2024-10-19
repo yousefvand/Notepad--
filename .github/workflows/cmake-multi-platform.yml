@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -16,9 +17,6 @@ jobs:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
@@ -49,7 +47,7 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-        # Locate Visual Studio installation using vswhere.exe
+        # Locate Visual Studio installation
         $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
           -latest -products * `
           -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
@@ -61,6 +59,7 @@ jobs:
         }
 
         $vs_vars_cmd = "$vs_path\VC\Auxiliary\Build\vcvars64.bat"
+
         if (-not (Test-Path $vs_vars_cmd)) {
           Write-Error "Error: vcvars64.bat not found!"
           exit 1
@@ -74,7 +73,10 @@ jobs:
     - name: Initialize MSVC environment
       if: matrix.os == 'windows-latest'
       run: |
-        call "${{ env.VS_VARS_CMD }}"
+        if not exist "%VS_VARS_CMD%" (
+          echo "Error: vcvars64.bat not found!" && exit 1
+        )
+        call "%VS_VARS_CMD%"
       shell: cmd
 
     # Set reusable build directory
