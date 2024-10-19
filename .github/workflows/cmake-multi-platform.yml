@@ -28,7 +28,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Install dependencies on Ubuntu
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -36,14 +35,12 @@ jobs:
         sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    # Install dependencies on macOS
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Install dependencies on Windows
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -52,15 +49,19 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    # Download and Install Qt on Windows
     - name: Download and Install Qt (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        Invoke-WebRequest -Uri https://download.qt.io/official_releases/qt/6.5/6.5.2/qt-opensource-windows-x86-64-6.5.2.exe -OutFile qt-installer.exe
-        Start-Process -Wait -FilePath qt-installer.exe -ArgumentList '--silent', '--platform minimal', '--no-force-installations'
+        Invoke-WebRequest -Uri https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe -OutFile qt-installer.exe
+        Start-Process -Wait -FilePath qt-installer.exe -ArgumentList `
+          '--silent', `
+          '--platform minimal', `
+          '--no-force-installations', `
+          '--accept-licenses'
+        $qtPath = "C:\Qt"
+        echo "CMAKE_PREFIX_PATH=$qtPath\6.5.2\msvc2019_64\lib\cmake\Qt6" >> $GITHUB_ENV
 
-    # Set up MSVC environment on Windows
     - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
@@ -74,11 +75,6 @@ jobs:
         CALL "%VS_VARS_CMD%" || exit /b 1
         where cl || (echo cl.exe not found in PATH && exit /b 1)
 
-        # Set CMAKE_PREFIX_PATH for Qt
-        SET CMAKE_PREFIX_PATH="C:\Qt\6.5.2\msvc2019_64\lib\cmake\Qt6"
-        echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> %GITHUB_ENV%
-
-    # Configure CMake for all platforms
     - name: Configure CMake
       run: |
         cmake -B "${{ github.workspace }}/build" \
@@ -88,11 +84,9 @@ jobs:
           -G "Ninja" \
           -S "${{ github.workspace }}"
 
-    # Build the project
     - name: Build
       run: cmake --build "${{ github.workspace }}/build" --config Release
 
-    # Run tests
     - name: Test
       working-directory: "${{ github.workspace }}/build"
       run: ctest --output-on-failure --build-config Release
