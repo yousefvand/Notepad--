@@ -12,7 +12,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -72,11 +72,7 @@ jobs:
         )
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         echo Using vcvars64.bat from: %VS_VARS_CMD%
-        call "%VS_VARS_CMD%"
-
-        # Export path to environment for next steps
-        echo "::add-path::%VS_PATH%\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64" >> $GITHUB_ENV
-        echo "::add-path::%VS_PATH%\Common7\IDE" >> $GITHUB_ENV
+        CALL "%VS_VARS_CMD%" || exit /b 1
 
     # Configure CMake
     - name: Configure CMake
