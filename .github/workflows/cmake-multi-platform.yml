@@ -72,10 +72,23 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         echo Using vcvars64.bat from: %VS_VARS_CMD%
         CALL "%VS_VARS_CMD%" || exit /b 1
+        where cl  # Verify cl.exe is in the PATH
 
-    # Configure CMake for all platforms
-    - name: Configure CMake
-      shell: bash
+    # Configure CMake for Windows
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        cmake -B "%GITHUB_WORKSPACE%\build" ^
+          -DCMAKE_CXX_COMPILER=cl ^
+          -DCMAKE_C_COMPILER=cl ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -G "Ninja" ^
+          -S "%GITHUB_WORKSPACE%"
+
+    # Configure CMake for other platforms
+    - name: Configure CMake (Other Platforms)
+      if: matrix.os != 'windows-latest'
       run: |
         cmake -B "${{ github.workspace }}/build" \
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
