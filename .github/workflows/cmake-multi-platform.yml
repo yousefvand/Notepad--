@@ -43,7 +43,7 @@ jobs:
     - name: Set up Visual Studio Build Tools and MSVC (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install visualstudio2019buildtools -y
+        choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
@@ -54,25 +54,20 @@ jobs:
           -property installationPath
 
         if (-not $vs_path) {
-          Write-Error "Visual Studio Build Tools not found!"
-          exit 1
+          Write-Host "Visual Studio Build Tools not found!" && exit 1
         }
 
         $vs_vars_cmd = "$vs_path\VC\Auxiliary\Build\vcvars64.bat"
 
-        if (-not (Test-Path $vs_vars_cmd)) {
-          Write-Error "Error: vcvars64.bat not found!"
-          exit 1
-        }
-
+        Write-Host "Found vcvars64.bat at: $vs_vars_cmd"
         echo "VS_VARS_CMD=$vs_vars_cmd" >> $GITHUB_ENV
-        Write-Host "Visual Studio environment set up successfully."
       shell: powershell
 
     # Initialize MSVC environment for Windows
     - name: Initialize MSVC environment
       if: matrix.os == 'windows-latest'
       run: |
+        echo "Using vcvars64.bat from: %VS_VARS_CMD%"
         if not exist "%VS_VARS_CMD%" (
           echo "Error: vcvars64.bat not found!" && exit 1
         )
