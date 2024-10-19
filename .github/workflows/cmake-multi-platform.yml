@@ -29,7 +29,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Qt caching setup for Windows
+    ### Ubuntu Dependencies (Unchanged)
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev
+        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
+
+    ### macOS Dependencies (Unchanged)
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install ninja qt
+        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
+
+    ### Windows Setup with Qt Caching
     - name: Restore Qt cache (Windows)
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
@@ -54,7 +69,6 @@ jobs:
           '--silent', '--platform minimal', '--accept-licenses', `
           '--select qt.qt6.653.win64_msvc2019_64', '--no-force-installations'
 
-    # Caching Qt on first successful installation
     - name: Save Qt cache (Windows)
       if: matrix.os == 'windows-latest' && steps.restore.outputs.cache-hit != 'true'
       uses: actions/cache@v3
@@ -62,7 +76,6 @@ jobs:
         path: C:\Qt
         key: qt-windows-6.5.3
 
-    # Set up MSVC environment
     - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
