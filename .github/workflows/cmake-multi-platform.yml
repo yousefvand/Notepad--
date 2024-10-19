@@ -29,22 +29,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Install dependencies on Ubuntu
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev
-        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
+    # Qt caching setup for Windows
+    - name: Restore Qt cache (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      with:
+        path: C:\Qt
+        key: qt-windows-6.5.3
 
-    # Install dependencies on macOS
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install ninja qt
-        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
-
-    # Install dependencies on Windows
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -53,16 +45,24 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Download and Install Qt (Windows)
-      if: matrix.os == 'windows-latest'
+    - name: Download and Install Qt (Windows) if not cached
+      if: matrix.os == 'windows-latest' && !steps.restore.outputs.cache-hit
       shell: powershell
       run: |
         Invoke-WebRequest -Uri https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe -OutFile qt-installer.exe
         Start-Process -Wait -FilePath qt-installer.exe -ArgumentList `
           '--silent', '--platform minimal', '--accept-licenses', `
           '--select qt.qt6.653.win64_msvc2019_64', '--no-force-installations'
-        echo "CMAKE_PREFIX_PATH=C:\Qt\6.5.3\msvc2019_64\lib\cmake\Qt6" >> $GITHUB_ENV
 
+    # Caching Qt on first successful installation
+    - name: Save Qt cache (Windows)
+      if: matrix.os == 'windows-latest' && steps.restore.outputs.cache-hit != 'true'
+      uses: actions/cache@v3
+      with:
+        path: C:\Qt
+        key: qt-windows-6.5.3
+
+    # Set up MSVC environment
     - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
