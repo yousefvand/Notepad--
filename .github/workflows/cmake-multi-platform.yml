@@ -58,12 +58,11 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    # Set up MSVC environment for CMake on Windows
+    # Set up MSVC environment for Windows
     - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        echo Setting up MSVC environment...
         FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
           -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
         IF NOT DEFINED VS_PATH (
@@ -74,16 +73,16 @@ jobs:
         echo Using vcvars64.bat from: %VS_VARS_CMD%
         CALL "%VS_VARS_CMD%" || exit /b 1
 
-    # Configure CMake
+    # Configure CMake for all platforms
     - name: Configure CMake
       shell: bash
       run: |
         cmake -B "${{ github.workspace }}/build" \
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -G "Ninja" \
-        -S "${{ github.workspace }}"
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
 
     # Build the project
     - name: Build
