@@ -66,7 +66,7 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         echo Using vcvars64.bat from: %VS_VARS_CMD%
         CALL "%VS_VARS_CMD%" || exit /b 1
-        where cl  # Ensure cl.exe is in PATH
+        where cl || exit /b 1  # Ensure cl.exe is in PATH
 
     # Configure CMake for Windows
     - name: Configure CMake (Windows)
