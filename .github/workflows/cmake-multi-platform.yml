@@ -61,6 +61,10 @@ jobs:
         }
 
         $vs_vars_cmd = "$vs_path\VC\Auxiliary\Build\vcvars64.bat"
+        if (-not (Test-Path $vs_vars_cmd)) {
+          Write-Error "Error: vcvars64.bat not found!"
+          exit 1
+        }
 
         echo "VS_VARS_CMD=$vs_vars_cmd" >> $GITHUB_ENV
         Write-Host "Visual Studio environment set up successfully."
@@ -70,12 +74,7 @@ jobs:
     - name: Initialize MSVC environment
       if: matrix.os == 'windows-latest'
       run: |
-        if exist "${{ env.VS_VARS_CMD }}" (
-          call "${{ env.VS_VARS_CMD }}"
-        ) else (
-          echo "Error: vcvars64.bat not found!"
-          exit 1
-        )
+        call "${{ env.VS_VARS_CMD }}"
       shell: cmd
 
     # Set reusable build directory
