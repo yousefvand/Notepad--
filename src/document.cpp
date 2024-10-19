@@ -295,7 +295,7 @@ bool Document::closeDocument() {
     if (isModified()) {
         // Document has unsaved changes, so prompt the user
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::warning(this, tr("Unsaved Changes"),
+        reply = QMessageBox::warning(this, tr("Unsaved Changes for: ") + m_fileName,
                                      tr("The document has unsaved changes. Do you want to save your changes?"),
                                      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 

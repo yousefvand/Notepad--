@@ -238,12 +238,28 @@ void MainWindow::closeAllDocuments() {
     int tabCount = ui->documentsTab->count();
     qDebug() << "Attempting to close all tabs. Current tab count:" << tabCount;
 
-    for (int i = tabCount - 1; i >= 0; --i) {
-        on_documentsTab_tabCloseRequested(i);
+    QList<Document*> docsToClose;
+    for (int i = 0; i < tabCount; ++i) {
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(i));
+        if (doc && doc->closeDocument()) {  // Check if the document can be closed
+            docsToClose.append(doc);
+        } else {
+            qDebug() << "Skipped closing tab due to unsaved changes.";
+        }
     }
 
-    qDebug() << "Remaining tabs after close all:" << ui->documentsTab->count();
+    // Batch remove the collected tabs
+    for (Document* doc : docsToClose) {
+        int index = ui->documentsTab->indexOf(doc);
+        if (index != -1) {
+            ui->documentsTab->removeTab(index);
+            doc->deleteLater();  // Safely delete the document
+        }
+    }
+
+    qDebug() << "All tabs have been closed.";
 }
+
 
 void MainWindow::on_actionC_3_triggered() {
     Document *doc = qobject_cast<Document *>(ui->documentsTab->currentWidget());
@@ -524,3 +540,43 @@ void MainWindow::on_documentsTab_tabCloseRequested(int index) {
         closingInProgress = false;
     });
 }
+
+void MainWindow::on_actionClose_all_BUT_current_document_triggered() {
+    int activeTabIndex = ui->documentsTab->currentIndex();  // Get the index of the active tab
+    int tabCount = ui->documentsTab->count();
+
+    if (activeTabIndex == -1 || tabCount <= 1) {
+        qDebug() << "No tabs to close or only one active tab.";
+        return;
+    }
+
+    qDebug() << "Closing all tabs except the active tab at index:" << activeTabIndex;
+
+    // Collect documents to close except the active one
+    QList<Document*> docsToClose;
+    for (int i = 0; i < tabCount; ++i) {
+        if (i != activeTabIndex) {
+            Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(i));
+            if (doc && doc->closeDocument()) {  // Check if the document can be closed
+                docsToClose.append(doc);
+            } else {
+                qDebug() << "Skipped closing tab due to unsaved changes.";
+            }
+        }
+    }
+
+    // Batch remove the collected tabs
+    for (Document* doc : docsToClose) {
+        int index = ui->documentsTab->indexOf(doc);
+        if (index != -1) {
+            ui->documentsTab->removeTab(index);
+            doc->deleteLater();  // Safely delete the document
+        }
+    }
+
+    qDebug() << "All tabs except the active one have been closed.";
+}
+
+
+
+

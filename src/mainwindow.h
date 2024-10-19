@@ -65,6 +65,8 @@ private slots:
 
     void on_actionSa_ve_a_copy_as_triggered();
 
+    void on_actionClose_all_BUT_current_document_triggered();
+
 private:
     Ui::MainWindow *ui;
     void initialize();
