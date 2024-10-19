@@ -77,7 +77,7 @@ jobs:
         }
 
         Write-Host "Found vcvars64.bat at: $vs_vars_cmd"
-        echo "VS_VARS_CMD=$vs_vars_cmd" >> $GITHUB_ENV
+        echo "VS_VARS_CMD=$vs_vars_cmd" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8
 
     # Initialize MSVC environment for Windows
     - name: Initialize MSVC environment
