@@ -1,17 +1,10 @@
 name: Build and Test
 
-on:  # Define the events that trigger this workflow
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -48,47 +41,61 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Set up Visual Studio Build Tools and MSVC (Windows)
+    # Install Visual Studio Build Tools on Windows
     - name: Set up Visual Studio Build Tools and MSVC (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         choco install visualstudio2019buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+
+        # Locate Visual Studio using vswhere.exe
+        $vs_path = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
+          -latest -products * `
+          -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+          -property installationPath
+
+        echo "Visual Studio Path: $vs_path"
+
+        if (-not $vs_path) {
+          echo "Error: Visual Studio Build Tools not found!"
+          exit 1
+        }
+
         echo "VS_PATH=$vs_path" >> $GITHUB_ENV
         echo "VS_VARS_CMD=$vs_path\VC\Auxiliary\Build\vcvars64.bat" >> $GITHUB_ENV
       shell: powershell
 
-    # Run vcvarsall.bat to set up the environment variables for MSVC
+    # Initialize MSVC environment for Windows
     - name: Initialize MSVC environment
       if: matrix.os == 'windows-latest'
       run: |
         call "${{ env.VS_VARS_CMD }}"
       shell: cmd
 
-    # Set reusable strings
+    # Set reusable build directory
     - name: Set reusable strings
       id: strings
-      shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    # Configure CMake for all platforms
+    # Configure CMake
     - name: Configure CMake
       run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -G "Ninja" \
-        -S ${{ github.workspace }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S ${{ github.workspace }}
       shell: bash
 
     # Build the project
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+      run: |
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     # Run tests
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --output-on-failure --build-config Release
+      run: |
+        ctest --output-on-failure --build-config Release
