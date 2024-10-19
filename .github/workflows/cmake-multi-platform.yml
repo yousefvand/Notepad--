@@ -70,7 +70,12 @@ jobs:
     - name: Initialize MSVC environment
       if: matrix.os == 'windows-latest'
       run: |
-        call "${{ env.VS_VARS_CMD }}"
+        if exist "${{ env.VS_VARS_CMD }}" (
+          call "${{ env.VS_VARS_CMD }}"
+        ) else (
+          echo "Error: vcvars64.bat not found!"
+          exit 1
+        )
       shell: cmd
 
     # Set reusable build directory
