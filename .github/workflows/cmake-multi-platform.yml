@@ -54,7 +54,8 @@ jobs:
           -property installationPath
 
         if (-not $vs_path) {
-          Write-Host "Visual Studio Build Tools not found!" && exit 1
+          Write-Host "Visual Studio Build Tools not found!"
+          exit 1
         }
 
         $vs_vars_cmd = "$vs_path\VC\Auxiliary\Build\vcvars64.bat"
@@ -67,9 +68,10 @@ jobs:
     - name: Initialize MSVC environment
       if: matrix.os == 'windows-latest'
       run: |
-        echo "Using vcvars64.bat from: %VS_VARS_CMD%"
+        Write-Host "Using vcvars64.bat from: %VS_VARS_CMD%"
         if not exist "%VS_VARS_CMD%" (
-          echo "Error: vcvars64.bat not found!" && exit 1
+          echo "Error: vcvars64.bat not found!"
+          exit 1
         )
         call "%VS_VARS_CMD%"
       shell: cmd
