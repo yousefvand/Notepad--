@@ -1,5 +1,6 @@
 #pragma once
 
+#include "document.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -62,11 +63,17 @@ private slots:
 
     void on_actionOpen_Folder_triggered();
 
+    void on_actionSa_ve_a_copy_as_triggered();
+
 private:
     Ui::MainWindow *ui;
     void initialize();
     void openDocument(const QString &filePath);
     void closeAllDocuments();
     void removeTabSafely(int index);
+    int findUntitledDocumentIndex();
+    void setTabColor(int index, const QString& color);
+    void connectSignals(Document* doc);
+    bool isUntitledDocument(const QString &title);
 };
 

@@ -24,6 +24,7 @@ public:
     void saveDocument();
     bool promptForSave();
     QString filePath() const;
+    QString fileName() const;
     void setFilePath(const QString &path);
     QString getLanguage() const;
     void openFile(const QString &filePath);
@@ -31,6 +32,7 @@ public:
     void onWorkerTaskCompleted();
     bool checkForUnsavedChanges();
     void saveFileAs(const QString &newFilePath);
+    void saveAcopyAs();
     bool closeDocument();
     void goToLineNumberInText(QWidget* parent);
     void goToLineNumberInEditor();
@@ -41,6 +43,9 @@ public:
     void setModified(bool modified);
     void startLoading();
     void finishLoading();
+    CodeEditor* editor() const { return m_editor; }
+    FileLoaderWorker* worker() const { return m_fileLoaderWorker; }
+    bool isLoading() const;
 
     QString originalFileContent;  // Changed from QString& to QString (regular value)
 
@@ -68,6 +73,7 @@ private slots:
     void onFileSizeDetermined(qint64 fileSize);
     void onSavingProgress(int progress);
     void onSavingFinished();
+    void handleProgressBarHiding();
 
 private:
     void loadContent();
@@ -88,9 +94,10 @@ private:
     QProgressBar *m_progressBar;
 
     QString m_filePath;
+    QString m_fileName;
     QString m_fileExtension;
     QFile m_file;
-    CodeEditor *editor;
+    CodeEditor *m_editor;
     std::unique_ptr<QSyntaxHighlighter> syntaxHighlighter;
     qint64 m_fileSize;
     QMap<qint64, QString> m_changedSegments;

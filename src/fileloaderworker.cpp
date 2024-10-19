@@ -20,22 +20,16 @@ FileLoaderWorker::~FileLoaderWorker() {
 }
 
 qint64 calculateChunkSize(qint64 fileSize) {
-    qint64 chunkSize = fileSize / 100;  // Default chunk size is 1/100th of the file
+    qint64 chunkSize = fileSize / 100;
 
-    // For small files, read the entire file at once
-    if (fileSize < 1 * 1024 * 1024) {  // Less than 1MB
-        chunkSize = fileSize;
+    if (fileSize > 500 * 1024 * 1024) {  // If file is larger than 500MB
+        chunkSize = 8 * 1024 * 1024;  // Set chunk size to 8MB
+    } else if (fileSize < 1 * 1024 * 1024) {
+        chunkSize = fileSize;  // Read small files in one go
     }
 
-    // Set a minimum chunk size of 4KB
-    if (chunkSize < 4096) {
-        chunkSize = 4096;  // 4KB minimum
-    }
-
-    // Optionally, set a maximum chunk size of 10MB
-    if (chunkSize > 10 * 1024 * 1024) {  // Cap chunk size at 10MB
-        chunkSize = 10 * 1024 * 1024;  // 10MB maximum
-    }
+    if (chunkSize < 4096) chunkSize = 4096;  // Minimum 4KB
+    if (chunkSize > 10 * 1024 * 1024) chunkSize = 10 * 1024 * 1024;  // Maximum 10MB
 
     return chunkSize;
 }
@@ -49,28 +43,43 @@ void FileLoaderWorker::startLoading() {
 
     m_fileSize = file.size();
     emit fileSizeDetermined(m_fileSize);
+    emit loadingStarted();  // Ensure UI knows loading has started
 
-    qint64 chunkSize = calculateChunkSize(m_fileSize);
+    const qint64 chunkSize = 16 * 1024;  // Use 16KB chunks for finer updates
     QTextStream in(&file);
     in.setEncoding(QStringConverter::Utf8);
 
     qint64 bytesRead = 0;
+    int lastReportedProgress = 0;
+    auto lastUpdateTime = std::chrono::steady_clock::now();
+
     while (!in.atEnd()) {
         QString buffer = in.read(chunkSize);
         if (buffer.isEmpty()) break;
 
         bytesRead += buffer.toUtf8().size();
-        emit contentLoaded(buffer);  // Emit content after every chunk is read
+        emit contentLoaded(buffer);  // Emit content incrementally
 
-        int progress = static_cast<int>((bytesRead * 100) / m_fileSize);
-        emit loadingProgress(progress);  // Update progress based on bytes read so far
+        // Calculate current progress percentage
+        int currentProgress = static_cast<int>((bytesRead * 100) / m_fileSize);
 
-        QCoreApplication::processEvents();  // Keep the UI responsive
+        // Throttle updates: emit only if 100ms has passed since the last update
+        auto now = std::chrono::steady_clock::now();
+        if (currentProgress > lastReportedProgress &&
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdateTime).count() > 100) {
+
+            lastReportedProgress = currentProgress;
+            emit loadingProgress(currentProgress);  // Emit progress
+
+            // Update last update time and process UI events
+            lastUpdateTime = now;
+            QCoreApplication::processEvents();
+        }
     }
 
-    if (bytesRead >= m_fileSize) {
-        emit loadingFinished();
-    }
+    emit loadingProgress(100);  // Ensure progress reaches 100%
+    emit loadingFinished();
+    file.close();
 }
 
 void FileLoaderWorker::saveFile(const QString &filePath, const QString &fileContent) {
@@ -144,6 +153,7 @@ void FileLoaderWorker::loadFile(const QString &filePath) {
         qDebug() << "Read chunk of size: " << buffer.size() << " Total bytesRead: " << bytesRead;
 
         emit contentLoaded(buffer);
+        QCoreApplication::processEvents();
 
         // Update progress bar
         int progress = static_cast<int>((bytesRead * 100) / m_fileSize);
