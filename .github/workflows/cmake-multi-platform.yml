@@ -28,7 +28,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Install dependencies for Ubuntu
+    # Install dependencies on Ubuntu
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -36,48 +36,43 @@ jobs:
         sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    # Install dependencies for macOS
+    # Install dependencies on macOS
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Install Visual Studio Build Tools on Windows
-    - name: Install Visual Studio Build Tools (Windows)
+    # Install dependencies on Windows
+    - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
         choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install qt --version 6.5.2 -y  # Install Qt
 
-    # Set up MSVC environment and run CMake
-    - name: Configure and Build (Windows)
+    # Set up MSVC environment on Windows
+    - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        echo Setting up MSVC environment...
         FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
           -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
         IF NOT DEFINED VS_PATH (
           echo Visual Studio Build Tools not found! && exit /b 1
         )
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
-        echo Using vcvars64.bat from: %VS_VARS_CMD%
         CALL "%VS_VARS_CMD%" || exit /b 1
         where cl || (echo cl.exe not found in PATH && exit /b 1)
 
-        cmake -B "%GITHUB_WORKSPACE%\build" ^
-          -DCMAKE_CXX_COMPILER=cl ^
-          -DCMAKE_C_COMPILER=cl ^
-          -DCMAKE_BUILD_TYPE=Release ^
-          -G "Ninja" ^
-          -S "%GITHUB_WORKSPACE%"
+        # Set CMAKE_PREFIX_PATH for Qt
+        SET CMAKE_PREFIX_PATH="C:\Program Files\Qt\6.5.2\msvc2019_64\lib\cmake\Qt6"
+        echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> %GITHUB_ENV%
 
-    # Configure CMake for other platforms
-    - name: Configure CMake (Other Platforms)
-      if: matrix.os != 'windows-latest'
+    # Configure CMake for all platforms
+    - name: Configure CMake
       run: |
         cmake -B "${{ github.workspace }}/build" \
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
