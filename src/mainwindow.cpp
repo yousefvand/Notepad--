@@ -19,6 +19,10 @@
 #include <QTabBar>
 #include <QRegularExpression>
 #include <QTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QTextCursor>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -119,13 +123,18 @@ void MainWindow::openDocument(const QString &filePath) {
         return;
     }
 
-    // Check if the first tab is "Untitled Document" and delete it if present
     if (ui->documentsTab->count() > 0) {
         Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(0));
+
         if (doc && isUntitledDocument(ui->documentsTab->tabText(0))) {
-            qDebug() << "Closing untitled document.";
-            ui->documentsTab->removeTab(0);
-            doc->deleteLater();  // Schedule safe deletion
+            QString content = doc->getEditorContent();  // Retrieve the editor content
+            if (content.isEmpty()) {  // Check if the document is empty
+                qDebug() << "Closing untitled and empty document.";
+                ui->documentsTab->removeTab(0);
+                doc->deleteLater();  // Schedule safe deletion
+            } else {
+                qDebug() << "Untitled document is not empty, skipping removal.";
+            }
         }
     }
 
@@ -453,33 +462,14 @@ void MainWindow::setTabColor(int index, const QString &color) {
 }
 
 void MainWindow::connectSignals(Document *doc) {
-    if (!doc) {
-        qDebug() << "Error: Document is null in connectSignals()";
-        return;
-    }
-    // Connect to the editor's modificationChanged signal
+    if (!doc) return;
+
     connect(doc->editor(), &QPlainTextEdit::modificationChanged, this, [this, doc](bool changed) {
-        int index = ui->documentsTab->indexOf(doc);
-        if (index != -1) {
-            if (changed) {
-                setTabColor(index, "red");
-            } else {
-                setTabColor(index, "green");
-            }
-        }
+        applyColorCoding(doc, changed);
     });
 
-    // Connect to the worker's savingFinished signal
     connect(doc->worker(), &FileLoaderWorker::savingFinished, this, [this, doc]() {
-        int index = ui->documentsTab->indexOf(doc);
-        if (index != -1) {
-            qDebug() << "Saving finished for tab at index:" << index;
-            // Temporarily block signals to avoid unnecessary modifications
-            doc->editor()->blockSignals(true);
-            doc->editor()->document()->setModified(false);  // Reset modified state
-            setTabColor(index, "green");
-            doc->editor()->blockSignals(false);
-        }
+        applyColorCoding(doc, false);
     });
 }
 
@@ -577,6 +567,152 @@ void MainWindow::on_actionClose_all_BUT_current_document_triggered() {
     qDebug() << "All tabs except the active one have been closed.";
 }
 
+void MainWindow::on_actionSave_session_triggered() {
+    QString filePath = QFileDialog::getSaveFileName(
+        this, tr("Save Session"), "", tr("JSON Files (*.json);;All Files (*)"));
 
+    if (filePath.isEmpty()) return;
 
+    QJsonArray tabsArray;
 
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->widget(i));
+        if (doc) {
+            QJsonObject tabData;
+
+            // Ensure correct order: filePath -> isModified -> cursorPosition -> content
+            tabData["filePath"] = doc->filePath();
+            tabData["isModified"] = doc->isModified();
+            tabData["cursorPosition"] = doc->editor()->textCursor().position();
+
+            QString content = doc->isModified() ? doc->editor()->toPlainText() : "";
+            tabData["content"] = content;  // Ensure content is added last
+
+            tabsArray.append(tabData);
+        }
+    }
+
+    QJsonObject sessionData;
+    sessionData["activeTab"] = ui->documentsTab->currentIndex();
+    sessionData["tabs"] = tabsArray;
+
+    QJsonDocument doc(sessionData);
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(doc.toJson(QJsonDocument::Indented));
+        file.close();
+    }
+}
+
+void MainWindow::applyColorCoding(Document* doc, bool isModified) {
+    int index = ui->documentsTab->indexOf(doc);
+    if (index == -1) return;  // Invalid tab index
+
+    QColor tabColor = isModified ? Qt::red : QColor(0, 100, 0);  // Dark Green for saved
+
+    ui->documentsTab->tabBar()->setTabTextColor(index, tabColor);
+    qDebug() << "Applied color" << tabColor.name() << "to tab index:" << index;
+}
+
+void MainWindow::restoreCursorPosition(Document *doc, int position) {
+    QTimer::singleShot(0, doc->editor(), [doc, position]() {
+        QTextCursor cursor = doc->editor()->textCursor();
+        cursor.setPosition(position);
+        doc->editor()->setTextCursor(cursor);
+        doc->editor()->ensureCursorVisible();
+    });
+}
+
+void MainWindow::on_actionLoad_session_triggered() {
+    QString filePath = QFileDialog::getOpenFileName(
+        this, tr("Load Session"), "", tr("JSON Files (*.json);;All Files (*)"));
+
+    if (filePath.isEmpty()) return;
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) return;
+
+    QByteArray sessionData = file.readAll();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(sessionData);
+    QJsonObject rootObj = jsonDoc.object();
+
+    closeAllDocuments();  // Close all existing tabs before restoring the session
+
+    QJsonArray tabsArray = rootObj["tabs"].toArray();
+    int activeTabIndex = rootObj["activeTab"].toInt();
+
+    for (int i = 0; i < tabsArray.size(); ++i) {
+        QJsonObject tabData = tabsArray[i].toObject();
+        loadTabFromSession(tabData);
+    }
+
+    ui->documentsTab->setCurrentIndex(activeTabIndex);
+}
+
+void MainWindow::loadTabFromSession(const QJsonObject &tabData) {
+    QString filePath = tabData["filePath"].toString();
+    bool isModified = tabData["isModified"].toBool();
+    int cursorPosition = tabData["cursorPosition"].toInt();
+    QString content = tabData["content"].toString();
+
+    qDebug() << "\n==== Restoring Tab from Session ====";
+    qDebug() << "File Path:" << filePath;
+    qDebug() << "Is Modified:" << isModified;
+    qDebug() << "Cursor Position:" << cursorPosition;
+
+    Document *newDoc = nullptr;
+    QString tabTitle;
+
+    // Case 1: Untitled Document (no path)
+    if (filePath.isEmpty()) {
+        newDoc = new Document("", this);
+        newDoc->editor()->setPlainText(content);
+        newDoc->setModified(isModified);
+        tabTitle = "Untitled Document";
+    }
+    // Case 2: Modified Document with Path (use session content)
+    else if (isModified) {
+        newDoc = new Document(filePath, this);
+        newDoc->editor()->setPlainText("");
+        newDoc->editor()->appendPlainText(content);
+        newDoc->setModified(true);
+        tabTitle = newDoc->fileName();
+    }
+    // Case 3: Unmodified Document with Path (load from path)
+    else {
+        newDoc = new Document(filePath, this);
+        tabTitle = newDoc->fileName();
+    }
+
+    int tabIndex = ui->documentsTab->addTab(newDoc, tabTitle);
+    applyColorCoding(newDoc, isModified);
+    ui->documentsTab->setCurrentIndex(tabIndex);
+
+    // Restore the cursor only after the document loading is completed
+    connect(newDoc->worker(), &FileLoaderWorker::loadingFinished, this, [this, newDoc, cursorPosition]() {
+        qDebug() << "Worker thread finished loading document.";
+
+        QTextCursor cursor = newDoc->editor()->textCursor();
+        int docLength = newDoc->editor()->document()->characterCount();
+
+        // Set the cursor to the saved position or move to the end if out of bounds
+        if (cursorPosition >= 0 && cursorPosition <= docLength) {
+            cursor.setPosition(cursorPosition);
+            newDoc->editor()->setTextCursor(cursor);
+            qDebug() << "Cursor successfully restored to position:" << cursor.position();
+        } else {
+            qDebug() << "Cursor position" << cursorPosition << "out of bounds, moving to end.";
+            newDoc->editor()->moveCursor(QTextCursor::End);
+        }
+
+        // Ensure UI updates are applied
+        newDoc->editor()->ensureCursorVisible();
+        newDoc->editor()->update();
+    });
+
+    // Connect all required signals for the document
+    connectSignals(newDoc);
+
+    qDebug() << "Connected signals for tab with title:" << tabTitle;
+    qDebug() << "==== Tab Restoration Complete ====";
+}

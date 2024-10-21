@@ -17,6 +17,7 @@
 #include "document.h"
 #include "fileloaderworker.h"
 #include "codeeditor.h"
+#include "languages/languagemanager.h"
 
 Document::Document(const QString &filePath, QWidget *parent)
     : QWidget(parent), m_filePath(filePath), m_isModified(false), m_totalBytesRead(0), m_workerThread(new QThread(this)) {
@@ -56,10 +57,7 @@ Document::Document(const QString &filePath, QWidget *parent)
     connect(m_fileLoaderWorker, &FileLoaderWorker::savingFinished, this, &Document::onSavingFinished, Qt::QueuedConnection);
     connect(this, &Document::savingProgress, m_progressBar, &QProgressBar::setValue, Qt::QueuedConnection);
     connect(this, &Document::uiReady, m_fileLoaderWorker, &FileLoaderWorker::startLoading);
-    connect(this, &Document::handleProgressBarHiding, this, [this]() {
-        m_progressBar->setVisible(false);  // Hide progress bar when loading/saving is done
-        m_statusLabel->setText("");
-    });
+    connect(m_fileLoaderWorker, &FileLoaderWorker::loadingFinished, this, &Document::handleProgressBarHiding);
     // Connect the editor's textChanged signal, but ensure changes are only registered after loading is complete
     connect(m_editor, &QPlainTextEdit::textChanged, this, [this]() {
         if (!m_isLoading) {
@@ -67,6 +65,10 @@ Document::Document(const QString &filePath, QWidget *parent)
             this->setModified(true);
         }
     });
+    connect(m_editor, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
+        setSavedCursorPosition(m_editor->textCursor().position());
+    });
+
 
     // Start worker thread
     m_workerThread->start();
@@ -150,6 +152,13 @@ void Document::onSavingProgress(int progress) {
     }
 }
 
+void Document::handleProgressBarHiding() {
+    qDebug() << "Hiding progress bar and clearing status label.";
+    m_progressBar->setVisible(false);
+    m_statusLabel->clear();
+    m_statusLabel->setVisible(false);
+}
+
 void Document::onLoadingFinished() {
     if (m_progressBar->value() < 100) {
         // Simulate smooth completion if it finishes too fast
@@ -191,6 +200,10 @@ QString Document::fileName() const {
     return m_fileName;
 }
 
+QString Document::getLanguage() const {
+    return m_language;
+}
+
 QString Document::getEditorContent() const {
     return m_editor->toPlainText();  // Safely access the editor content
 }
@@ -206,6 +219,14 @@ void Document::setModified(bool modified) {
         emit editor()->modificationChanged(modified);
         qDebug() << "Document modification state changed for" << filePath() << "to:" << modified;
     }
+}
+
+int Document::savedCursorPosition() const {
+    return m_savedCursorPosition;
+}
+
+void Document::setSavedCursorPosition(int position) {
+    m_savedCursorPosition = position;
 }
 
 void Document::startLoading() {
@@ -295,9 +316,11 @@ bool Document::closeDocument() {
     if (isModified()) {
         // Document has unsaved changes, so prompt the user
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::warning(this, tr("Unsaved Changes for: ") + m_fileName,
-                                     tr("The document has unsaved changes. Do you want to save your changes?"),
-                                     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        reply = QMessageBox::warning(
+            this,
+            tr(QString("Unsaved Changes for \"%1\"").arg(m_fileName).toUtf8().constData()),
+            tr("The document has unsaved changes. Do you want to save your changes?"),
+            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
         if (reply == QMessageBox::Save) {
             saveFile();  // Save the document
@@ -364,6 +387,7 @@ void Document::goToLineNumberInText(QWidget* parent) {
 
 void Document::applySyntaxHighlighter(const QString &language) {
     qDebug() << "Applying syntax highlighter for language: " << language;
+    m_language = language;
 
     if (syntaxHighlighter) {
         qDebug() << "Deleting existing syntax highlighter";
@@ -442,16 +466,6 @@ void Document::onContentLoaded(const QString &chunk) {
         setModified(false);  // Reset the modified flag
         emit loadingFinished();
     }
-}
-
-void Document::handleProgressBarHiding() {
-    qDebug() << "Hiding progress bar and clearing status label.";
-    qDebug() << "Status label visibility:" << m_statusLabel->isVisible();
-    qDebug() << "Progress bar visibility:" << m_progressBar->isVisible();
-
-    m_progressBar->setVisible(false);  // Hide progress bar
-    m_statusLabel->setVisible(false);  // Hide status label
-    m_statusLabel->clear();  // Clear text to avoid stale status
 }
 
 bool Document::isLoading() const {

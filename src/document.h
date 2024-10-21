@@ -9,10 +9,10 @@
 #include <QProgressBar>
 #include <QSyntaxHighlighter>
 #include "fileloaderworker.h"
-#include "languages/languagemanager.h"
 
 class CodeEditor;
 class FileLoaderWorker;
+class LanguageManager;
 
 class Document : public QWidget {
     Q_OBJECT
@@ -46,8 +46,9 @@ public:
     CodeEditor* editor() const { return m_editor; }
     FileLoaderWorker* worker() const { return m_fileLoaderWorker; }
     bool isLoading() const;
-
-    QString originalFileContent;  // Changed from QString& to QString (regular value)
+    QString originalFileContent;
+    int savedCursorPosition() const;
+    void setSavedCursorPosition(int position);
 
 signals:
     void uiReady();
@@ -67,13 +68,13 @@ public slots:
     void onLoadingFinished();
     void onLoadingError(const QString &error);
     void onSavingStarted();
+    void handleProgressBarHiding();
 
 private slots:
     void onContentLoaded(const QString &chunk);
     void onFileSizeDetermined(qint64 fileSize);
     void onSavingProgress(int progress);
     void onSavingFinished();
-    void handleProgressBarHiding();
 
 private:
     void loadContent();
@@ -108,4 +109,5 @@ private:
     int m_smoothProgressUpdateInterval = 1;
     qint64 m_totalBytesInserted = 0;
     bool m_isModified;
+    int m_savedCursorPosition = 0;
 };

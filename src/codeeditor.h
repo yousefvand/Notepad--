@@ -17,6 +17,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    void highlightCurrentLine();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -26,7 +27,6 @@ signals:
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
-    void highlightCurrentLine();
     void updateLineNumberArea(const QRect &rect, int dy);
 
 private:

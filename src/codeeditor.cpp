@@ -38,17 +38,28 @@ int CodeEditor::lineNumberAreaWidth() {
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int) {
-    setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+    int marginWidth = lineNumberAreaWidth();
+    setViewportMargins(marginWidth, 0, 0, 0);
+
+    qDebug() << "Line number area width updated to:" << marginWidth;
+
+    // Ensure the viewport is refreshed immediately
+    viewport()->update();
+    updateGeometry();
 }
 
 void CodeEditor::updateLineNumberArea(const QRect &rect, int dy) {
-    if (dy)
-        lineNumberArea->scroll(0, dy);
-    else
-        lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+    if (!document()) return;  // Ensure the document exists
 
-    if (rect.contains(viewport()->rect()))
+    if (dy) {
+        lineNumberArea->scroll(0, dy);
+    } else {
+        lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+    }
+
+    if (rect.contains(viewport()->rect())) {
         updateLineNumberAreaWidth(0);
+    }
 }
 
 void CodeEditor::resizeEvent(QResizeEvent *e) {
@@ -56,6 +67,11 @@ void CodeEditor::resizeEvent(QResizeEvent *e) {
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+
+    // Force recalculation of the layout
+    document()->adjustSize();
+    updateGeometry();
+    viewport()->update();
 }
 
 void CodeEditor::highlightCurrentLine() {
@@ -72,6 +88,7 @@ void CodeEditor::highlightCurrentLine() {
     }
 
     setExtraSelections(extraSelections);
+    qDebug() << "Highlighted current line at position:" << textCursor().position();
 }
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {

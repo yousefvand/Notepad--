@@ -13,6 +13,7 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void restoreCursorPosition(Document* doc, int position);
 
 signals:
     void uiReady();
@@ -67,6 +68,10 @@ private slots:
 
     void on_actionClose_all_BUT_current_document_triggered();
 
+    void on_actionSave_session_triggered();
+
+    void on_actionLoad_session_triggered();
+
 private:
     Ui::MainWindow *ui;
     void initialize();
@@ -77,5 +82,7 @@ private:
     void setTabColor(int index, const QString& color);
     void connectSignals(Document* doc);
     bool isUntitledDocument(const QString &title);
+    void applyColorCoding(Document* doc, bool isModified);
+    void loadTabFromSession(const QJsonObject &tabData);
 };
 
