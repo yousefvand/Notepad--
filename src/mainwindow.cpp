@@ -23,6 +23,10 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QTextCursor>
+#include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrintDialog>
+#include <QPrintDialog>
+#include <QTextDocument>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -716,3 +720,38 @@ void MainWindow::loadTabFromSession(const QJsonObject &tabData) {
     qDebug() << "Connected signals for tab with title:" << tabTitle;
     qDebug() << "==== Tab Restoration Complete ====";
 }
+
+void MainWindow::on_action_Print_triggered() {
+    // Create a printer object
+    QPrinter printer;
+
+    // Show a print dialog to the user
+    QPrintDialog printDialog(&printer, this);
+    printDialog.setWindowTitle("Print Document");
+
+    // Check if the user accepted the dialog
+    if (printDialog.exec() != QDialog::Accepted) {
+        QMessageBox::information(this, "Print", "Printing was canceled.");
+        return;
+    }
+
+    // Get the currently active document from the tab widget
+    int currentTabIndex = ui->documentsTab->currentIndex();
+    if (currentTabIndex == -1) {
+        QMessageBox::warning(this, "Print Error", "No document to print.");
+        return;
+    }
+
+    Document *currentDoc = qobject_cast<Document*>(ui->documentsTab->widget(currentTabIndex));
+    if (!currentDoc) {
+        QMessageBox::warning(this, "Print Error", "Failed to retrieve the document.");
+        return;
+    }
+
+    // Print the content of the editor associated with the current document
+    QTextDocument *textDoc = currentDoc->editor()->document();
+    textDoc->print(&printer);
+
+    QMessageBox::information(this, "Print", "Document printed successfully.");
+}
+

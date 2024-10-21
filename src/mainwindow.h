@@ -72,6 +72,8 @@ private slots:
 
     void on_actionLoad_session_triggered();
 
+    void on_action_Print_triggered();
+
 private:
     Ui::MainWindow *ui;
     void initialize();

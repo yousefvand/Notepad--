@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find Qt6 libraries
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets PrintSupport)
 
 # Translation file path in 'translations' folder
 set(TS_FILES translations/Notepad--_en_GB.ts)
@@ -45,7 +46,7 @@ qt_add_executable(Notepad--
 
 # Link necessary Qt6 libraries
 target_link_libraries(Notepad--
-    PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Concurrent
+    PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Concurrent Qt6::PrintSupport
 )
 
 # Set target properties for macOS/iOS
