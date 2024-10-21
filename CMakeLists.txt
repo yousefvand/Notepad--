@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 # Translation file path in 'translations' folder
 set(TS_FILES translations/Notepad--_en_GB.ts)

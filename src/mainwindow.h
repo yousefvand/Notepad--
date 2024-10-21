@@ -2,6 +2,9 @@
 
 #include "document.h"
 #include <QMainWindow>
+#include <QMenu>
+#include <QSettings>
+#include <QStringList>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,6 +17,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void restoreCursorPosition(Document* doc, int position);
+
+protected:
+    void closeEvent(QCloseEvent *event) override;  // Override close event
 
 signals:
     void uiReady();
@@ -74,6 +80,12 @@ private slots:
 
     void on_action_Print_triggered();
 
+    void openRecentFile(const QString &filePath);  // Open a file from recent files
+
+    void clearRecentFiles();  // Clear all recent files
+
+    void on_actionE_xit_triggered();
+
 private:
     Ui::MainWindow *ui;
     void initialize();
@@ -86,5 +98,12 @@ private:
     bool isUntitledDocument(const QString &title);
     void applyColorCoding(Document* doc, bool isModified);
     void loadTabFromSession(const QJsonObject &tabData);
+    QStringList recentFiles;  // List of recent files
+    QSettings settings;  // Store recent files inside the application
+    QMenu *recentFilesMenu = nullptr; // Pointer to the Recent Files submenu
+    void addToRecentFiles(const QString &filePath);  // Add new file path
+    void updateRecentFilesMenu(); // Refresh submenu dynamically
+    void loadRecentFiles();  // Load recent files from settings
+    void saveRecentFiles();  // Save recent files to settings
 };
 

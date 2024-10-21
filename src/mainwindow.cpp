@@ -27,9 +27,10 @@
 #include <QtPrintSupport/QPrintDialog>
 #include <QPrintDialog>
 #include <QTextDocument>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), settings("Remisa", "Notepad--") {
     ui->setupUi(this);
     qDebug() << "Tab widget pointer: " << ui->documentsTab;
     ui->documentsTab->setTabsClosable(true);
@@ -94,12 +95,28 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
+    qDebug() << "Loaded recent files:" << settings.value("recentFiles").toStringList();
+    // Create a QMenu dynamically and assign it to the action
+    recentFilesMenu = new QMenu("Recent Files", this);
+    ui->menu_File->insertMenu(ui->actionRecent_Files, recentFilesMenu);
+    // Remove the placeholder QAction (if not needed anymore)
+    ui->menu_File->removeAction(ui->actionRecent_Files);
+    // Load and update recent files
+    loadRecentFiles();
+    updateRecentFilesMenu();
+
     qDebug() << "Initialization complete, emitting uiReady signal.";
     initialize();  // Initialize UI readiness
 }
 
 MainWindow::~MainWindow() {
+    settings.setValue("recentFiles", recentFiles);
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    saveRecentFiles();
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::initialize() {
@@ -142,6 +159,7 @@ void MainWindow::openDocument(const QString &filePath) {
         }
     }
 
+    if (filePath != "") addToRecentFiles(filePath);
     // Create a new document and add it as a tab
     Document* newDoc = new Document(filePath, this);
     ui->documentsTab->addTab(newDoc, fileName);
@@ -156,6 +174,62 @@ void MainWindow::on_action_Open_triggered() {
     if (!filePath.isEmpty()) {
         openDocument(filePath);
     }
+}
+
+void MainWindow::addToRecentFiles(const QString &filePath) {
+    recentFiles.removeAll(filePath);  // Avoid duplicates
+    recentFiles.prepend(filePath);  // Add to the top
+
+    if (recentFiles.size() > 10) {
+        recentFiles.removeLast();  // Keep only the last 10 items
+    }
+
+    updateRecentFilesMenu();  // Refresh the menu
+    qDebug() << "Recent files updated:" << recentFiles;
+
+}
+
+void MainWindow::saveRecentFiles() {
+    QSettings settings("Remisa", "Notepad--");
+    settings.setValue("recentFiles", recentFiles);
+}
+
+void MainWindow::updateRecentFilesMenu() {
+    if (!recentFilesMenu) {
+        qWarning() << "Recent files menu is not initialized!";
+        return;
+    }
+
+    recentFilesMenu->clear();  // Clear existing items
+
+    // Add recent file actions
+    for (const QString &filePath : recentFiles) {
+        QAction *action = new QAction(filePath, this);
+        connect(action, &QAction::triggered, this, [this, filePath]() { openRecentFile(filePath); });
+        recentFilesMenu->addAction(action);
+    }
+
+    // Add separator and "Clear Recent Files" action
+    recentFilesMenu->addSeparator();
+    QAction *clearAction = new QAction("Clear Recent Files", this);
+    connect(clearAction, &QAction::triggered, this, &MainWindow::clearRecentFiles);
+    recentFilesMenu->addAction(clearAction);
+}
+
+void MainWindow::openRecentFile(const QString &filePath) {
+    // Logic to open the recent file
+    qDebug() << "Opening recent file:" << filePath;
+    openDocument(filePath);  // Your file opening logic
+}
+
+void MainWindow::clearRecentFiles() {
+    recentFiles.clear();
+    updateRecentFilesMenu();
+}
+
+void MainWindow::loadRecentFiles() {
+    QSettings settings("Remisa", "Notepad--");
+    recentFiles = settings.value("recentFiles").toStringList();
 }
 
 bool MainWindow::isUntitledDocument(const QString &title) {
@@ -753,5 +827,11 @@ void MainWindow::on_action_Print_triggered() {
     textDoc->print(&printer);
 
     QMessageBox::information(this, "Print", "Document printed successfully.");
+}
+
+
+void MainWindow::on_actionE_xit_triggered()
+{
+    // TODO: Exit app gracefully
 }
 
