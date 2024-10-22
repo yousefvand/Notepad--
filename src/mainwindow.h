@@ -105,5 +105,6 @@ private:
     void updateRecentFilesMenu(); // Refresh submenu dynamically
     void loadRecentFiles();  // Load recent files from settings
     void saveRecentFiles();  // Save recent files to settings
+    CodeEditor* getCurrentEditor() const;
 };
 

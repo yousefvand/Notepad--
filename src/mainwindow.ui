@@ -138,9 +138,8 @@
      <addaction name="action_Enable_Smart_Indent"/>
     </widget>
     <addaction name="action_Undo"/>
-    <addaction name="separator"/>
-    <addaction name="separator"/>
     <addaction name="action_Redo"/>
+    <addaction name="separator"/>
     <addaction name="actionCu_t"/>
     <addaction name="action_Copy"/>
     <addaction name="action_Paste"/>

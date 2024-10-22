@@ -67,7 +67,7 @@ jobs:
         $ErrorActionPreference = "Stop"
         $qtInstallerPath = "qt-unified-windows-x64-online.exe"
 
-        # Download with retries
+        # Download Qt installer with retries
         for ($i = 0; $i -lt 3; $i++) {
           try {
             Write-Host "Downloading Qt installer... Attempt $($i + 1)"
@@ -80,12 +80,17 @@ jobs:
           }
         }
 
-        # Install Qt silently
+        # Install Qt
         Write-Host "Installing Qt..."
         Start-Process -FilePath $qtInstallerPath -ArgumentList `
-          '--silent', '--platform minimal', '--accept-licenses', `
-          '--select qt.qt6.653.win64_msvc2019_64', '--no-force-installations' `
-          -NoNewWindow -Wait
+          '--accept-messages', '--confirm-command', '--no-interaction', `
+          '--platform minimal', '--select-components qt.qt6.653.win64_msvc2019_64', `
+          '--install-root C:\Qt' -NoNewWindow -Wait
+
+        # Verify installation
+        if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
+          throw "Qt installation failed!"
+        }
 
     - name: Save Qt cache (Windows)
       if: matrix.os == 'windows-latest' && steps.restore.outputs.cache-hit != 'true'

@@ -65,6 +65,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::on_documentsTab_tabCloseRequested);
     connect(ui->actionE_xit, &QAction::triggered, this, &MainWindow::on_actionE_xit_triggered);
 
+    connect(ui->action_Undo, &QAction::triggered, this, &MainWindow::on_action_Undo_triggered);
+    connect(ui->action_Redo, &QAction::triggered, this, &MainWindow::on_action_Redo_triggered);
+    connect(ui->documentsTab, &QTabWidget::currentChanged, this, [this](int index) {
+        if (auto *editor = getCurrentEditor()) {
+            editor->setFocus();  // Ensure focus on current editor
+        }
+    });
+
+
 
     qDebug() << "Tabs cleared, preparing to open files.";
 
@@ -435,15 +444,24 @@ void MainWindow::on_action_Paste_triggered()
 
 void MainWindow::on_action_Undo_triggered()
 {
-    // TODO: Undo
+    if (auto *editor = getCurrentEditor()) {
+        editor->undo();  // Perform undo operation
+    }
 }
 
 
 void MainWindow::on_action_Redo_triggered()
 {
-    // TODO: Redo
+    if (auto *editor = getCurrentEditor()) {
+        editor->redo();  // Perform redo operation
+    }
 }
 
+CodeEditor* MainWindow::getCurrentEditor() const {
+    int currentIndex = ui->documentsTab->currentIndex();
+    if (currentIndex == -1) return nullptr;  // No active tab
+    return qobject_cast<CodeEditor*>(ui->documentsTab->widget(currentIndex));
+}
 
 void MainWindow::on_actionZoom_In_triggered()
 {
@@ -544,13 +562,27 @@ void MainWindow::setTabColor(int index, const QString &color) {
 void MainWindow::connectSignals(Document *doc) {
     if (!doc) return;
 
+    // Connect modification change to apply color coding.
     connect(doc->editor(), &QPlainTextEdit::modificationChanged, this, [this, doc](bool changed) {
         applyColorCoding(doc, changed);
     });
 
+    // Connect the worker’s save completion signal.
     connect(doc->worker(), &FileLoaderWorker::savingFinished, this, [this, doc]() {
         applyColorCoding(doc, false);
     });
+
+    // Connect undo and redo actions to the editor.
+    connect(ui->action_Undo, &QAction::triggered, doc->editor(), &QPlainTextEdit::undo);
+    connect(ui->action_Redo, &QAction::triggered, doc->editor(), &QPlainTextEdit::redo);
+
+    // Enable/disable the undo and redo actions based on editor state.
+    connect(doc->editor(), &QPlainTextEdit::undoAvailable, ui->action_Undo, &QAction::setEnabled);
+    connect(doc->editor(), &QPlainTextEdit::redoAvailable, ui->action_Redo, &QAction::setEnabled);
+
+    // Ensure undo/redo actions are enabled/disabled initially.
+    ui->action_Undo->setEnabled(doc->editor()->document()->isUndoAvailable());
+    ui->action_Redo->setEnabled(doc->editor()->document()->isRedoAvailable());
 }
 
 void MainWindow::removeTabSafely(int index) {
