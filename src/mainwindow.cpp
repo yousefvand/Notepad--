@@ -63,6 +63,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->documentsTab->setTabsClosable(true);
 
     connect(ui->documentsTab, &QTabWidget::tabCloseRequested, this, &MainWindow::on_documentsTab_tabCloseRequested);
+    connect(ui->actionE_xit, &QAction::triggered, this, &MainWindow::on_actionE_xit_triggered);
+
 
     qDebug() << "Tabs cleared, preparing to open files.";
 
@@ -832,6 +834,33 @@ void MainWindow::on_action_Print_triggered() {
 
 void MainWindow::on_actionE_xit_triggered()
 {
-    // TODO: Exit app gracefully
+    qDebug() << "Exit triggered, checking for worker thread activity...";
+    // Access the worker thread through one of the documents
+    auto* document = qobject_cast<Document*>(ui->documentsTab->widget(0));  // Assuming at least one document exists
+    if (document) {
+        QThread* workerThread = document->workerThread();
+        if (workerThread && workerThread->isRunning()) {
+            qDebug() << "Worker thread is running. Waiting for it to finish...";
+            // Show a message to the user if necessary
+            QMessageBox::information(this, "Exiting",
+                                     "Please wait while the application completes pending operations...");
+
+            // Request the worker thread to quit gracefully
+            workerThread->quit();
+
+            // Wait for the thread to finish with a timeout of 5 seconds
+            if (!workerThread->wait(5000)) {
+                qDebug() << "Worker thread did not respond. Forcing termination...";
+                workerThread->terminate();  // Force terminate if not responsive
+                workerThread->wait();
+            }
+        }
+    }
+
+    // Ensure all recent files are saved before exiting
+    saveRecentFiles();
+
+    qDebug() << "Exiting application...";
+    QCoreApplication::quit();  // Gracefully exit the application
 }
 

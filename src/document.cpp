@@ -186,6 +186,10 @@ void Document::onLoadingError(const QString &error) {
     m_statusLabel->setText("Error: " + error);
 }
 
+QThread* Document::workerThread() const {
+    return m_workerThread;
+}
+
 void Document::setFilePath(const QString &path) {
     m_filePath = path;
     m_fileExtension = QFileInfo(m_filePath).suffix();

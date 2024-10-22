@@ -49,6 +49,7 @@ public:
     QString originalFileContent;
     int savedCursorPosition() const;
     void setSavedCursorPosition(int position);
+    QThread* workerThread() const;
 
 signals:
     void uiReady();

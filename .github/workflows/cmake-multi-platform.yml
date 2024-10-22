@@ -60,28 +60,32 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Download Qt Installer (Windows) with Retries
+    - name: Download and Install Qt (Windows) with Retries
       if: matrix.os == 'windows-latest' && !steps.restore.outputs.cache-hit
       shell: powershell
       run: |
         $ErrorActionPreference = "Stop"
         $qtInstallerPath = "qt-unified-windows-x64-online.exe"
-        if (!(Test-Path $qtInstallerPath)) {
-          for ($i = 0; $i -lt 3; $i++) {
-            try {
-              Invoke-WebRequest `
-                -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
-                -OutFile $qtInstallerPath -TimeoutSec 600
-              break
-            } catch {
-              Write-Host "Download failed. Retry $($i + 1)..."
-              if ($i -eq 2) { throw "Failed to download Qt installer after 3 attempts." }
-            }
+
+        # Download with retries
+        for ($i = 0; $i -lt 3; $i++) {
+          try {
+            Write-Host "Downloading Qt installer... Attempt $($i + 1)"
+            Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
+                              -OutFile $qtInstallerPath -TimeoutSec 1200
+            break
+          } catch {
+            Write-Host "Download failed. Retrying..."
+            if ($i -eq 2) { throw "Failed to download Qt installer after 3 attempts." }
           }
         }
-        Start-Process -Wait -FilePath $qtInstallerPath -ArgumentList `
+
+        # Install Qt silently
+        Write-Host "Installing Qt..."
+        Start-Process -FilePath $qtInstallerPath -ArgumentList `
           '--silent', '--platform minimal', '--accept-licenses', `
-          '--select qt.qt6.653.win64_msvc2019_64', '--no-force-installations'
+          '--select qt.qt6.653.win64_msvc2019_64', '--no-force-installations' `
+          -NoNewWindow -Wait
 
     - name: Save Qt cache (Windows)
       if: matrix.os == 'windows-latest' && steps.restore.outputs.cache-hit != 'true'
