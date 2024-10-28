@@ -5,6 +5,7 @@
 #include "document.h"
 
 class Document;
+class MainWindow;
 
 class FileLoaderWorker : public QObject {
     Q_OBJECT

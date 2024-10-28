@@ -20,7 +20,7 @@
 #include "languages/languagemanager.h"
 
 Document::Document(const QString &filePath, QWidget *parent)
-    : QWidget(parent), m_filePath(filePath), m_isModified(false), m_totalBytesRead(0), m_workerThread(new QThread(this)) {
+    : QWidget(parent), m_totalBytesRead(0), m_workerThread(new QThread(this)), m_filePath(filePath), m_isModified(false) {
 
     qDebug() << "Document created for file: " << filePath;
     // Initialize the code editor and layout
@@ -125,10 +125,12 @@ void Document::onLoadingStarted() {
 }
 
 void Document::onSavingStarted() {
+    qDebug() << "Saving started for document:" << m_filePath;
     m_isSaving = true;
+    m_statusLabel->setText("Saving File...");
     m_statusLabel->setVisible(true);
-    m_progressBar->setVisible(true);
     m_progressBar->setValue(0);
+    m_progressBar->setVisible(true);
 }
 
 void Document::onLoadingProgress(int progress) {
@@ -148,6 +150,8 @@ void Document::onSavingProgress(int progress) {
     m_progressBar->setValue(progress);
 
     if (progress == 100) {
+        qDebug() << "File saving complete.";
+        onSavingFinished();
         emit hideProgressBar();
     }
 }
@@ -176,8 +180,10 @@ void Document::onLoadingFinished() {
 }
 
 void Document::onSavingFinished() {
+    qDebug() << "Saving finished for document:" << m_filePath;
     m_isSaving = false;
-    m_statusLabel->setText("");
+    m_statusLabel->clear();
+    m_statusLabel->setVisible(false);
     m_progressBar->setVisible(false);
 }
 
@@ -259,6 +265,7 @@ void Document::saveFile() {
     m_progressBar->setValue(0);
     m_progressBar->setVisible(true);
     m_statusLabel->setText("Saving File...");
+    m_statusLabel->setVisible(true);
 
     // Start the save operation in the worker thread
     m_isSaving = true;
