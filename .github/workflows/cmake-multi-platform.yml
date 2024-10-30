@@ -80,14 +80,15 @@ jobs:
           }
         }
 
-        # Install Qt with simplified arguments
+        # Install Qt
         Write-Host "Installing Qt..."
         Start-Process -FilePath $qtInstallerPath -ArgumentList `
-          '--accept-messages', '--confirm-command', '--platform minimal' `
-          -NoNewWindow -Wait
+          '--accept-messages', '--confirm-command', '--no-interaction', `
+          '--platform minimal', '--select-components qt.qt6.653.win64_msvc2019_64', `
+          '--install-root C:\Qt' -NoNewWindow -Wait
 
-        # Verify installation path exists
-        if (!(Test-Path "C:\Qt")) {
+        # Verify installation
+        if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
           throw "Qt installation failed!"
         }
 

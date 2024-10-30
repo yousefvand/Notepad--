@@ -25,6 +25,7 @@ Document::Document(const QString &filePath, QWidget *parent)
     qDebug() << "Document created for file: " << filePath;
     // Initialize the code editor and layout
     m_editor = new CodeEditor(this);
+
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(m_editor);
     setLayout(layout);
@@ -107,6 +108,10 @@ Document::~Document() {
     }
 
     qDebug() << "Document destructor called, all resources cleaned up.";
+}
+
+QString Document::filePath() const {
+    return m_filePath;
 }
 
 void Document::onLoadingStarted() {
@@ -200,10 +205,6 @@ void Document::setFilePath(const QString &path) {
     m_filePath = path;
     m_fileExtension = QFileInfo(m_filePath).suffix();
     qDebug() << "File path set to:" << m_filePath;
-}
-
-QString Document::filePath() const {
-    return m_filePath;
 }
 
 QString Document::fileName() const {

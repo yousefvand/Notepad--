@@ -95,5 +95,21 @@ void Helpers::Print(QTabWidget* documentsTab, QWidget* parent) {
     QMessageBox::information(parent, "Print", "Document printed successfully.");
 }
 
+Document* Helpers::getCurrentDocument(QTabWidget* documentsTab) {
+    if (!documentsTab) return nullptr;
+    if (!documentsTab) {
+        qDebug() << "Error: documentsTab is not initialized!";
+        return nullptr;
+    }
+    int currentIndex = documentsTab->currentIndex();
+    if (currentIndex == -1) {
+        qDebug() << "No active document.";
+        return nullptr;
+    }
+
+    return qobject_cast<Document*>(documentsTab->widget(currentIndex));
+}
+
+
 
 

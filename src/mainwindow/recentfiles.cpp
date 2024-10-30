@@ -107,10 +107,14 @@ void RecentFiles::updateMenu() {
 
 void RecentFiles::loadRecentFiles() {
     qDebug() << "Loading recent files from QSettings...";
-    QVariant value = Settings::instance().value("recentFiles");
 
-    if (value.canConvert<QStringList>()) {
-        m_recentFiles = value.toStringList();
+    // Retrieve the saved JSON string from settings
+    QString jsonString = Settings::instance()->value("recentFiles", "[]").toString();
+
+    // Deserialize the JSON string to QStringList
+    m_recentFiles = deserializeFromJson(jsonString);
+
+    if (!m_recentFiles.isEmpty()) {
         qDebug() << "Loaded recent files:" << m_recentFiles;
     } else {
         qDebug() << "No recent files found. Clearing list.";
@@ -125,31 +129,32 @@ void RecentFiles::saveRecentFiles() {
     QString jsonString = serializeToJson(m_recentFiles);
 
     // Save the JSON string to settings
-    Settings::instance().setValue("recentFiles", jsonString);
-    Settings::instance().sync();  // Flush changes to disk
+    Settings::instance()->setValue("recentFiles", jsonString);
+    Settings::instance()->sync();  // Flush changes to disk
 
-    qDebug() << "Saved recent files:" << m_recentFiles;
+    qDebug() << "Saved recent files:" << jsonString;
 }
 
-QString RecentFiles::serializeToJson(const QStringList& list) const {
+QString RecentFiles::serializeToJson(const QStringList& recentFiles) const {
     QJsonArray jsonArray;
-    for (const QString& str : list) {
-        jsonArray.append(str);
+    for (const QString& file : recentFiles) {
+        jsonArray.append(file);
     }
     QJsonDocument jsonDoc(jsonArray);
-    return QString(jsonDoc.toJson(QJsonDocument::Compact));
+    return jsonDoc.toJson(QJsonDocument::Compact);
 }
 
-QStringList RecentFiles::deserializeFromJson(const QString& json) const {
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(json.toUtf8());
-    QStringList list;
+QStringList RecentFiles::deserializeFromJson(const QString& jsonString) const {
+    QStringList recentFiles;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonString.toUtf8());
+
     if (jsonDoc.isArray()) {
         QJsonArray jsonArray = jsonDoc.array();
         for (const QJsonValue& value : jsonArray) {
-            list.append(value.toString());
+            recentFiles.append(value.toString());
         }
     }
-    return list;
+    return recentFiles;
 }
 
 void RecentFiles::setFileOperations(FileOperations* fileOperations) {

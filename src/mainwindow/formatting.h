@@ -1,10 +1,9 @@
 #pragma once
 
 #include <QObject>
-#include <QAction>
 #include <QActionGroup>
 #include <QSettings>
-#include <QPointer>
+#include <QTabWidget>
 
 class MainWindow;
 
@@ -12,26 +11,26 @@ class Formatting : public QObject {
     Q_OBJECT
 
 public:
-    Formatting(MainWindow* mainWindow);
+     Formatting(QObject* parent, QTabWidget* documentsTab);
 
-    void setupActions(QAction* windowsAction,
-                      QAction* unixAction,
-                      QAction* oldMacAction);
+    enum EOLType { Windows, Unix, OldMac };
+    Q_ENUM(EOLType)
+    void applyEOL(EOLType eolType);
+    void setupActions(QAction* windowsAction, QAction* unixAction, QAction* oldMacAction);
 
 private:
-    QPointer<MainWindow> m_mainWindow;
+    MainWindow* m_mainWindow;
+    QActionGroup* m_actionGroup;
     QAction* m_windowsAction;
     QAction* m_unixAction;
     QAction* m_oldMacAction;
-    QActionGroup* m_actionGroup;
-
-    void saveEolFormat(const QString& format);
-    QString loadEolFormat();
-
-    // Callback functions for each format
-    void onWindowsFormatSelected();
-    void onUnixFormatSelected();
-    void onOldMacFormatSelected();
 
     void updateStatusBar(const QString& message);
+    void saveEolFormat(const QString& format);
+
+    QString loadEolFormat();
+    QTabWidget* m_documentsTab;
+
+private slots:
+    void onEolFormatChanged();  // Unified callback for EOL format change
 };

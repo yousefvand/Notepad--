@@ -59,6 +59,8 @@ set(PROJECT_SOURCES
     src/mainwindow/formatting.h
     src/mainwindow/session.cpp
     src/mainwindow/session.h
+    src/mainwindow/textoperations.cpp
+    src/mainwindow/textoperations.h
 )
 
 # Add Qt6 executable

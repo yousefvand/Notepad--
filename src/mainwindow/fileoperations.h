@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QTabWidget>
 
 class Document;
 class MainWindow;
@@ -10,7 +11,9 @@ class FileOperations : public QObject {
     Q_OBJECT
 
 public:
-    explicit FileOperations(MainWindow* mainWindow);
+    explicit FileOperations(MainWindow* mainWindow, QObject* parent = nullptr);
+    void closeTabByIndex(int index);
+    void closeCurrentTab();
 
     static bool closeDocument(Document* doc);
     // This method moves the logic for opening a document from MainWindow
@@ -22,10 +25,15 @@ public:
     void saveDocumentAs();
     void saveACopyAs();
     void saveAll();
-    void closeActiveTab();
     void closeAllDocuments();
     void closeAllButThisDocument();
+    void copyFullPathToClipboard();
+    void copyFileNameToClipboard();
+    void copyDirectoryPathToClipboard();
 
 private:
     MainWindow* m_mainWindow;
+    QTabWidget* m_documentsTab;
+
+    Document* getCurrentDocument() const;
 };

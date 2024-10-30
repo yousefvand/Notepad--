@@ -4,20 +4,26 @@
 #include <QString>
 
 class Settings : public QSettings {
+    Q_OBJECT
+
 public:
-    // Provide a global point of access to the instance
-    static Settings& instance();
+    static Settings* instance();  // Singleton accessor
 
-    // Delete copy constructor and assignment operator to prevent multiple instances
-    Settings(const Settings&) = delete;
-    Settings& operator=(const Settings&) = delete;
+    Settings(const Settings&) = delete;              // Delete copy constructor
+    Settings& operator=(const Settings&) = delete;   // Delete assignment operator
 
-    // Functions to manage settings
-    QString getValue(const QString& key, const QString& defaultValue = QString()) const;
-    void setValue(const QString& key, const QString& value);
+    enum EOLType { Unix, Windows, OldMac };
+    Q_ENUM(EOLType)
+
+    EOLType eol() const;
+    void setEol(EOLType eol);
+
+signals:
+    void eolChanged(EOLType newEOL);
 
 private:
-    // Private constructor to prevent instantiation from outside
-    Settings();
-    QSettings m_settings;
+    explicit Settings(QObject* parent = nullptr);  // Private constructor
+    static Settings* s_instance;  // Singleton instance
+
+    EOLType m_eol;
 };

@@ -5,12 +5,14 @@
 #include "mainwindow/helpers.h"
 #include "mainwindow/formatting.h"
 #include "mainwindow/fileoperations.h"
+#include "mainwindow/textoperations.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class Session;
+class Settings;
 class RecentFiles;
 class FileOperations;
 
@@ -57,12 +59,46 @@ private slots:
 
     void on_actionE_xit_triggered();
 
+    void on_action_Undo_triggered();
+
+    void on_action_Redo_triggered();
+
+    void on_actionCu_t_triggered();
+
+    void on_action_Copy_triggered();
+
+    void on_action_Paste_triggered();
+
+    void on_action_Delete_triggered();
+
+    void on_actionSelect_All_triggered();
+
+    void on_actionCopy_Full_Path_to_Clipboard_triggered();
+
+    void on_actionCopy_File_Name_to_Clipboard_triggered();
+
+    void on_actionCopy_Directory_to_Clipboard_triggered();
+
+    void on_action_UPPERCASE_triggered();
+
+    void on_action_lowercase_triggered();
+
+    void on_actionDuplicate_Current_Line_triggered();
+
+    void on_actionDelete_Current_Line_triggered();
+
+    void on_action_Move_Line_Up_triggered();
+
+    void on_actionMove_Line_Down_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
-    Session* session;
+    TextOperations* textOperations;
+    QScopedPointer<Session> session;
     Helpers helpers;
-    Formatting* m_formatting;
+    Settings *settings;
+    Formatting* formatting;
     RecentFiles* recentFiles;
     void applyColorCoding(Document* doc, bool isModified);
 };

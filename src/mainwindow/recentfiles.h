@@ -39,6 +39,6 @@ private:
 
     // Update the recent files menu
     void updateMenu();
-    QString serializeToJson(const QStringList& list) const;  // Serialize helper
-    QStringList deserializeFromJson(const QString& json) const;  // Deserialize helper
+    QString serializeToJson(const QStringList& recentFiles) const;
+    QStringList deserializeFromJson(const QString& jsonString) const;
 };

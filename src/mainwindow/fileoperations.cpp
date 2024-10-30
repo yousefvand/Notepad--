@@ -4,16 +4,35 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QMimeDatabase>
+#include <QClipboard>
 #include <QDebug>
 #include "fileoperations.h"
 #include "../ui_mainwindow.h"
 #include "recentfiles.h"
 #include "../mainwindow.h"
 #include "../document.h"
+#include "../codeeditor.h"
 
-FileOperations::FileOperations(MainWindow* mainWindow)
-    : QObject(nullptr),  // Set QObject's parent to nullptr (optional)
-    m_mainWindow(mainWindow) {}
+FileOperations::FileOperations(MainWindow* mainWindow, QObject* parent)
+    : QObject(parent), m_mainWindow(mainWindow)
+{
+    m_documentsTab = mainWindow->getUi()->documentsTab;
+}
+
+Document* FileOperations::getCurrentDocument() const {
+    if (!m_documentsTab) {
+        qDebug() << "No document tab found.";
+        return nullptr;
+    }
+
+    int currentIndex = m_documentsTab->currentIndex();
+    if (currentIndex == -1) {
+        qDebug() << "No active tab.";
+        return nullptr;
+    }
+
+    return qobject_cast<Document*>(m_documentsTab->widget(currentIndex));
+}
 
 bool FileOperations::closeDocument(Document* doc) {
     if (!doc) return false;  // Check if the document is valid
@@ -254,24 +273,6 @@ void FileOperations::saveAll() {
     qDebug() << "Save All completed.";
 }
 
-void FileOperations::closeActiveTab() {
-    QTabWidget* documentsTab = m_mainWindow->getUi()->documentsTab;
-    int currentIndex = documentsTab->currentIndex();
-
-    if (currentIndex == -1) {
-        qDebug() << "No active tab to close.";
-        return;
-    }
-
-    Document* doc = qobject_cast<Document*>(documentsTab->widget(currentIndex));
-    if (doc && closeDocument(doc)) {
-        documentsTab->removeTab(currentIndex);  // Close the tab
-        qDebug() << "Tab closed successfully.";
-    } else {
-        qDebug() << "Tab close operation canceled.";
-    }
-}
-
 void FileOperations::closeAllDocuments() {
     QTabWidget* documentsTab = m_mainWindow->getUi()->documentsTab;  // Access the tab widget
     int tabCount = documentsTab->count();
@@ -337,5 +338,118 @@ void FileOperations::closeAllButThisDocument() {
 
     qDebug() << "All tabs except the active one have been closed.";
 }
+
+void FileOperations::closeTabByIndex(int index) {
+    if (index < 0 || index >= m_documentsTab->count()) {
+        qDebug() << "Invalid tab index:" << index;
+        return;
+    }
+
+    QWidget* widget = m_documentsTab->widget(index);
+    if (!widget) {
+        qDebug() << "No widget found at index:" << index;
+        return;
+    }
+
+    // Attempt to cast the widget to a Document.
+    Document* doc = qobject_cast<Document*>(widget);
+
+    if (doc) {
+        // Check for unsaved changes and prompt the user to save if necessary.
+        if (!doc->closeDocument()) {
+            qDebug() << "Tab close operation canceled.";
+            return;  // User canceled the close operation.
+        }
+    }
+
+    // If no unsaved changes or user confirmed the close, proceed with tab removal.
+    qDebug() << "Closing tab at index:" << index;
+
+    widget->disconnect();  // Disconnect any signals connected to the widget.
+    m_documentsTab->removeTab(index);  // Remove the tab from the tab widget.
+    widget->deleteLater();  // Schedule the widget for deletion.
+
+    qDebug() << "Tab closed successfully.";
+}
+
+void FileOperations::closeCurrentTab() {
+    int currentIndex = m_documentsTab->currentIndex();
+    if (currentIndex != -1) {
+        closeTabByIndex(currentIndex);
+    } else {
+        QMessageBox::warning(nullptr, "Close Tab", "No tab to close.");
+    }
+}
+
+void FileOperations::copyFullPathToClipboard() {
+    // Get the current document from the active tab
+    Document* currentDoc = getCurrentDocument();
+    if (!currentDoc) {
+        qDebug() << "No active document found.";
+        return;
+    }
+
+    // Get the file path of the current document
+    QString filePath = currentDoc->filePath();  // Assuming Document class has getFilePath()
+    if (filePath.isEmpty()) {
+        qDebug() << "The document has no associated file path.";
+        return;
+    }
+
+    // Copy the file path to the clipboard
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    clipboard->setText(filePath);
+    qDebug() << "Copied file path to clipboard:" << filePath;
+}
+
+void FileOperations::copyFileNameToClipboard() {
+    // Get the current document from the active tab
+    Document* currentDoc = getCurrentDocument();
+    if (!currentDoc) {
+        qDebug() << "No active document found.";
+        return;
+    }
+
+    // Get the file path of the current document
+    QString filePath = currentDoc->fileName();  // Assuming Document class has getFilePath()
+    if (filePath.isEmpty()) {
+        qDebug() << "The document has no associated file path.";
+        return;
+    }
+
+    // Extract the file name from the path
+    QString fileName = QFileInfo(filePath).fileName();
+
+    // Copy the file name to the clipboard
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    clipboard->setText(fileName);
+    qDebug() << "Copied file name to clipboard:" << fileName;
+}
+
+void FileOperations::copyDirectoryPathToClipboard() {
+    // Get the current document from the active tab
+    Document* currentDoc = getCurrentDocument();
+    if (!currentDoc) {
+        qDebug() << "No active document found.";
+        return;
+    }
+
+    // Get the file path of the current document
+    QString filePath = currentDoc->filePath();  // Assuming Document class has getFilePath()
+    if (filePath.isEmpty()) {
+        qDebug() << "The document has no associated file path.";
+        return;
+    }
+
+    // Extract the directory path from the file path
+    QString directoryPath = QFileInfo(filePath).absolutePath();
+
+    // Copy the directory path to the clipboard
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    clipboard->setText(directoryPath);
+    qDebug() << "Copied directory path to clipboard:" << directoryPath;
+}
+
+
 
 

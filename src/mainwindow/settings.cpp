@@ -1,22 +1,27 @@
 #include "settings.h"
+#include "../mainwindow.h"
 
-// Initialize the static instance of Settings
-Settings& Settings::instance() {
-    static Settings instance;  // Thread-safe initialization
-    return instance;
+// Initialize the singleton instance to nullptr
+Settings* Settings::s_instance = nullptr;
+
+Settings* Settings::instance() {
+    if (!s_instance) {
+        s_instance = new Settings();  // Create the singleton instance
+    }
+    return s_instance;
 }
 
-// Private constructor initializing QSettings
-Settings::Settings()
-    : QSettings("Remisa", "Notepad--") {
+Settings::Settings(QObject* parent)
+    : QSettings("Remisa", "Notepad--", parent), m_eol(Unix) {
 }
 
-// Get a setting value by key
-QString Settings::getValue(const QString& key, const QString& defaultValue) const {
-    return m_settings.value(key, defaultValue).toString();
+Settings::EOLType Settings::eol() const {
+    return m_eol;
 }
 
-// Set a setting value by key
-void Settings::setValue(const QString& key, const QString& value) {
-    m_settings.setValue(key, value);
+void Settings::setEol(EOLType eol) {
+    if (m_eol != eol) {
+        m_eol = eol;
+        emit eolChanged(m_eol);
+    }
 }

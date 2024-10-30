@@ -8,6 +8,8 @@
 #include <QRegularExpression>
 #include "../document.h"
 
+class Document;
+
 class Helpers {
 public:
     static void RemoveMe(QTabWidget* documentsTab);
@@ -16,6 +18,7 @@ public:
     static void CloseTab(QTabWidget* documentsTab, int index);
     static void zMenu(QMenu* menuLanguage, QObject* receiver);
     void Print(QTabWidget* documentsTab, QWidget* parent);
+    static Document* getCurrentDocument(QTabWidget* documentsTab);
 
 private:
     bool validateDocument(Document* doc, QWidget* parent);
