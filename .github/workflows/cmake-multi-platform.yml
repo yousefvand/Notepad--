@@ -34,7 +34,9 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev libglu1-mesa-dev
+        sudo apt-get install -y ninja-build \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
     ### macOS Dependencies
@@ -67,7 +69,6 @@ jobs:
         $ErrorActionPreference = "Stop"
         $qtInstallerPath = "qt-unified-windows-x64-online.exe"
 
-        # Download Qt installer with retries
         for ($i = 0; $i -lt 3; $i++) {
           try {
             Write-Host "Downloading Qt installer... Attempt $($i + 1)"
@@ -80,14 +81,11 @@ jobs:
           }
         }
 
-        # Install Qt
-        Write-Host "Installing Qt..."
         Start-Process -FilePath $qtInstallerPath -ArgumentList `
           '--accept-messages', '--confirm-command', '--no-interaction', `
           '--platform minimal', '--select-components qt.qt6.653.win64_msvc2019_64', `
           '--install-root C:\Qt' -NoNewWindow -Wait
 
-        # Verify installation
         if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
           throw "Qt installation failed!"
         }
