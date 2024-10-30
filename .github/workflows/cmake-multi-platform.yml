@@ -66,32 +66,13 @@ jobs:
         choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install qt --version=6.5.3 -y
 
-    - name: Download and Install Qt (Windows) with Retries
-      if: matrix.os == 'windows-latest' && !steps.restore.outputs.cache-hit
+    - name: Verify Qt Installation (Windows)
+      if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $ErrorActionPreference = "Stop"
-        $qtInstallerPath = "qt-unified-windows-x64-online.exe"
-
-        for ($i = 0; $i -lt 3; $i++) {
-          try {
-            Write-Host "Downloading Qt installer... Attempt $($i + 1)"
-            Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
-                              -OutFile $qtInstallerPath -TimeoutSec 1200
-            break
-          } catch {
-            Write-Host "Download failed. Retrying..."
-            if ($i -eq 2) { throw "Failed to download Qt installer after 3 attempts." }
-          }
-        }
-
-        Start-Process -FilePath $qtInstallerPath -ArgumentList `
-          '--accept-messages', '--confirm-command', '--no-interaction', `
-          '--platform minimal', '--select-components qt.qt6.653.win64_msvc2019_64', `
-          '--install-root C:\Qt' -NoNewWindow -Wait
-
-        if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
+        if (!(Test-Path "C:\Program Files\Qt\6.5.3\msvc2019_64")) {
           throw "Qt installation failed!"
         }
 
