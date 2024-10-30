@@ -37,7 +37,6 @@ jobs:
         sudo apt-get install -y ninja-build \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
             qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
-        # Verify if lconvert exists
         if [ ! -f /usr/lib/qt6/bin/lconvert ]; then
           echo "Error: lconvert not found!"
           exit 1
@@ -51,14 +50,7 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Setup with Qt Caching
-    - name: Restore Qt cache (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: actions/cache@v3
-      with:
-        path: C:\Qt
-        key: qt-windows-6.5.3
-
+    ### Windows Setup with Qt Installer
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -66,18 +58,24 @@ jobs:
         choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install qt --version=6.5.3 -y
+        
+        # Download Qt Online Installer
+        $installer = "qt-unified-windows-x64-online.exe"
+        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
+                          -OutFile $installer -TimeoutSec 1200
+        
+        # Install Qt silently
+        Start-Process -FilePath $installer -ArgumentList `
+          '--accept-messages', '--confirm-command', '--no-interaction', `
+          '--platform minimal', '--select-components qt.qt6.653.win64_msvc2019_64', `
+          '--install-root C:\Qt' -NoNewWindow -Wait
 
-    - name: Verify Qt Installation (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        if (!(Test-Path "C:\Program Files\Qt\6.5.3\msvc2019_64")) {
+        if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
           throw "Qt installation failed!"
         }
 
     - name: Save Qt cache (Windows)
-      if: matrix.os == 'windows-latest' && steps.restore.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
       with:
         path: C:\Qt
@@ -93,7 +91,6 @@ jobs:
           echo Visual Studio Build Tools not found! && exit /b 1
         )
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
-        echo Using vcvars64.bat from: %VS_VARS_CMD%
         CALL "%VS_VARS_CMD%" || exit /b 1
         where cl || (echo cl.exe not found in PATH && exit /b 1)
 
