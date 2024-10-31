@@ -75,10 +75,13 @@ jobs:
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
                           -OutFile $installer -TimeoutSec 1200
 
-        # Run the Qt installer in a headless, script-based mode
+        # Run the Qt installer interactively without extra flags
         Start-Process -FilePath $installer -ArgumentList `
-          '--script', 'install-qt.qs', `
-          '-platform minimal' -NoNewWindow -Wait
+          '--no-interaction', `
+          '--confirm-command', `
+          '--default-answer', `
+          '--install', '--target-dir', 'C:\Qt' `
+          '-NoNewWindow -Wait'
 
         # Verify Qt installation
         if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
