@@ -81,7 +81,7 @@ jobs:
           '--confirm-command', `
           '--default-answer', `
           '--install', '--target-dir', 'C:\Qt' `
-          '-NoNewWindow -Wait'
+          -NoNewWindow -Wait
 
         # Verify Qt installation
         if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
