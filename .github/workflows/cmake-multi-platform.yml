@@ -75,10 +75,11 @@ jobs:
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
                           -OutFile $installer -TimeoutSec 1200
 
-        # Run the Qt installer with the custom script
+        # Run the Qt installer in interactive mode without extra options
         Start-Process -FilePath $installer -ArgumentList `
-          '--script', 'install-qt.qs', `
-          '--platform', 'minimal' `
+          '--silent', '--accept-licenses', `
+          '--default-answer', `
+          '--install', '--target-dir', 'C:\Qt\6.5.3' `
           -NoNewWindow -Wait
 
         # Verify Qt installation
