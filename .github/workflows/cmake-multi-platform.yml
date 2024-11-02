@@ -75,12 +75,15 @@ jobs:
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
                           -OutFile $installer -TimeoutSec 1200
 
-        # Run the Qt installer silently without unrecognized options
+        # Download custom installation script for non-interactive mode
+        $script = "install-qt.qs"
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/your-repo/your-branch/install-qt.qs" `
+                          -OutFile $script
+
+        # Run the Qt installer with the custom script
         Start-Process -FilePath $installer -ArgumentList `
-          '--silent', `
-          '--no-default-installations', `
-          '--add', 'qt.qt6.653.win64_msvc2019_64', `
-          '--install-dir', 'C:\Qt' `
+          '--script', $script, `
+          '--platform', 'minimal' `
           -Wait
 
         # Verify Qt installation
