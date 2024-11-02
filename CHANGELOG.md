@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.0.42
+
+- Implemented:
+- Search -> Find UI
+
 ## 0.0.41
 
 - Implemented:
@@ -12,7 +17,7 @@
 - Indentation -> Custom
 
 
-0.0.40
+## 0.0.40
 
 - Implemented:
 - Delete

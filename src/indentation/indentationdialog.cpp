@@ -4,7 +4,7 @@
 #include "../settings.h"
 #include "../document.h"
 #include "../codeeditor.h"
-#include "../mainwindow/helpers.h"
+#include "../helpers.h"
 
 IndentationDialog::IndentationDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::IndentationDialog)

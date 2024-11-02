@@ -4,7 +4,7 @@
 #include "formatting.h"
 #include "../mainwindow.h"
 #include "../settings.h"
-#include "helpers.h"
+#include "../helpers.h"
 #include "../codeeditor.h"
 
 Formatting::Formatting(QObject* parent, QTabWidget* documentsTab)

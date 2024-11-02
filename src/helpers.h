@@ -7,7 +7,7 @@
 #include <QTabWidget>
 #include <QMessageBox>
 #include <QRegularExpression>
-#include "../document.h"
+#include "document.h"
 
 class Document;
 

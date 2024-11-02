@@ -29,10 +29,14 @@ find_package(Qt6 REQUIRED COMPONENTS
 # Translation files (optional)
 set(TS_FILES translations/Notepad--_en_GB.ts)
 
-# Define project sources
+set(PROJECT_UI
+    src/mainwindow.ui
+    src/indentation/indentationdialog.ui
+    src/search/searchdialog.ui
+)
+
 set(PROJECT_SOURCES
     src/main.cpp
-    src/mainwindow.ui
     src/mainwindow.cpp
     src/mainwindow.h
     src/document.cpp
@@ -41,6 +45,10 @@ set(PROJECT_SOURCES
     src/codeeditor.h
     src/fileloaderworker.cpp
     src/fileloaderworker.h
+    src/helpers.cpp
+    src/helpers.h
+    src/settings.cpp
+    src/settings.h
     src/languages/languagemanager.cpp
     src/languages/languagemanager.h
     src/languages/cppsyntaxhighlighter.cpp
@@ -51,29 +59,25 @@ set(PROJECT_SOURCES
     src/mainwindow/fileoperations.h
     src/mainwindow/recentfiles.cpp
     src/mainwindow/recentfiles.h
-
-
-    src/mainwindow/helpers.cpp
-    src/mainwindow/helpers.h
     src/mainwindow/formatting.cpp
     src/mainwindow/formatting.h
     src/mainwindow/session.cpp
     src/mainwindow/session.h
     src/mainwindow/textoperations.cpp
     src/mainwindow/textoperations.h
-    src/indentation/indentationdialog.ui
     src/indentation/indentationdialog.cpp
     src/indentation/indentationdialog.h
     src/indentation/indentationmanager.cpp
     src/indentation/indentationmanager.h
+    src/search/searchdialog.cpp
+    src/search/searchdialog.h
+    ${PROJECT_UI}
 )
 
 # Add Qt6 executable
 qt_add_executable(Notepad--
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
-    src/settings.cpp
-    src/settings.h
 )
 
 # Link Qt6 libraries

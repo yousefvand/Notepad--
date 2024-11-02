@@ -6,8 +6,8 @@
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrintDialog>
 #include "helpers.h"
-#include "../document.h"
-#include "../codeeditor.h"
+#include "document.h"
+#include "codeeditor.h"
 
 bool Helpers::isUntitledDocument(const QString& title) {
     // Static QRegularExpression to avoid repeated creation

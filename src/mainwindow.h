@@ -5,7 +5,7 @@
 #include <QGroupBox>
 #include <QMainWindow>
 #include "document.h"
-#include "mainwindow/helpers.h"
+#include "helpers.h"
 #include "mainwindow/formatting.h"
 #include "mainwindow/fileoperations.h"
 #include "mainwindow/textoperations.h"
@@ -39,7 +39,6 @@ protected:
 private slots:
     void on_action_New_triggered();
     void on_action_Open_triggered();
-
     void on_action_Save_triggered();
     void onActionZ80Triggered();
 
@@ -116,6 +115,8 @@ private slots:
     void on_action_Custom_triggered();
 
     void on_smartIndent_triggered();
+
+    void on_action_Find_triggered();
 
 private:
     Ui::MainWindow* ui;

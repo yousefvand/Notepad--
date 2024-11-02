@@ -10,8 +10,9 @@
 #include "mainwindow/recentfiles.h"
 #include "mainwindow/session.h"
 #include "src/ui_mainwindow.h"
-#include "mainwindow/helpers.h"
+#include "helpers.h"
 #include "indentation/indentationdialog.h"
+#include "search/searchdialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -301,9 +302,9 @@ bool MainWindow::isSmartIndentChecked() const {
 
 /* Search Menu */
 
-
-
-
+void MainWindow::on_action_Find_triggered() {
+    SearchDialog::showDialog(this);
+}
 
 
 
@@ -381,6 +382,9 @@ void MainWindow::saveIndentationSetting(const QString& setting) {
     settings->setValue("IndentationSettings/indentationSetting", setting);
     qDebug() << "Saved indentation setting:" << setting;
 }
+
+
+
 
 
 
