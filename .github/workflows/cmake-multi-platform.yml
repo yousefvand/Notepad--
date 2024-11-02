@@ -75,10 +75,8 @@ jobs:
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
                           -OutFile $installer -TimeoutSec 1200
 
-        # Replace this URL with the actual raw link to your install-qt.qs script
-        $scriptUrl = "https://raw.githubusercontent.com/your-repo/your-branch/install-qt.qs"
-        $scriptPath = "install-qt.qs"
-        Invoke-WebRequest -Uri $scriptUrl -OutFile $scriptPath
+        # Use the install-qt.qs script from the repository
+        $scriptPath = "${{ github.workspace }}\.github\scripts\install-qt.qs"
 
         # Run the Qt installer with the custom script
         Start-Process -FilePath $installer -ArgumentList `
