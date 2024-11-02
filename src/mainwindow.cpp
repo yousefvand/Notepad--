@@ -1,19 +1,22 @@
 #include <QTabBar>
+#include <QVBoxLayout>
 #include <QCheckBox>
 #include <QFileDialog>
 #include <QPlainTextEdit>
 #include "mainwindow.h"
 #include "codeeditor.h"
+#include "settings.h"
 #include "mainwindow/textoperations.h"
 #include "mainwindow/recentfiles.h"
 #include "mainwindow/session.h"
-#include "ui_mainwindow.h"
+#include "src/ui_mainwindow.h"
 #include "mainwindow/helpers.h"
+#include "indentation/indentationdialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
-    fileOperations(new FileOperations(this, this)) {
+    indentationManager(new IndentationManager(this)) {
 
     qDebug() << "Initializing MainWindow...";
 
@@ -25,6 +28,9 @@ MainWindow::MainWindow(QWidget* parent)
 
     fileOperations = new FileOperations(this);
     textOperations = new TextOperations(ui->documentsTab);
+    indentationManager = new IndentationManager(this, this);
+    indentationManager->setupIndentationMenu(ui->action_Custom, ui->action_Default_Setting, ui->smartIndent);
+    indentationManager->loadSmartIndentSetting();
 
     ui->actionRecent_Files->setVisible(false);
     RecentFiles::instance().loadRecentFiles();
@@ -191,6 +197,12 @@ void MainWindow::on_actionCopy_Directory_to_Clipboard_triggered()
     fileOperations->copyDirectoryPathToClipboard();
 }
 
+// helper function
+FileOperations* MainWindow::getFileOperations() const
+{
+    return fileOperations;
+}
+
 void MainWindow::on_action_UPPERCASE_triggered()
 {
     textOperations->convertToUpperCase();
@@ -221,100 +233,100 @@ void MainWindow::on_actionMove_Line_Down_triggered()
     textOperations->moveLineDown();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-FileOperations* MainWindow::getFileOperations() const
+void MainWindow::on_action_Trim_Trailing_Space_triggered()
 {
-    return fileOperations;
+    formatting->trimTrailingSpace();
 }
+
+void MainWindow::on_actionTrim_Leading_Space_triggered()
+{
+    formatting->trimLeadingSpace();
+}
+
+void MainWindow::on_actionTrim_Leading_and_Trailing_Space_triggered()
+{
+    formatting->trimLeadingAndTrailingSpace();
+}
+
+void MainWindow::on_action_EOL_to_Space_triggered()
+{
+    formatting->eolToSpace();
+}
+
+void MainWindow::on_actionTab_to_Space_triggered()
+{
+    formatting->tabToSpace(2); // TODO: Number of spaces is hardcoded.
+}
+
+void MainWindow::on_action_Space_to_TAB_all_triggered()
+{
+    Helpers::notImplemented(this);
+    // formatting->spaceToTab(2); // FIXME: Various methods doesn't work
+}
+
+void MainWindow::on_actionS_pace_to_Tab_Leading_triggered()
+{
+    Helpers::notImplemented(this);
+    // formatting->spaceToTabLeading(2); // FIXME: Various methods doesn't work
+}
+
+void MainWindow::on_action_Default_Setting_triggered() {
+    // Code to handle Default Setting selection
+    indentationManager->setToDefaultIndentation();
+    saveIndentationSetting("Default");
+    qDebug() << "Default indentation setting applied.";
+}
+
+void MainWindow::on_action_Custom_triggered()
+{
+    if (indentationManager) indentationManager->openIndentationDialog();
+}
+
+void MainWindow::on_smartIndent_triggered()
+{
+    Helpers::notImplemented(this);
+    bool isChecked = isSmartIndentChecked();
+    indentationManager->saveSmartIndentSetting(isChecked);
+}
+
+// helper function
+void MainWindow::setSmartIndentChecked(bool checked) {
+    ui->smartIndent->setChecked(checked);
+}
+
+// helper function
+bool MainWindow::isSmartIndentChecked() const {
+    return ui->smartIndent->isChecked();
+}
+
+/* Search Menu */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void MainWindow::onActionZ80Triggered()
 {
@@ -324,11 +336,7 @@ void MainWindow::onActionZ80Triggered()
 
 
 
-
-
-
-
-
+// helper function
 void MainWindow::connectSignals(Document *doc)
 {
     if (!doc) return;
@@ -356,9 +364,7 @@ void MainWindow::connectSignals(Document *doc)
     ui->action_Redo->setEnabled(doc->editor()->document()->isRedoAvailable());
 }
 
-
-
-
+// helper function
 void MainWindow::applyColorCoding(Document* doc, bool isModified)
 {
     int index = ui->documentsTab->indexOf(doc);
@@ -369,6 +375,46 @@ void MainWindow::applyColorCoding(Document* doc, bool isModified)
     ui->documentsTab->tabBar()->setTabTextColor(index, tabColor);
     qDebug() << "Applied color" << tabColor.name() << "to tab index:" << index;
 }
+
+void MainWindow::saveIndentationSetting(const QString& setting) {
+    auto* settings = Settings::instance();  // Use the singleton Settings instance
+    settings->setValue("IndentationSettings/indentationSetting", setting);
+    qDebug() << "Saved indentation setting:" << setting;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

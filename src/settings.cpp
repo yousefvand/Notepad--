@@ -1,5 +1,5 @@
 #include "settings.h"
-#include "../mainwindow.h"
+#include "mainwindow.h"
 
 // Initialize the singleton instance to nullptr
 Settings* Settings::s_instance = nullptr;

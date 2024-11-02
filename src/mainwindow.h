@@ -1,11 +1,15 @@
 #pragma once
 
+#include <QActionGroup>
+#include <QRadioButton>
+#include <QGroupBox>
 #include <QMainWindow>
 #include "document.h"
 #include "mainwindow/helpers.h"
 #include "mainwindow/formatting.h"
 #include "mainwindow/fileoperations.h"
 #include "mainwindow/textoperations.h"
+#include "indentation/indentationmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,6 +30,8 @@ public:
     Ui::MainWindow* getUi() const;
     void connectSignals(Document* doc);
     FileOperations* getFileOperations() const;
+    void setSmartIndentChecked(bool checked);
+    bool isSmartIndentChecked() const;
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -91,6 +97,26 @@ private slots:
 
     void on_actionMove_Line_Down_triggered();
 
+    void on_action_Trim_Trailing_Space_triggered();
+
+    void on_actionTrim_Leading_Space_triggered();
+
+    void on_actionTrim_Leading_and_Trailing_Space_triggered();
+
+    void on_action_EOL_to_Space_triggered();
+
+    void on_actionTab_to_Space_triggered();
+
+    void on_action_Space_to_TAB_all_triggered();
+
+    void on_actionS_pace_to_Tab_Leading_triggered();
+
+    void on_action_Default_Setting_triggered();
+
+    void on_action_Custom_triggered();
+
+    void on_smartIndent_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -101,4 +127,12 @@ private:
     Formatting* formatting;
     RecentFiles* recentFiles;
     void applyColorCoding(Document* doc, bool isModified);
+
+    void setupIndentationMenu();
+    QAction* action_Custom;
+    QAction* action_Default_Setting;
+
+    void saveIndentationSetting(const QString& setting);  // Save the selected option
+    void loadIndentationSetting();  // Load and apply the saved setting
+    IndentationManager* indentationManager;
 };

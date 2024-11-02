@@ -32,8 +32,8 @@ public slots:
     void startLoading();
 
 private:
-    qint64 m_fileSize;
-    Document *document;
-    QString m_filePath;
     QFile m_file;
+    QString m_filePath;
+    Document *document;
+    qint64 m_fileSize;
 };

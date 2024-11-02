@@ -8,7 +8,7 @@
 #include "../codeeditor.h"
 #include "textoperations.h"
 #include "helpers.h"
-#include "settings.h"
+#include "../settings.h"
 
 TextOperations::TextOperations(QTabWidget* documentsTab)
     : m_documentsTab(documentsTab) {

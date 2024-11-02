@@ -51,8 +51,8 @@ set(PROJECT_SOURCES
     src/mainwindow/fileoperations.h
     src/mainwindow/recentfiles.cpp
     src/mainwindow/recentfiles.h
-    src/mainwindow/settings.cpp
-    src/mainwindow/settings.h
+
+
     src/mainwindow/helpers.cpp
     src/mainwindow/helpers.h
     src/mainwindow/formatting.cpp
@@ -61,12 +61,19 @@ set(PROJECT_SOURCES
     src/mainwindow/session.h
     src/mainwindow/textoperations.cpp
     src/mainwindow/textoperations.h
+    src/indentation/indentationdialog.ui
+    src/indentation/indentationdialog.cpp
+    src/indentation/indentationdialog.h
+    src/indentation/indentationmanager.cpp
+    src/indentation/indentationmanager.h
 )
 
 # Add Qt6 executable
 qt_add_executable(Notepad--
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
+    src/settings.cpp
+    src/settings.h
 )
 
 # Link Qt6 libraries

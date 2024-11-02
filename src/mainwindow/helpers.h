@@ -4,7 +4,8 @@
 #include <QAction>
 #include <QString>
 #include <QPrintDialog>
-#include <qtabwidget.h>
+#include <QTabWidget>
+#include <QMessageBox>
 #include <QRegularExpression>
 #include "../document.h"
 
@@ -19,6 +20,8 @@ public:
     static void zMenu(QMenu* menuLanguage, QObject* receiver);
     void Print(QTabWidget* documentsTab, QWidget* parent);
     static Document* getCurrentDocument(QTabWidget* documentsTab);
+    static void showInformationMessage(const QString& message);
+    static void notImplemented(QWidget* parent = nullptr);
 
 private:
     bool validateDocument(Document* doc, QWidget* parent);

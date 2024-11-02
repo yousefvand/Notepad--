@@ -135,7 +135,7 @@
      <addaction name="action_Default_Setting"/>
      <addaction name="action_Custom"/>
      <addaction name="separator"/>
-     <addaction name="action_Enable_Smart_Indent"/>
+     <addaction name="smartIndent"/>
     </widget>
     <addaction name="action_Undo"/>
     <addaction name="action_Redo"/>
@@ -1870,7 +1870,7 @@
     <string>&amp;Custom...</string>
    </property>
   </action>
-  <action name="action_Enable_Smart_Indent">
+  <action name="smartIndent">
    <property name="checkable">
     <bool>true</bool>
    </property>

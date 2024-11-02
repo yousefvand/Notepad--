@@ -18,6 +18,7 @@ public:
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
     void highlightCurrentLine();
+    void applyIndentation(bool useTabs, int indentationWidth);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

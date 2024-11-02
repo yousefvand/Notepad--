@@ -8,7 +8,7 @@
 #include "recentfiles.h"
 #include "../mainwindow.h"
 #include "fileoperations.h"
-#include "settings.h"
+#include "../settings.h"
 
 RecentFiles& RecentFiles::instance() {
     static RecentFiles instance;

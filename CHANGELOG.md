@@ -1,6 +1,18 @@
 # Change Log
 
-## 0.0.40
+## 0.0.41
+
+- Implemented:
+- Blank Operations -> Trim Trailing Space
+- Blank Operations -> Trim Leading Space
+- Blank Operations -> Trim Leading and Trailing Space
+- Blank Operations -> EOL to Space
+- Blank Operations -> Tab to Space
+- Indentation -> Default Settings
+- Indentation -> Custom
+
+
+0.0.40
 
 - Implemented:
 - Delete

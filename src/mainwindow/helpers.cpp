@@ -110,6 +110,15 @@ Document* Helpers::getCurrentDocument(QTabWidget* documentsTab) {
     return qobject_cast<Document*>(documentsTab->widget(currentIndex));
 }
 
+void Helpers::showInformationMessage(const QString& message) {
+    QMessageBox::information(nullptr, "Information", message, QMessageBox::Ok);
+}
+
+void Helpers::notImplemented(QWidget* parent) {
+    QString hardcodedMessage = "Sorry, this option is not available now.\nIt will be implemented in future versions.";
+    QMessageBox::information(parent, "Information", hardcodedMessage, QMessageBox::Ok);
+}
+
 
 
 

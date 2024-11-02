@@ -7,7 +7,7 @@
 #include <QFile>
 
 FileLoaderWorker::FileLoaderWorker(const QString &filePath, Document *doc, QObject *parent)
-    : QObject(parent), m_filePath(filePath), m_file(filePath), document(doc) {
+    : QObject(parent), m_file(filePath), m_filePath(filePath), document(doc) {
     qDebug() << "FileLoaderWorker initialized for file:" << filePath;
     qDebug() << "FileLoaderWorker thread at initialization:" << QThread::currentThread();
 }

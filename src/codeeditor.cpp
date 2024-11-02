@@ -1,6 +1,7 @@
 #include "codeeditor.h"
 #include <QPainter>
 #include <QTextBlock>
+#include "mainwindow/helpers.h"
 
 CodeEditor::CodeEditor(QWidget *parent)
     : QPlainTextEdit(parent), lineNumberArea(new LineNumberArea(this)) {
@@ -147,4 +148,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
         bottom = top + static_cast<int>(blockBoundingRect(block).height());
         ++blockNumber;
     }
+}
+
+void CodeEditor::applyIndentation(bool useTabs, int indentationWidth) {
+    // TODO: Implement indentation
 }

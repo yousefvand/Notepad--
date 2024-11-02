@@ -17,6 +17,13 @@ public:
     Q_ENUM(EOLType)
     void applyEOL(EOLType eolType);
     void setupActions(QAction* windowsAction, QAction* unixAction, QAction* oldMacAction);
+    void trimTrailingSpace();
+    void trimLeadingSpace();
+    void trimLeadingAndTrailingSpace();
+    void eolToSpace();
+    void tabToSpace(int spaces);
+    void spaceToTab(int spaces);
+    void spaceToTabLeading(int spaces);
 
 private:
     MainWindow* m_mainWindow;
