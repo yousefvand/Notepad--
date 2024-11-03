@@ -57,7 +57,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: C:\Qt
-        key: qt-windows-6.5.3
+        key: qt-windows-6.x
 
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -75,18 +75,21 @@ jobs:
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
                           -OutFile $installer -TimeoutSec 1200
 
-        # Use the install-qt.qs script from the repository
-        $scriptPath = "${{ github.workspace }}\.github\scripts\install-qt.qs"
-
-        # Run the Qt installer with the custom script
+        # Run the Qt installer with silent options
         Start-Process -FilePath $installer -ArgumentList `
-          '--script', $scriptPath, `
-          '--platform', 'minimal' `
-          -Wait
+          '--silent', `
+          '--accept-messages', `
+          '--default-answer', `
+          '--root C:\Qt', `
+          '--add-module', 'qt.qt6.653.win64_msvc2019_64' `
+          -NoNewWindow -Wait
 
-        # Verify Qt installation
-        if (!(Test-Path "C:\Qt\6.5.3\msvc2019_64")) {
-          throw "Qt installation failed!"
+        # Verify the Qt installation by checking for a 'bin' directory
+        $qtDir = Get-ChildItem -Path "C:\Qt\" -Directory -Recurse | Where-Object { $_.Name -match "bin" } | Select-Object -First 1
+        if (-Not $qtDir) {
+          throw "Qt installation failed or directory structure not found!"
+        } else {
+          echo "Qt installation verified at $($qtDir.FullName)"
         }
 
     - name: Save Qt cache (Windows)
@@ -94,7 +97,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: C:\Qt
-        key: qt-windows-6.5.3
+        key: qt-windows-6.x
 
     - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
