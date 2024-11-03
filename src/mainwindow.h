@@ -118,6 +118,12 @@ private slots:
 
     void on_action_Find_triggered();
 
+    void on_actionFind_Next_triggered();
+
+    void on_actionFind_previoud_triggered();
+
+    void on_action_Replace_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;

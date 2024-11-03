@@ -152,4 +152,5 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
 
 void CodeEditor::applyIndentation(bool useTabs, int indentationWidth) {
     // TODO: Implement indentation
+    qDebug() << "Indentation. Use Tabs: " << useTabs << ". Indentation width: " << indentationWidth;
 }

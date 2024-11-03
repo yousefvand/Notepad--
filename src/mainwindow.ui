@@ -158,14 +158,18 @@
      <string>&amp;Search</string>
     </property>
     <addaction name="action_Find"/>
-    <addaction name="action_Advanced_sEarch"/>
     <addaction name="actionFind_Next"/>
     <addaction name="actionFind_previoud"/>
     <addaction name="separator"/>
     <addaction name="action_Replace"/>
+    <addaction name="actionReplace_N_ext"/>
+    <addaction name="actionReplace_P_revious"/>
     <addaction name="separator"/>
-    <addaction name="action_Go_to_line_in_editor"/>
-    <addaction name="action_Go_to_line_in_text"/>
+    <addaction name="actionFind_System"/>
+    <addaction name="actionReplace_S_ystem"/>
+    <addaction name="separator"/>
+    <addaction name="actionGo_to_Line_in_Text"/>
+    <addaction name="actionGo_to_Line_in_Editor"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -795,7 +799,10 @@
     <iconset theme="edit-find"/>
    </property>
    <property name="text">
-    <string>&amp;Find...</string>
+    <string>&amp;Find</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
   <action name="action_Advanced_sEarch">
@@ -810,6 +817,9 @@
    <property name="text">
     <string>Find &amp;Next</string>
    </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
   </action>
   <action name="actionFind_previoud">
    <property name="icon">
@@ -818,10 +828,16 @@
    <property name="text">
     <string>Find &amp;Previous</string>
    </property>
+   <property name="shortcut">
+    <string>Shift+F3</string>
+   </property>
   </action>
   <action name="action_Replace">
    <property name="text">
-    <string>&amp;Replace...</string>
+    <string>&amp;Replace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="action_Go_to_line_in_editor">
@@ -1945,6 +1961,51 @@
   <action name="action_Open_in_a_New_Window">
    <property name="text">
     <string>&amp;Open in a New Window</string>
+   </property>
+  </action>
+  <action name="actionReplace_N_ext">
+   <property name="icon">
+    <iconset theme="go-next"/>
+   </property>
+   <property name="text">
+    <string>Replace N&amp;ext</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
+   </property>
+  </action>
+  <action name="actionReplace_P_revious">
+   <property name="icon">
+    <iconset theme="go-previous"/>
+   </property>
+   <property name="text">
+    <string>Replace P&amp;revious</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F4</string>
+   </property>
+  </action>
+  <action name="actionFind_System">
+   <property name="text">
+    <string>Find &amp;System</string>
+   </property>
+  </action>
+  <action name="actionReplace_S_ystem">
+   <property name="text">
+    <string>Replace S&amp;ystem</string>
+   </property>
+  </action>
+  <action name="actionGo_to_Line_in_Text">
+   <property name="text">
+    <string>Go to Line in Text</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionGo_to_Line_in_Editor">
+   <property name="text">
+    <string>Go to Line in Editor</string>
    </property>
   </action>
  </widget>

@@ -32,7 +32,8 @@ set(TS_FILES translations/Notepad--_en_GB.ts)
 set(PROJECT_UI
     src/mainwindow.ui
     src/indentation/indentationdialog.ui
-    src/search/searchdialog.ui
+    src/find/finddialog.ui
+    src/replace/replacedialog.ui
 )
 
 set(PROJECT_SOURCES
@@ -69,8 +70,10 @@ set(PROJECT_SOURCES
     src/indentation/indentationdialog.h
     src/indentation/indentationmanager.cpp
     src/indentation/indentationmanager.h
-    src/search/searchdialog.cpp
-    src/search/searchdialog.h
+    src/find/finddialog.cpp
+    src/find/finddialog.h
+    src/replace/replacedialog.cpp
+    src/replace/replacedialog.h
     ${PROJECT_UI}
 )
 

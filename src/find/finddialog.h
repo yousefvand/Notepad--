@@ -3,31 +3,31 @@
 #include <QDialog>
 
 namespace Ui {
-class SearchDialog;
+class FindDialog;
 }
 
-class SearchDialog : public QDialog
+class FindDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit SearchDialog(QWidget *parent = nullptr);
-    ~SearchDialog();
+    explicit FindDialog(QWidget *parent = nullptr);
+    ~FindDialog();
 
-    enum SearchMode {
+    enum FindMode {
         PlainText,
         RegularExpression,
         SpecialCharacters
     };
 
-    void performSearch();
+    void performFind();
     static void showDialog(QWidget *parent = nullptr);
-    QString getSearchText() const;
+    QString getFindText() const;
     bool isMatchCaseChecked() const;
     bool isWholeWordsChecked() const;
 
 signals:
-    void searchRequested(const QString& searchText, bool matchCase, bool matchWholeWord, SearchDialog::SearchMode mode);
+    void findRequested(const QString& findText, bool matchCase, bool matchWholeWord, FindDialog::FindMode mode);
 
 private slots:
     void on_advancedOptions_checkStateChanged(const Qt::CheckState &arg1);
@@ -38,14 +38,14 @@ private slots:
 
     void on_selectAll_clicked();
 
-    void handleSearchRequest(const QString& searchText, bool matchCase, bool matchWholeWord, SearchMode mode);
+    void handleFindRequest(const QString& findText, bool matchCase, bool matchWholeWord, FindMode mode);
 
     void onAdvancedOptionsToggled(bool checked);
 
     void toggleAdvancedOptions(bool checked);
 
 private:
-    Ui::SearchDialog *ui;
-    SearchMode selectedSearchMode() const;
+    Ui::FindDialog *ui;
+    FindMode selectedFindMode() const;
 };
 

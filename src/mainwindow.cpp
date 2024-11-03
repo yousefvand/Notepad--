@@ -12,7 +12,8 @@
 #include "src/ui_mainwindow.h"
 #include "helpers.h"
 #include "indentation/indentationdialog.h"
-#include "search/searchdialog.h"
+#include "find/finddialog.h"
+#include "replace/replacedialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -303,9 +304,23 @@ bool MainWindow::isSmartIndentChecked() const {
 /* Search Menu */
 
 void MainWindow::on_action_Find_triggered() {
-    SearchDialog::showDialog(this);
+    FindDialog::showDialog(this);
 }
 
+void MainWindow::on_actionFind_Next_triggered()
+{
+    // TODO: Implement
+}
+
+void MainWindow::on_actionFind_previoud_triggered()
+{
+    // TODO: Implement
+}
+
+void MainWindow::on_action_Replace_triggered()
+{
+    ReplaceDialog::showDialog(this);
+}
 
 
 
@@ -382,6 +397,19 @@ void MainWindow::saveIndentationSetting(const QString& setting) {
     settings->setValue("IndentationSettings/indentationSetting", setting);
     qDebug() << "Saved indentation setting:" << setting;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

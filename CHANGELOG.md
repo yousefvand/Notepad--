@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.43
+
+- Implemented:
+- Search -> Replace UI
+
+
 ## 0.0.42
 
 - Implemented:

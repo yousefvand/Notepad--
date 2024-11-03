@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ReplaceDialog</class>
+ <widget class="QDialog" name="ReplaceDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>503</width>
+    <height>381</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Replace</string>
+  </property>
+  <widget class="QComboBox" name="replaceLineEdit">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>10</y>
+     <width>391</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>true</bool>
+   </property>
+   <property name="currentText">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="replaceNext">
+   <property name="geometry">
+    <rect>
+     <x>18</x>
+     <y>346</y>
+     <width>151</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Replace</string>
+   </property>
+   <property name="icon">
+    <iconset theme="go-down"/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="replaceAll">
+   <property name="geometry">
+    <rect>
+     <x>337</x>
+     <y>348</y>
+     <width>151</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Replace all</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>16</x>
+     <y>48</y>
+     <width>81</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Replace with</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="replacePrevious">
+   <property name="geometry">
+    <rect>
+     <x>177</x>
+     <y>347</y>
+     <width>151</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Replace</string>
+   </property>
+   <property name="icon">
+    <iconset theme="go-up"/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="advancedOptions">
+   <property name="geometry">
+    <rect>
+     <x>27</x>
+     <y>83</y>
+     <width>171</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Show advanced options</string>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBoxAdvanced">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>23</x>
+     <y>121</y>
+     <width>461</width>
+     <height>181</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Advanced</string>
+   </property>
+   <widget class="QRadioButton" name="replacePlainText">
+    <property name="geometry">
+     <rect>
+      <x>18</x>
+      <y>32</y>
+      <width>121</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Replace &amp;plain text</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="replaceRegularExpression">
+    <property name="geometry">
+     <rect>
+      <x>17</x>
+      <y>60</y>
+      <width>221</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Replace with &amp;regular expressions</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="replaceSpecialCharachters">
+    <property name="geometry">
+     <rect>
+      <x>17</x>
+      <y>89</y>
+      <width>351</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Replace &amp;with special characters (\n, \r, \t, \0, \u...,\x...)</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="matchWholeWord">
+    <property name="geometry">
+     <rect>
+      <x>16</x>
+      <y>120</y>
+      <width>171</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Match whole word only</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="matchCase">
+    <property name="geometry">
+     <rect>
+      <x>16</x>
+      <y>150</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Match case</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>63</x>
+     <y>14</y>
+     <width>31</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Find</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="replaceLineEdit_2">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>45</y>
+     <width>391</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>true</bool>
+   </property>
+   <property name="currentText">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="findNext">
+   <property name="geometry">
+    <rect>
+     <x>19</x>
+     <y>313</y>
+     <width>151</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Find</string>
+   </property>
+   <property name="icon">
+    <iconset theme="go-down"/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="findPrevious">
+   <property name="geometry">
+    <rect>
+     <x>177</x>
+     <y>313</y>
+     <width>151</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Find</string>
+   </property>
+   <property name="icon">
+    <iconset theme="go-up"/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="selectAll">
+   <property name="geometry">
+    <rect>
+     <x>338</x>
+     <y>314</y>
+     <width>151</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Select all</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
