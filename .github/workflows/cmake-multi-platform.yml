@@ -75,21 +75,19 @@ jobs:
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
                           -OutFile $installer -TimeoutSec 1200
 
-        # Run the Qt installer with silent options
+        # Run the Qt installer in silent mode
         Start-Process -FilePath $installer -ArgumentList `
-          '--silent', `
-          '--accept-messages', `
-          '--default-answer', `
-          '--root C:\Qt', `
-          '--add-module', 'qt.qt6.653.win64_msvc2019_64' `
-          -NoNewWindow -Wait
+          '--quiet', `
+          '--no-default-installations', `
+          '--add', 'qt.qt6.653.win64_msvc2019_64', `
+          '--install-dir', 'C:\Qt' `
+          -Wait
 
-        # Verify the Qt installation by checking for a 'bin' directory
-        $qtDir = Get-ChildItem -Path "C:\Qt\" -Directory -Recurse | Where-Object { $_.Name -match "bin" } | Select-Object -First 1
-        if (-Not $qtDir) {
-          throw "Qt installation failed or directory structure not found!"
+        # Verify the Qt installation by checking if 'bin' folder exists
+        if (-Not (Test-Path "C:\Qt\6*\msvc*\bin")) {
+          throw "Qt installation failed!"
         } else {
-          echo "Qt installation verified at $($qtDir.FullName)"
+          echo "Qt installation verified"
         }
 
     - name: Save Qt cache (Windows)
