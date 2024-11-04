@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.0.44
+
+- Implemented:
+- Search System UI
+- Replace System UI
+- Goto line in text
+- Goto line in editor
+
 ## 0.0.43
 
 - Implemented:

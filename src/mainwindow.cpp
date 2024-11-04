@@ -309,11 +309,13 @@ void MainWindow::on_action_Find_triggered() {
 
 void MainWindow::on_actionFind_Next_triggered()
 {
+    qDebug() << "Implement on_actionFind_Next_triggered";
     // TODO: Implement
 }
 
 void MainWindow::on_actionFind_previoud_triggered()
 {
+    qDebug() << "Implement on_actionFind_previoud_triggered";
     // TODO: Implement
 }
 
@@ -322,6 +324,41 @@ void MainWindow::on_action_Replace_triggered()
     ReplaceDialog::showDialog(this);
 }
 
+void MainWindow::on_actionReplace_N_ext_triggered()
+{
+    qDebug() << "Implement on_actionReplace_N_ext_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionReplace_P_revious_triggered()
+{
+    qDebug() << "Implement on_actionReplace_P_revious_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionFind_System_triggered()
+{
+    qDebug() << "Implement on_actionFind_System_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionReplace_S_ystem_triggered()
+{
+    qDebug() << "Implement on_actionReplace_S_ystem_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionGo_to_Line_in_Text_triggered()
+{
+    Helpers::gotoLineInText(this, getCurrentDocument()->editor());
+}
+
+void MainWindow::on_actionGo_to_Line_in_Editor_triggered()
+{
+    Helpers::gotoLineInEditor(this, getCurrentDocument()->editor());
+}
+
+/* View Menu */
 
 
 
@@ -399,102 +436,14 @@ void MainWindow::saveIndentationSetting(const QString& setting) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Document* MainWindow::getCurrentDocument() {
+    int currentIndex = ui->documentsTab->currentIndex(); // Assuming you use a QTabWidget named documentsTab
+    if (currentIndex != -1) {
+        // Assuming the document object is stored as a widget in the tab
+        return qobject_cast<Document*>(ui->documentsTab->widget(currentIndex));
+    }
+    return nullptr;
+}
 
 
 

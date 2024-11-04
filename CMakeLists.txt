@@ -31,9 +31,11 @@ set(TS_FILES translations/Notepad--_en_GB.ts)
 
 set(PROJECT_UI
     src/mainwindow.ui
-    src/indentation/indentationdialog.ui
     src/find/finddialog.ui
     src/replace/replacedialog.ui
+    src/indentation/indentationdialog.ui
+    src/systemfind/systemfinddialog.ui
+    src/systemreplace/systemreplacedialog.ui
 )
 
 set(PROJECT_SOURCES
@@ -74,6 +76,10 @@ set(PROJECT_SOURCES
     src/find/finddialog.h
     src/replace/replacedialog.cpp
     src/replace/replacedialog.h
+    src/systemfind/systemfinddialog.cpp
+    src/systemfind/systemfinddialog.h
+    src/systemreplace/systemreplacedialog.cpp
+    src/systemreplace/systemreplacedialog.h
     ${PROJECT_UI}
 )
 

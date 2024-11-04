@@ -6,8 +6,8 @@ FindDialog::FindDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::FindDialog) {
     ui->setupUi(this);
 
-    const int move = 180;
-    const int reduceHeight = 170;
+    const int move = 220;
+    const int reduceHeight = 210;
 
     // Adjust the vertical positions of the buttons to move them up
     ui->findNext->move(ui->findNext->x(), ui->findNext->y() - move);
@@ -28,7 +28,7 @@ FindDialog::~FindDialog()
 }
 
 QString FindDialog::getFindText() const {
-    return ui->findLineEdit->currentText();
+    return ui->comboBoxFind->currentText();
 }
 
 bool FindDialog::isMatchCaseChecked() const {
@@ -40,13 +40,14 @@ bool FindDialog::isWholeWordsChecked() const {
 }
 
 void FindDialog::showDialog(QWidget *parent) {
-    FindDialog dialog(parent);
-    dialog.setModal(true);
-    dialog.exec();
+    FindDialog* dialog = new FindDialog(parent);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setModal(false);
+    dialog->show();
 }
 
 void FindDialog::on_findNext_clicked() {
-    handleFindRequest(ui->findLineEdit->currentText(),
+    handleFindRequest(ui->comboBoxFind->currentText(),
                         ui->matchCase->isChecked(),
                         ui->matchWholeWord->isChecked(),
                         selectedFindMode());  // Get current find mode
@@ -58,7 +59,7 @@ void FindDialog::on_advancedOptions_checkStateChanged(const Qt::CheckState &arg1
 }
 
 void FindDialog::on_findPrevious_clicked() {
-    handleFindRequest(ui->findLineEdit->currentText(),
+    handleFindRequest(ui->comboBoxFind->currentText(),
                         ui->matchCase->isChecked(),
                         ui->matchWholeWord->isChecked(),
                         selectedFindMode());  // Get current find mode
@@ -119,8 +120,8 @@ void FindDialog::onAdvancedOptionsToggled(bool checked) {
 }
 
 void FindDialog::toggleAdvancedOptions(bool checked) {
-    const int move = 180;
-    const int increaseHeight = 170;
+    const int move = 220;
+    const int increaseHeight = 210;
 
     if (checked) {
         // Move buttons down, resize form and tabWidget, and show advanced options

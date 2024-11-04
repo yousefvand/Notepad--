@@ -6,8 +6,8 @@ ReplaceDialog::ReplaceDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::ReplaceDialog) {
     ui->setupUi(this);
 
-    const int move = 180;
-    const int reduceHeight = 170;
+    const int move = 220;
+    const int reduceHeight = 210;
 
     // Adjust the vertical positions of the buttons to move them up
     ui->findNext->move(ui->findNext->x(), ui->findNext->y() - move);
@@ -31,7 +31,7 @@ ReplaceDialog::~ReplaceDialog()
 }
 
 QString ReplaceDialog::getReplaceText() const {
-    return ui->replaceLineEdit->currentText();
+    return ui->comboBoxReplace->currentText();
 }
 
 bool ReplaceDialog::isMatchCaseChecked() const {
@@ -43,13 +43,13 @@ bool ReplaceDialog::isWholeWordsChecked() const {
 }
 
 void ReplaceDialog::showDialog(QWidget *parent) {
-    ReplaceDialog dialog(parent);
-    dialog.setModal(true);
-    dialog.exec();
+    ReplaceDialog* dialog = new ReplaceDialog(parent);
+    dialog->setWindowModality(Qt::NonModal);
+    dialog->show();
 }
 
 void ReplaceDialog::on_replaceNext_clicked() {
-    handleReplaceRequest(ui->replaceLineEdit->currentText(),
+    handleReplaceRequest(ui->comboBoxReplace->currentText(),
                         ui->matchCase->isChecked(),
                         ui->matchWholeWord->isChecked(),
                         selectedReplaceMode());  // Get current replace mode
@@ -61,7 +61,7 @@ void ReplaceDialog::on_advancedOptions_checkStateChanged(const Qt::CheckState &a
 }
 
 void ReplaceDialog::on_replacePrevious_clicked() {
-    handleReplaceRequest(ui->replaceLineEdit->currentText(),
+    handleReplaceRequest(ui->comboBoxReplace->currentText(),
                         ui->matchCase->isChecked(),
                         ui->matchWholeWord->isChecked(),
                         selectedReplaceMode());  // Get current replace mode
@@ -122,8 +122,8 @@ void ReplaceDialog::onAdvancedOptionsToggled(bool checked) {
 }
 
 void ReplaceDialog::toggleAdvancedOptions(bool checked) {
-    const int move = 180;
-    const int increaseHeight = 170;
+    const int move = 220;
+    const int increaseHeight = 210;
 
     if (checked) {
         // Move buttons down, resize form, and show advanced options

@@ -7,18 +7,18 @@
     <x>0</x>
     <y>0</y>
     <width>503</width>
-    <height>336</height>
+    <height>382</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Find</string>
+   <string>System Find</string>
   </property>
   <widget class="QComboBox" name="comboBoxFind">
    <property name="geometry">
     <rect>
-     <x>56</x>
+     <x>76</x>
      <y>11</y>
-     <width>431</width>
+     <width>411</width>
      <height>25</height>
     </rect>
    </property>
@@ -33,7 +33,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>300</y>
+     <y>345</y>
      <width>151</width>
      <height>25</height>
     </rect>
@@ -49,7 +49,7 @@
    <property name="geometry">
     <rect>
      <x>339</x>
-     <y>302</y>
+     <y>347</y>
      <width>151</width>
      <height>25</height>
     </rect>
@@ -75,7 +75,7 @@
    <property name="geometry">
     <rect>
      <x>179</x>
-     <y>301</y>
+     <y>346</y>
      <width>151</width>
      <height>25</height>
     </rect>
@@ -91,7 +91,7 @@
    <property name="geometry">
     <rect>
      <x>19</x>
-     <y>45</y>
+     <y>90</y>
      <width>171</width>
      <height>23</height>
     </rect>
@@ -107,7 +107,7 @@
    <property name="geometry">
     <rect>
      <x>26</x>
-     <y>79</y>
+     <y>124</y>
      <width>461</width>
      <height>211</height>
     </rect>
@@ -180,7 +180,7 @@
      <string>Match case</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBoxAllTabs">
+   <widget class="QCheckBox" name="AllTabs">
     <property name="geometry">
      <rect>
       <x>15</x>
@@ -193,6 +193,45 @@
      <string>All Tabs</string>
     </property>
    </widget>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>54</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Location</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBoxLocation">
+   <property name="geometry">
+    <rect>
+     <x>74</x>
+     <y>49</y>
+     <width>371</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButtonBrowse">
+   <property name="geometry">
+    <rect>
+     <x>455</x>
+     <y>50</y>
+     <width>31</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
   </widget>
  </widget>
  <resources/>

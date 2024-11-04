@@ -32,6 +32,7 @@ public:
     FileOperations* getFileOperations() const;
     void setSmartIndentChecked(bool checked);
     bool isSmartIndentChecked() const;
+    Document* getCurrentDocument();
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -123,6 +124,18 @@ private slots:
     void on_actionFind_previoud_triggered();
 
     void on_action_Replace_triggered();
+
+    void on_actionFind_System_triggered();
+
+    void on_actionReplace_N_ext_triggered();
+
+    void on_actionReplace_P_revious_triggered();
+
+    void on_actionReplace_S_ystem_triggered();
+
+    void on_actionGo_to_Line_in_Text_triggered();
+
+    void on_actionGo_to_Line_in_Editor_triggered();
 
 private:
     Ui::MainWindow* ui;

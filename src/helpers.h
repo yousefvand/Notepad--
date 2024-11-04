@@ -22,6 +22,8 @@ public:
     static Document* getCurrentDocument(QTabWidget* documentsTab);
     static void showInformationMessage(const QString& message);
     static void notImplemented(QWidget* parent = nullptr);
+    static void gotoLineInText(QWidget* parent, CodeEditor* editor);
+    static void gotoLineInEditor(QWidget* parent, CodeEditor* editor);
 
 private:
     bool validateDocument(Document* doc, QWidget* parent);
