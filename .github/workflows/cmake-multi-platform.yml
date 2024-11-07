@@ -63,13 +63,14 @@ jobs:
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
                           -OutFile $installer -TimeoutSec 1200
 
-        # Run the Qt installer without components that require a login
+        # Run the Qt installer in silent mode without specifying components
         Start-Process -FilePath $installer -ArgumentList `
+          'install', `
           '--platform', 'minimal', `
           '--root', 'C:\Qt', `
           '--accept-licenses', `
           '--no-default-installations', `
-          '--add', 'qt.qt6.653.win64_msvc2019_64' `
+          '--confirm-command' `
           -NoNewWindow -Wait
 
         # Verify the Qt installation
