@@ -55,22 +55,19 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Download and Install Qt (Windows)
+    - name: Download and Install Qt Offline (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $installer = "qt-unified-windows-x64-online.exe"
-        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" `
-                          -OutFile $installer -TimeoutSec 1200
+        # Direct download URL for Qt 6.5.3 offline installer
+        $qtUrl = "https://download.qt.io/official_releases/qt/6.5/6.5.3/qt-opensource-windows-x86-64-6.5.3.exe"
+        $installer = "qt-offline-installer.exe"
+        Invoke-WebRequest -Uri $qtUrl -OutFile $installer -TimeoutSec 1200
 
-        # Run the Qt installer in silent mode without specifying components
+        # Run the Qt offline installer in silent mode
         Start-Process -FilePath $installer -ArgumentList `
-          'install', `
           '--platform', 'minimal', `
-          '--root', 'C:\Qt', `
-          '--accept-licenses', `
-          '--no-default-installations', `
-          '--confirm-command' `
+          '--script', 'install' `
           -NoNewWindow -Wait
 
         # Verify the Qt installation
