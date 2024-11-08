@@ -67,7 +67,10 @@ jobs:
         # Run the Qt offline installer in silent mode
         Start-Process -FilePath $installer -ArgumentList `
           '--platform', 'minimal', `
-          '--script', 'install' `
+          '--no-default-installations', `
+          '--accept-licenses', `
+          '--no-force-installations', `
+          '--install-dir', 'C:\Qt' `
           -NoNewWindow -Wait
 
         # Verify the Qt installation
