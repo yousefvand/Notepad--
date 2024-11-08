@@ -5,6 +5,7 @@
 #include <QGroupBox>
 #include <QMainWindow>
 #include "document.h"
+#include "find/finddialog.h"
 #include "helpers.h"
 #include "mainwindow/formatting.h"
 #include "mainwindow/fileoperations.h"
@@ -147,6 +148,7 @@ private:
     Formatting* formatting;
     RecentFiles* recentFiles;
     void applyColorCoding(Document* doc, bool isModified);
+    void setActiveDocumentEditorInFindDialog();
 
     void setupIndentationMenu();
     QAction* action_Custom;
@@ -155,4 +157,5 @@ private:
     void saveIndentationSetting(const QString& setting);  // Save the selected option
     void loadIndentationSetting();  // Load and apply the saved setting
     IndentationManager* indentationManager;
+    FindDialog* findDialog;
 };

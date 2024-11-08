@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.45
+
+- Implemented:
+- Find Functionality
+- Known Issues: Special Characters, All Tabs
+
 ## 0.0.44
 
 - Implemented:

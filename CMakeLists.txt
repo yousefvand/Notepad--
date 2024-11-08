@@ -80,6 +80,15 @@ set(PROJECT_SOURCES
     src/systemfind/systemfinddialog.h
     src/systemreplace/systemreplacedialog.cpp
     src/systemreplace/systemreplacedialog.h
+    src/replace/replace.cpp
+    src/replace/replace.h
+    src/find/find.cpp
+    src/find/find.h
+    src/search/search.cpp
+    src/search/search.h
+    src/search/searchcontroller.cpp
+    src/search/searchcontroller.h
+    src/search/searchoptions.h
     ${PROJECT_UI}
 )
 

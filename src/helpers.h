@@ -24,6 +24,7 @@ public:
     static void notImplemented(QWidget* parent = nullptr);
     static void gotoLineInText(QWidget* parent, CodeEditor* editor);
     static void gotoLineInEditor(QWidget* parent, CodeEditor* editor);
+    static bool isValidRegularExpression(const QString& pattern);
 
 private:
     bool validateDocument(Document* doc, QWidget* parent);

@@ -6,6 +6,8 @@
 CodeEditor::CodeEditor(QWidget *parent)
     : QPlainTextEdit(parent), lineNumberArea(new LineNumberArea(this)) {
 
+    QTabWidget* doc = qobject_cast<QTabWidget*>(parent);
+    m_documentsTab = doc;
     QPalette p = this->palette();
     p.setColor(QPalette::Text, Qt::black);
     this->setPalette(p);
@@ -153,4 +155,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
 void CodeEditor::applyIndentation(bool useTabs, int indentationWidth) {
     // TODO: Implement indentation
     qDebug() << "Indentation. Use Tabs: " << useTabs << ". Indentation width: " << indentationWidth;
+}
+
+QTabWidget* CodeEditor::DocumentsTab() {
+    return m_documentsTab;
 }

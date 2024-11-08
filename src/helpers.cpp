@@ -4,6 +4,7 @@
 #include <QInputDialog>
 #include <QPlainTextEdit>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrintDialog>
 #include "helpers.h"
@@ -169,6 +170,12 @@ void Helpers::gotoLineInEditor(QWidget* parent, CodeEditor* editor) {
         QMessageBox::information(parent, "Invalid Line Number", "The specified line is out of range.");
     }
 }
+
+bool Helpers::isValidRegularExpression(const QString& pattern) {
+    QRegularExpression regex(pattern);
+    return regex.isValid();
+}
+
 
 
 

@@ -18,15 +18,12 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
-    indentationManager(new IndentationManager(this)) {
-
-    qDebug() << "Initializing MainWindow...";
+    indentationManager(new IndentationManager(this)),
+    findDialog(new FindDialog(this)) {
 
     ui->setupUi(this);  // Ensure the UI is set up before using it
 
-    Helpers::RemoveMe(ui->documentsTab);
-    Helpers::AddDefaultTab(ui->documentsTab);
-    Helpers::zMenu(ui->menu_Language, this);
+    qDebug() << "Initializing MainWindow...";
 
     fileOperations = new FileOperations(this);
     textOperations = new TextOperations(ui->documentsTab);
@@ -47,6 +44,10 @@ MainWindow::MainWindow(QWidget* parent)
     // Initialize Formatting after setting up the UI
     formatting = new Formatting(this, ui->documentsTab);
     formatting->setupActions(ui->actionWindows_Format, ui->action_Unix_OS_X_Format, ui->action_Old_Mac_Format);
+
+    Helpers::RemoveMe(ui->documentsTab);
+    Helpers::AddDefaultTab(ui->documentsTab);
+    Helpers::zMenu(ui->menu_Language, this);
 
     qDebug() << "MainWindow initialized...";
 }
@@ -303,10 +304,6 @@ bool MainWindow::isSmartIndentChecked() const {
 
 /* Search Menu */
 
-void MainWindow::on_action_Find_triggered() {
-    FindDialog::showDialog(this);
-}
-
 void MainWindow::on_actionFind_Next_triggered()
 {
     qDebug() << "Implement on_actionFind_Next_triggered";
@@ -321,7 +318,7 @@ void MainWindow::on_actionFind_previoud_triggered()
 
 void MainWindow::on_action_Replace_triggered()
 {
-    ReplaceDialog::showDialog(this);
+    //ReplaceDialog::showDialog(this);
 }
 
 void MainWindow::on_actionReplace_N_ext_triggered()
@@ -358,17 +355,26 @@ void MainWindow::on_actionGo_to_Line_in_Editor_triggered()
     Helpers::gotoLineInEditor(this, getCurrentDocument()->editor());
 }
 
+void MainWindow::on_action_Find_triggered() {
+    // Set the active document's editor in FindDialog
+    setActiveDocumentEditorInFindDialog();
+
+    // Show the dialog without creating a new instance each time
+    if (!findDialog->isVisible()) {
+        findDialog->show();
+    } else {
+        findDialog->raise();  // Bring it to the front if it’s already open
+        findDialog->activateWindow();
+    }
+}
+
+
+
+
+
+
+
 /* View Menu */
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -435,9 +441,9 @@ void MainWindow::saveIndentationSetting(const QString& setting) {
     qDebug() << "Saved indentation setting:" << setting;
 }
 
-
+// helper function
 Document* MainWindow::getCurrentDocument() {
-    int currentIndex = ui->documentsTab->currentIndex(); // Assuming you use a QTabWidget named documentsTab
+    int currentIndex = ui->documentsTab->currentIndex();
     if (currentIndex != -1) {
         // Assuming the document object is stored as a widget in the tab
         return qobject_cast<Document*>(ui->documentsTab->widget(currentIndex));
@@ -445,22 +451,25 @@ Document* MainWindow::getCurrentDocument() {
     return nullptr;
 }
 
+// helper function
+void MainWindow::setActiveDocumentEditorInFindDialog() {
+    // Retrieve the active document from the current tab
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
 
+    if (activeDocument) {
+        // Get the editor from the active document
+        CodeEditor* activeEditor = activeDocument->editor();  // Assumes Document::editor() returns a CodeEditor*
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        if (activeEditor) {
+            // Set the active editor in the find dialog
+            findDialog->setEditor(activeEditor);
+        } else {
+            qWarning() << "Warning: No active editor found in document.";
+        }
+    } else {
+        qWarning() << "Warning: No active document found.";
+    }
+}
 
 
 

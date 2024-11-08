@@ -6,6 +6,7 @@ class QPaintEvent;
 class QResizeEvent;
 class QSize;
 class QWidget;
+class QTabWidget;
 
 class LineNumberArea;
 
@@ -19,6 +20,7 @@ public:
     int lineNumberAreaWidth();
     void highlightCurrentLine();
     void applyIndentation(bool useTabs, int indentationWidth);
+    QTabWidget* DocumentsTab();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -32,6 +34,7 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+    QTabWidget* m_documentsTab;
 };
 
 class LineNumberArea : public QWidget {

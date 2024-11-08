@@ -1,9 +1,17 @@
 #include <QVBoxLayout>
+#include <QMessageBox>
 #include "finddialog.h"
 #include "ui_finddialog.h"
+#include "../find/find.h"
+#include "../helpers.h"
 
 FindDialog::FindDialog(QWidget* parent)
-    : QDialog(parent), ui(new Ui::FindDialog) {
+    : QDialog(parent),
+    ui(new Ui::FindDialog),
+    m_searchOptions(new SearchOptions()),
+    m_find(nullptr)
+{
+
     ui->setupUi(this);
 
     const int move = 220;
@@ -20,99 +28,8 @@ FindDialog::FindDialog(QWidget* parent)
 
     // Connect advancedOptions checkbox to toggle advanced options visibility
     connect(ui->advancedOptions, &QCheckBox::toggled, this, &FindDialog::toggleAdvancedOptions);
-}
 
-FindDialog::~FindDialog()
-{
-    delete ui;
-}
-
-QString FindDialog::getFindText() const {
-    return ui->comboBoxFind->currentText();
-}
-
-bool FindDialog::isMatchCaseChecked() const {
-    return ui->matchCase->isChecked();
-}
-
-bool FindDialog::isWholeWordsChecked() const {
-    return ui->matchWholeWord->isChecked();
-}
-
-void FindDialog::showDialog(QWidget *parent) {
-    FindDialog* dialog = new FindDialog(parent);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->setModal(false);
-    dialog->show();
-}
-
-void FindDialog::on_findNext_clicked() {
-    handleFindRequest(ui->comboBoxFind->currentText(),
-                        ui->matchCase->isChecked(),
-                        ui->matchWholeWord->isChecked(),
-                        selectedFindMode());  // Get current find mode
-}
-
-void FindDialog::on_advancedOptions_checkStateChanged(const Qt::CheckState &arg1)
-{
-    qDebug() << "on_advancedOptions_checkStateChanged";
-}
-
-void FindDialog::on_findPrevious_clicked() {
-    handleFindRequest(ui->comboBoxFind->currentText(),
-                        ui->matchCase->isChecked(),
-                        ui->matchWholeWord->isChecked(),
-                        selectedFindMode());  // Get current find mode
-}
-
-void FindDialog::on_selectAll_clicked()
-{
-    qDebug() << "on_selectAll_clicked";
-}
-
-void FindDialog::performFind() {
-    FindMode mode = selectedFindMode();
-
-    switch (mode) {
-    case PlainText:
-        qDebug() << "Performing Plain Text find";
-        // Implement plain text find logic here
-        break;
-    case RegularExpression:
-        qDebug() << "Performing Regular Expression find";
-        // Implement regex find logic here
-        break;
-    case SpecialCharacters:
-        qDebug() << "Performing Special Characters find";
-        // Implement special character find logic here
-        break;
-    }
-}
-
-FindDialog::FindMode FindDialog::selectedFindMode() const {
-    if (ui->findPlainText->isChecked()) {
-        return PlainText;
-    } else if (ui->findRegularExpression->isChecked()) {
-        return RegularExpression;
-    } else if (ui->findSpecialCharachters->isChecked()) {
-        return SpecialCharacters;
-    }
-    return PlainText; // Default fallback
-}
-
-void FindDialog::handleFindRequest(const QString& findText, bool matchCase, bool matchWholeWord, FindMode mode) {
-    switch (mode) {
-    case PlainText:
-        qDebug() << "Performing Plain Text find for:" << findText;
-        break;
-    case RegularExpression:
-        qDebug() << "Performing Regular Expression find for:" << findText;
-        break;
-    case SpecialCharacters:
-        qDebug() << "Performing Special Characters find for:" << findText;
-        break;
-    }
-    // Implement your actual find logic here
+    m_searchOptions->findMethod = FindMethod::SimpleText; // default method
 }
 
 void FindDialog::onAdvancedOptionsToggled(bool checked) {
@@ -143,6 +60,134 @@ void FindDialog::toggleAdvancedOptions(bool checked) {
         ui->groupBoxAdvanced->hide();
     }
 }
+
+FindDialog::~FindDialog()
+{
+    delete ui;
+    delete m_find;
+}
+
+QString FindDialog::getFindText() const {
+    return ui->comboBoxFind->currentText();
+}
+
+bool FindDialog::findPlainTextSelected() const {
+    return ui->findPlainText->isChecked();
+}
+
+bool FindDialog::findRegularExpressionSelected() const {
+    return ui->findRegularExpression->isChecked();
+}
+
+bool FindDialog::findSpecialCharachtersSelected() const {
+    return ui->findSpecialCharachters->isChecked();
+}
+
+bool FindDialog::isWholeWordsChecked() const {
+    return ui->matchWholeWord->isChecked();
+}
+
+bool FindDialog::isMatchCaseChecked() const {
+    return ui->matchCase->isChecked();
+}
+
+bool FindDialog::isAllTabsChecked() const {
+    return ui->checkBoxAllTabs->isChecked();
+}
+
+void FindDialog::on_findNext_clicked() {
+    if (!m_find) return;
+    qDebug() << "Searching for keyword:" << m_searchOptions->keyword;
+
+    m_find->setSearchOptions(*m_searchOptions);
+    m_find->findNext();
+}
+
+void FindDialog::on_findPrevious_clicked()
+{
+    if (!m_find) return;
+
+    m_find->setSearchOptions(*m_searchOptions);
+    m_find->findPrevious();
+}
+
+void FindDialog::on_selectAll_clicked()
+{
+    if (!m_find) return;
+
+    m_find->setSearchOptions(*m_searchOptions);
+    m_find->selectAll();
+}
+
+void FindDialog::on_comboBoxFind_currentTextChanged(const QString &arg1)
+{
+    m_searchOptions->keyword = arg1;
+}
+
+void FindDialog::on_comboBoxFind_currentIndexChanged(int index)
+{
+    m_searchOptions->keyword = ui->comboBoxFind->itemText(index);
+}
+
+void FindDialog::on_findPlainText_toggled(bool checked)
+{
+    if (checked) m_searchOptions->findMethod = FindMethod::SimpleText;
+}
+
+void FindDialog::on_findRegularExpression_toggled(bool checked)
+{
+    if (checked) {
+        m_searchOptions->findMethod = FindMethod::RegularExpression;
+        if (!Helpers::isValidRegularExpression(ui->comboBoxFind->currentText())) {
+            QMessageBox::critical(this, "Error", "Invalid RegularExpression.");
+        }
+    }
+}
+
+void FindDialog::on_findSpecialCharachters_toggled(bool checked)
+{
+    if (checked) m_searchOptions->findMethod = FindMethod::SpecialCharacters;
+}
+
+void FindDialog::on_matchWholeWord_toggled(bool checked)
+{
+    m_searchOptions->matchWholeWord = checked;
+}
+
+void FindDialog::on_matchCase_toggled(bool checked)
+{
+    m_searchOptions->matchCase = checked;
+}
+
+void FindDialog::on_checkBoxAllTabs_toggled(bool checked)
+{
+    m_searchOptions->allTabs = checked;
+}
+
+
+
+
+void FindDialog::setEditor(CodeEditor* editor) {
+    m_editor = editor;               // Store the editor
+    if (m_find) {                    // If m_find already exists, clean it up
+        delete m_find;
+    }
+    m_find = new Find(editor);       // Initialize m_find with the editor
+}
+
+
+
+
+
+
+void FindDialog::showDialog(QWidget *parent) {
+    FindDialog* dialog = new FindDialog(parent);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setModal(false);
+    dialog->show();
+}
+
+
 
 
 
