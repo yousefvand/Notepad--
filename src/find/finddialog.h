@@ -33,6 +33,8 @@ public:
     bool isMatchCaseChecked() const;
     bool isAllTabsChecked() const;
     void setEditor(CodeEditor* editor);
+    Find* getFind();
+    SearchOptions* getSearchOptions();
 
 signals:
     void findRequested(const QString& findText, bool matchCase, bool matchWholeWord, FindDialog::FindMode mode);
@@ -69,7 +71,7 @@ private:
     Ui::FindDialog *ui;
     FindMode selectedFindMode() const;
     SearchOptions* m_searchOptions;
-    Find* m_find = nullptr;
+    Find* m_find;
     CodeEditor* m_editor = nullptr;
 };
 

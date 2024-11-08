@@ -158,4 +158,6 @@ private:
     void loadIndentationSetting();  // Load and apply the saved setting
     IndentationManager* indentationManager;
     FindDialog* findDialog;
+    SearchOptions* m_searchOptions;
+    Find* m_find = nullptr;
 };

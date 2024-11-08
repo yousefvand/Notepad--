@@ -67,6 +67,14 @@ FindDialog::~FindDialog()
     delete m_find;
 }
 
+Find* FindDialog::getFind() {
+    return m_find;
+}
+
+SearchOptions* FindDialog::getSearchOptions() {
+    return m_searchOptions;
+}
+
 QString FindDialog::getFindText() const {
     return ui->comboBoxFind->currentText();
 }
@@ -146,6 +154,7 @@ void FindDialog::on_findRegularExpression_toggled(bool checked)
 
 void FindDialog::on_findSpecialCharachters_toggled(bool checked)
 {
+    if (checked) Helpers::notImplemented(this);
     if (checked) m_searchOptions->findMethod = FindMethod::SpecialCharacters;
 }
 
@@ -161,6 +170,7 @@ void FindDialog::on_matchCase_toggled(bool checked)
 
 void FindDialog::on_checkBoxAllTabs_toggled(bool checked)
 {
+    if (checked) Helpers::notImplemented(this);
     m_searchOptions->allTabs = checked;
 }
 

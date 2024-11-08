@@ -19,7 +19,8 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
     indentationManager(new IndentationManager(this)),
-    findDialog(new FindDialog(this)) {
+    findDialog(new FindDialog(this))
+{
 
     ui->setupUi(this);  // Ensure the UI is set up before using it
 
@@ -306,14 +307,22 @@ bool MainWindow::isSmartIndentChecked() const {
 
 void MainWindow::on_actionFind_Next_triggered()
 {
-    qDebug() << "Implement on_actionFind_Next_triggered";
-    // TODO: Implement
+    if (!findDialog->getFind()) {
+        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        return;
+    }
+
+    findDialog->getFind()->findNext();
 }
 
 void MainWindow::on_actionFind_previoud_triggered()
 {
-    qDebug() << "Implement on_actionFind_previoud_triggered";
-    // TODO: Implement
+    if (!findDialog->getFind()) {
+        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        return;
+    }
+
+    findDialog->getFind()->findPrevious();
 }
 
 void MainWindow::on_action_Replace_triggered()

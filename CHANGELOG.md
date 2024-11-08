@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.0.46
+
+- Implemented:
+- Not Implemented on Special Characters and All Tabs
+- Search Menu -> Find Next
+- Search Menu -> Find Previous
+
 ## 0.0.45
 
 - Implemented:
