@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QTabBar>
 #include "session.h"
-#include "helpers.h"
+#include "../helpers.h"
 #include "../mainwindow.h"
 #include "../document.h"
 #include "../codeeditor.h"

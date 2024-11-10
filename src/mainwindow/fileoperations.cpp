@@ -1,4 +1,4 @@
-#include "helpers.h"
+#include "../helpers.h"
 #include <QFileInfo>
 #include <QTabWidget>
 #include <QMessageBox>

@@ -1,13 +1,15 @@
 #include <QObject>
 #include <QAction>
 #include <QTabWidget>
+#include <QInputDialog>
 #include <QPlainTextEdit>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrintDialog>
 #include "helpers.h"
-#include "../document.h"
-#include "../codeeditor.h"
+#include "document.h"
+#include "codeeditor.h"
 
 bool Helpers::isUntitledDocument(const QString& title) {
     // Static QRegularExpression to avoid repeated creation
@@ -118,6 +120,62 @@ void Helpers::notImplemented(QWidget* parent) {
     QString hardcodedMessage = "Sorry, this option is not available now.\nIt will be implemented in future versions.";
     QMessageBox::information(parent, "Information", hardcodedMessage, QMessageBox::Ok);
 }
+
+void Helpers::gotoLineInText(QWidget* parent, CodeEditor* editor) {
+    if (!editor) {
+        QMessageBox::warning(parent, "Error", "No active editor found.");
+        return;
+    }
+
+    // Prompt user for line number input
+    int lineNumber = QInputDialog::getInt(parent, "Go to Line in Text", "Enter line number:");
+
+    QTextDocument* document = editor->document();
+    int currentLine = 1;
+    QTextBlock block = document->begin();
+
+    // Iterate through text blocks to find the requested line
+    while (block.isValid() && currentLine < lineNumber) {
+        currentLine++;
+        block = block.next();
+    }
+
+    if (currentLine == lineNumber) {
+        QTextCursor cursor = editor->textCursor();
+        cursor.setPosition(block.position());
+        editor->setTextCursor(cursor);
+        editor->centerCursor();
+    } else {
+        QMessageBox::information(parent, "Line Not Found", "The specified line exceeds the document length.");
+    }
+}
+
+void Helpers::gotoLineInEditor(QWidget* parent, CodeEditor* editor) {
+    if (!editor) {
+        QMessageBox::warning(parent, "Error", "No active editor found.");
+        return;
+    }
+
+    // Prompt user for line number input
+    int lineNumber = QInputDialog::getInt(parent, "Go to Line in Editor", "Enter line number:");
+
+    // Ensure the line number is within the valid range
+    if (lineNumber > 0 && lineNumber <= editor->blockCount()) {
+        QTextCursor cursor = editor->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, lineNumber - 1);
+        editor->setTextCursor(cursor);
+        editor->centerCursor();
+    } else {
+        QMessageBox::information(parent, "Invalid Line Number", "The specified line is out of range.");
+    }
+}
+
+bool Helpers::isValidRegularExpression(const QString& pattern) {
+    QRegularExpression regex(pattern);
+    return regex.isValid();
+}
+
 
 
 

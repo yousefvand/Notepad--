@@ -5,7 +5,9 @@
 #include <QGroupBox>
 #include <QMainWindow>
 #include "document.h"
-#include "mainwindow/helpers.h"
+#include "find/finddialog.h"
+#include "replace/replacedialog.h"
+#include "helpers.h"
 #include "mainwindow/formatting.h"
 #include "mainwindow/fileoperations.h"
 #include "mainwindow/textoperations.h"
@@ -32,6 +34,7 @@ public:
     FileOperations* getFileOperations() const;
     void setSmartIndentChecked(bool checked);
     bool isSmartIndentChecked() const;
+    Document* getCurrentDocument();
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -39,7 +42,6 @@ protected:
 private slots:
     void on_action_New_triggered();
     void on_action_Open_triggered();
-
     void on_action_Save_triggered();
     void onActionZ80Triggered();
 
@@ -117,6 +119,26 @@ private slots:
 
     void on_smartIndent_triggered();
 
+    void on_action_Find_triggered();
+
+    void on_actionFind_Next_triggered();
+
+    void on_actionFind_previoud_triggered();
+
+    void on_action_Replace_triggered();
+
+    void on_actionFind_System_triggered();
+
+    void on_actionReplace_N_ext_triggered();
+
+    void on_actionReplace_P_revious_triggered();
+
+    void on_actionReplace_S_ystem_triggered();
+
+    void on_actionGo_to_Line_in_Text_triggered();
+
+    void on_actionGo_to_Line_in_Editor_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -127,6 +149,8 @@ private:
     Formatting* formatting;
     RecentFiles* recentFiles;
     void applyColorCoding(Document* doc, bool isModified);
+    void setActiveDocumentEditorInFindDialog();
+    void setActiveDocumentEditorInReplaceDialog();
 
     void setupIndentationMenu();
     QAction* action_Custom;
@@ -135,4 +159,8 @@ private:
     void saveIndentationSetting(const QString& setting);  // Save the selected option
     void loadIndentationSetting();  // Load and apply the saved setting
     IndentationManager* indentationManager;
+    FindDialog* findDialog;
+    ReplaceDialog* replaceDialog;
+    SearchOptions* m_searchOptions;
+    Find* m_find = nullptr;
 };

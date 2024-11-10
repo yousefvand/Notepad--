@@ -4,7 +4,7 @@
 #include "../settings.h"
 #include "../document.h"
 #include "../codeeditor.h"
-#include "../mainwindow/helpers.h"
+#include "../helpers.h"
 
 IndentationDialog::IndentationDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::IndentationDialog)
@@ -39,23 +39,18 @@ void IndentationDialog::onIndentationSelected() {
 }
 
 void IndentationDialog::loadSettings() {
-    QSettings settings("Remisa", "Notepad--");
-    settings.beginGroup("IndentationSettings");
-    QString value = settings.value("indentationOption", "Tabs").toString(); // Default to tabs if no value found
-    int indentationSize = settings.value("indentationSize", 1).toInt(); // Default to 1 if no value found
-    settings.endGroup();
+    QString indentationOption = Settings::instance()->loadSetting("Indentation", "Option", "Tabs").toString();
+    int indentationSize = Settings::instance()->loadSetting("Indentation", "Size", 1).toInt();
 
-    ui->tabs->setChecked(value == "Tabs");
-    ui->spaces->setChecked(value == "Spaces");
+    // Update the UI elements based on loaded settings
+    ui->tabs->setChecked(indentationOption == "Tabs");
+    ui->spaces->setChecked(indentationOption == "Spaces");
     ui->number->setValue(indentationSize);
 }
 
 void IndentationDialog::saveSettings() {
-    QSettings settings("Remisa", "Notepad--");  // Adjust organization and application name
-    settings.beginGroup("IndentationSettings");
-    settings.setValue("indentationOption", ui->tabs->isChecked() ? "Tabs" : "Spaces");
-    settings.setValue("indentationSize", ui->number->value());
-    settings.endGroup();
+    Settings::instance()->saveSetting("Indentation", "Option", ui->tabs->isChecked() ? "Tabs" : "Spaces");
+    Settings::instance()->saveSetting("Indentation", "Size", ui->number->value());
 }
 
 void IndentationDialog::onOkClicked() {
@@ -77,8 +72,8 @@ void IndentationDialog::on_buttonBox_accepted()
     int indentationWidth = ui->number->value();
 
     auto* settings = Settings::instance();
-    settings->setValue("IndentationSettings/indentationOption", useTabs ? "Tabs" : "Spaces");
-    settings->setValue("IndentationSettings/indentationSize", indentationWidth);
+    settings->saveSetting("Indentation", "Option", useTabs ? "Tabs" : "Spaces");
+    settings->saveSetting("Indentation", "Size", indentationWidth);
 
     Document* doc = qobject_cast<Document*>(parent());
     if (doc && doc->editor()) {
@@ -86,4 +81,5 @@ void IndentationDialog::on_buttonBox_accepted()
     }
     Helpers::notImplemented(this);
 }
+
 

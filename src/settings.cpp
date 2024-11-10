@@ -1,5 +1,4 @@
 #include "settings.h"
-#include "mainwindow.h"
 
 // Initialize the singleton instance to nullptr
 Settings* Settings::s_instance = nullptr;
@@ -12,16 +11,16 @@ Settings* Settings::instance() {
 }
 
 Settings::Settings(QObject* parent)
-    : QSettings("Remisa", "Notepad--", parent), m_eol(Unix) {
+    : QSettings("Remisa", "Notepad--", parent) {}
+
+// Save a setting with a given title and name
+void Settings::saveSetting(const QString& title, const QString& name, const QVariant& value) {
+    QString key = title + "/" + name;  // Construct the key as "title/name"
+    setValue(key, value);
 }
 
-Settings::EOLType Settings::eol() const {
-    return m_eol;
-}
-
-void Settings::setEol(EOLType eol) {
-    if (m_eol != eol) {
-        m_eol = eol;
-        emit eolChanged(m_eol);
-    }
+// Load a setting with a given title and name, providing a default value
+QVariant Settings::loadSetting(const QString& title, const QString& name, const QVariant& defaultValue) const {
+    QString key = title + "/" + name;  // Construct the key as "title/name"
+    return value(key, defaultValue);
 }

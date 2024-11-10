@@ -59,8 +59,8 @@ void IndentationManager::onIndentationSelected() {
 
         // Save the values to settings
         auto* settings = Settings::instance();
-        settings->setValue("IndentationSettings/indentationOption", tabsSelected ? "Tabs" : "Spaces");
-        settings->setValue("IndentationSettings/indentationSize", indentationValue);
+        settings->saveSetting("Indentation", "Option", tabsSelected ? "Tabs" : "Spaces");
+        settings->saveSetting("Indentation", "Size", indentationValue);
     }
 }
 
@@ -76,8 +76,8 @@ void IndentationManager::openIndentationDialog() {
 
             // Save the values to settings
             auto* settings = Settings::instance();
-            settings->setValue("IndentationSettings/indentationOption", tabsSelected ? "Tabs" : "Spaces");
-            settings->setValue("IndentationSettings/indentationSize", indentationValue);
+            settings->saveSetting("Indentation", "Option", tabsSelected ? "Tabs" : "Spaces");
+            settings->saveSetting("Indentation", "Size", indentationValue);
         });
 
         connect(m_indentationDialog, &QDialog::rejected, m_indentationDialog, &QDialog::close);
@@ -90,14 +90,14 @@ void IndentationManager::openIndentationDialog() {
 
 bool IndentationManager::isTabsSelected() const {
     auto* settings = Settings::instance();  // Using the singleton settings class
-    QString indentationOption = settings->value("IndentationSettings/indentationOption", "Tabs").toString();
+    QString indentationOption = settings->loadSetting("Indentation", "Option", "Tabs").toString();
     return indentationOption == "Tabs";  // Returns true if "Tabs" is the selected option
 }
 
 void IndentationManager::setToDefaultIndentation() {
     // Logic to apply the default indentation
     auto* settings = Settings::instance();
-    settings->setValue("IndentationSettings/indentationSetting", "Default");
+    settings->saveSetting("Indentation", "Setting", "Default");
 
     // Ensure that the default setting is reflected in the UI
     if (m_actionDefaultSetting) {

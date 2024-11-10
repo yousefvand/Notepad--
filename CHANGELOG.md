@@ -1,5 +1,45 @@
 # Change Log
 
+## 0.0.47
+
+- Implemented:
+- Search Menu -> Find All
+- Search Menu -> Replace Next
+- Search Menu -> Replace Previous
+- Search Menu -> Replace All
+
+## 0.0.46
+
+- Implemented:
+- Not Implemented on Special Characters and All Tabs
+- Search Menu -> Find Next
+- Search Menu -> Find Previous
+
+## 0.0.45
+
+- Implemented:
+- Find Functionality
+- Known Issues: Special Characters, All Tabs
+
+## 0.0.44
+
+- Implemented:
+- Search System UI
+- Replace System UI
+- Goto line in text
+- Goto line in editor
+
+## 0.0.43
+
+- Implemented:
+- Search -> Replace UI
+
+
+## 0.0.42
+
+- Implemented:
+- Search -> Find UI
+
 ## 0.0.41
 
 - Implemented:
@@ -12,7 +52,7 @@
 - Indentation -> Custom
 
 
-0.0.40
+## 0.0.40
 
 - Implemented:
 - Delete

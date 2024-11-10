@@ -10,21 +10,22 @@
 #include "mainwindow/recentfiles.h"
 #include "mainwindow/session.h"
 #include "src/ui_mainwindow.h"
-#include "mainwindow/helpers.h"
+#include "helpers.h"
 #include "indentation/indentationdialog.h"
+#include "find/finddialog.h"
+#include "replace/replacedialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
-    indentationManager(new IndentationManager(this)) {
-
-    qDebug() << "Initializing MainWindow...";
+    indentationManager(new IndentationManager(this)),
+    findDialog(new FindDialog(this)),
+    replaceDialog(new ReplaceDialog(this))
+{
 
     ui->setupUi(this);  // Ensure the UI is set up before using it
 
-    Helpers::RemoveMe(ui->documentsTab);
-    Helpers::AddDefaultTab(ui->documentsTab);
-    Helpers::zMenu(ui->menu_Language, this);
+    qDebug() << "Initializing MainWindow...";
 
     fileOperations = new FileOperations(this);
     textOperations = new TextOperations(ui->documentsTab);
@@ -45,6 +46,10 @@ MainWindow::MainWindow(QWidget* parent)
     // Initialize Formatting after setting up the UI
     formatting = new Formatting(this, ui->documentsTab);
     formatting->setupActions(ui->actionWindows_Format, ui->action_Unix_OS_X_Format, ui->action_Old_Mac_Format);
+
+    Helpers::RemoveMe(ui->documentsTab);
+    Helpers::AddDefaultTab(ui->documentsTab);
+    Helpers::zMenu(ui->menu_Language, this);
 
     qDebug() << "MainWindow initialized...";
 }
@@ -301,6 +306,86 @@ bool MainWindow::isSmartIndentChecked() const {
 
 /* Search Menu */
 
+void MainWindow::on_actionFind_Next_triggered()
+{
+    if (!findDialog->getFind()) {
+        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        return;
+    }
+
+    findDialog->getFind()->findNext();
+}
+
+void MainWindow::on_actionFind_previoud_triggered()
+{
+    if (!findDialog->getFind()) {
+        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        return;
+    }
+
+    findDialog->getFind()->findPrevious();
+}
+
+void MainWindow::on_action_Replace_triggered()
+{
+    // Set the active document's editor in ReplaceDialog
+    setActiveDocumentEditorInReplaceDialog();
+
+    // Show the dialog without creating a new instance each time
+    if (!replaceDialog->isVisible()) {
+        replaceDialog->show();
+    } else {
+        replaceDialog->raise();  // Bring it to the front if it’s already open
+        replaceDialog->activateWindow();
+    }
+}
+
+void MainWindow::on_actionReplace_N_ext_triggered()
+{
+    qDebug() << "Implement on_actionReplace_N_ext_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionReplace_P_revious_triggered()
+{
+    qDebug() << "Implement on_actionReplace_P_revious_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionFind_System_triggered()
+{
+    qDebug() << "Implement on_actionFind_System_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionReplace_S_ystem_triggered()
+{
+    qDebug() << "Implement on_actionReplace_S_ystem_triggered";
+    // TODO: Implement
+}
+
+void MainWindow::on_actionGo_to_Line_in_Text_triggered()
+{
+    Helpers::gotoLineInText(this, getCurrentDocument()->editor());
+}
+
+void MainWindow::on_actionGo_to_Line_in_Editor_triggered()
+{
+    Helpers::gotoLineInEditor(this, getCurrentDocument()->editor());
+}
+
+void MainWindow::on_action_Find_triggered() {
+    // Set the active document's editor in FindDialog
+    setActiveDocumentEditorInFindDialog();
+
+    // Show the dialog without creating a new instance each time
+    if (!findDialog->isVisible()) {
+        findDialog->show();
+    } else {
+        findDialog->raise();  // Bring it to the front if it’s already open
+        findDialog->activateWindow();
+    }
+}
 
 
 
@@ -308,14 +393,7 @@ bool MainWindow::isSmartIndentChecked() const {
 
 
 
-
-
-
-
-
-
-
-
+/* View Menu */
 
 
 
@@ -382,103 +460,55 @@ void MainWindow::saveIndentationSetting(const QString& setting) {
     qDebug() << "Saved indentation setting:" << setting;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// helper function
+Document* MainWindow::getCurrentDocument() {
+    int currentIndex = ui->documentsTab->currentIndex();
+    if (currentIndex != -1) {
+        // Assuming the document object is stored as a widget in the tab
+        return qobject_cast<Document*>(ui->documentsTab->widget(currentIndex));
+    }
+    return nullptr;
+}
+
+// helper function
+void MainWindow::setActiveDocumentEditorInFindDialog() {
+    // Retrieve the active document from the current tab
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+
+    if (activeDocument) {
+        // Get the editor from the active document
+        CodeEditor* activeEditor = activeDocument->editor();  // Assumes Document::editor() returns a CodeEditor*
+
+        if (activeEditor) {
+            // Set the active editor in the find dialog
+            findDialog->setEditor(activeEditor);
+        } else {
+            qWarning() << "Warning: No active editor found in document.";
+        }
+    } else {
+        qWarning() << "Warning: No active document found.";
+    }
+}
+
+// helper function
+void MainWindow::setActiveDocumentEditorInReplaceDialog() {
+    // Retrieve the active document from the current tab
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+
+    if (activeDocument) {
+        // Get the editor from the active document
+        CodeEditor* activeEditor = activeDocument->editor();  // Assumes Document::editor() returns a CodeEditor*
+
+        if (activeEditor) {
+            // Set the active editor in the find dialog
+            replaceDialog->setEditor(activeEditor);
+        } else {
+            qWarning() << "Warning: No active editor found in document.";
+        }
+    } else {
+        qWarning() << "Warning: No active document found.";
+    }
+}
 
 
 

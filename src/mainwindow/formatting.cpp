@@ -4,7 +4,7 @@
 #include "formatting.h"
 #include "../mainwindow.h"
 #include "../settings.h"
-#include "helpers.h"
+#include "../helpers.h"
 #include "../codeeditor.h"
 
 Formatting::Formatting(QObject* parent, QTabWidget* documentsTab)
@@ -29,7 +29,7 @@ void Formatting::setupActions(QAction* windowsAction, QAction* unixAction, QActi
     connect(m_actionGroup, &QActionGroup::triggered, this, &Formatting::onEolFormatChanged);
 
     // Load the saved EOL format from settings and set the corresponding action checked
-    QString savedFormat = Settings::instance()->value("eolFormat", "Unix").toString();
+    QString savedFormat = Settings::instance()->loadSetting("EOL", "Type", "Unix").toString();
 
     if (savedFormat == "Windows") {
         m_windowsAction->setChecked(true);
@@ -59,7 +59,7 @@ void Formatting::onEolFormatChanged() {
     }
 
     // Save the selected format to Settings
-    Settings::instance()->setValue("eolFormat", format);
+    Settings::instance()->saveSetting("EOL", "Type", format);
 
     // Update status bar
     updateStatusBar(QString("EOL format changed to: %1").arg(format));

@@ -7,7 +7,7 @@
 #include <QTabWidget>
 #include <QMessageBox>
 #include <QRegularExpression>
-#include "../document.h"
+#include "document.h"
 
 class Document;
 
@@ -22,6 +22,9 @@ public:
     static Document* getCurrentDocument(QTabWidget* documentsTab);
     static void showInformationMessage(const QString& message);
     static void notImplemented(QWidget* parent = nullptr);
+    static void gotoLineInText(QWidget* parent, CodeEditor* editor);
+    static void gotoLineInEditor(QWidget* parent, CodeEditor* editor);
+    static bool isValidRegularExpression(const QString& pattern);
 
 private:
     bool validateDocument(Document* doc, QWidget* parent);
