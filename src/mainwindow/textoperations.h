@@ -25,6 +25,7 @@ public:
 
 
 private:
+    QString m_eolType;
     QTabWidget* m_documentsTab;
     void selectRestOfLine(QPlainTextEdit* editor);
 };

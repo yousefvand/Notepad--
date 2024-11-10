@@ -2,6 +2,7 @@
 
 #include <QSettings>
 #include <QString>
+#include <QVariant>
 
 class Settings : public QSettings {
     Q_OBJECT
@@ -12,18 +13,13 @@ public:
     Settings(const Settings&) = delete;              // Delete copy constructor
     Settings& operator=(const Settings&) = delete;   // Delete assignment operator
 
-    enum EOLType { Unix, Windows, OldMac };
-    Q_ENUM(EOLType)
+    // Save a setting with a given title, name, and value
+    void saveSetting(const QString& title, const QString& name, const QVariant& value);
 
-    EOLType eol() const;
-    void setEol(EOLType eol);
-
-signals:
-    void eolChanged(EOLType newEOL);
+    // Load a setting with a given title and name, providing a default value if it doesn’t exist
+    QVariant loadSetting(const QString& title, const QString& name, const QVariant& defaultValue = QVariant()) const;
 
 private:
     explicit Settings(QObject* parent = nullptr);  // Private constructor
     static Settings* s_instance;  // Singleton instance
-
-    EOLType m_eol;
 };

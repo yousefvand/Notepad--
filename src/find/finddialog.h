@@ -73,5 +73,8 @@ private:
     SearchOptions* m_searchOptions;
     Find* m_find;
     CodeEditor* m_editor = nullptr;
+    void populateComboBoxOnDropdown();
+    void saveKeyword(const QString& keyword);
+    bool eventFilter(QObject *watched, QEvent *event);
 };
 

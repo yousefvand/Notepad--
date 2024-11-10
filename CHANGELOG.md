@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.0.47
+
+- Implemented:
+- Search Menu -> Find All
+- Search Menu -> Replace Next
+- Search Menu -> Replace Previous
+- Search Menu -> Replace All
+
 ## 0.0.46
 
 - Implemented:

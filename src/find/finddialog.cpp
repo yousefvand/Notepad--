@@ -1,9 +1,11 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <QSettings>
 #include "finddialog.h"
 #include "ui_finddialog.h"
 #include "../find/find.h"
 #include "../helpers.h"
+#include "../settings.h"
 
 FindDialog::FindDialog(QWidget* parent)
     : QDialog(parent),
@@ -30,6 +32,49 @@ FindDialog::FindDialog(QWidget* parent)
     connect(ui->advancedOptions, &QCheckBox::toggled, this, &FindDialog::toggleAdvancedOptions);
 
     m_searchOptions->findMethod = FindMethod::SimpleText; // default method
+
+    ui->comboBoxFind->installEventFilter(this);
+}
+
+FindDialog::~FindDialog()
+{
+    delete ui;
+    delete m_find;
+}
+
+bool FindDialog::eventFilter(QObject *watched, QEvent *event) {
+    if (watched == ui->comboBoxFind && event->type() == QEvent::Show) {
+        populateComboBoxOnDropdown();  // Populate the combo box only when shown
+    }
+    return QDialog::eventFilter(watched, event); // Call the base class implementation
+}
+
+void FindDialog::populateComboBoxOnDropdown() {
+    QStringList keywords = Settings::instance()->loadSetting("Find", "Keywords", QStringList()).toStringList();
+
+    ui->comboBoxFind->clear();
+    ui->comboBoxFind->addItems(keywords);
+    ui->comboBoxFind->setCurrentText(""); // Ensure the display is empty until the user types or selects
+}
+
+void FindDialog::saveKeyword(const QString& keyword)
+{
+    if (keyword.isEmpty()) return;
+    QStringList keywords = Settings::instance()->loadSetting("Find", "Keywords", QStringList()).toStringList();
+
+    if (!keywords.contains(keyword)) {
+        keywords.prepend(keyword); // Add keyword to the top of history list
+        if (keywords.size() > 10) {
+            keywords = keywords.mid(0, 10); // Limit history to 10 items
+        }
+        Settings::instance()->saveSetting("Find", "Keywords", keywords);
+
+        // Update combobox without triggering text change
+        ui->comboBoxFind->blockSignals(true);
+        ui->comboBoxFind->clear();
+        ui->comboBoxFind->addItems(keywords);
+        ui->comboBoxFind->blockSignals(false);
+    }
 }
 
 void FindDialog::onAdvancedOptionsToggled(bool checked) {
@@ -59,12 +104,6 @@ void FindDialog::toggleAdvancedOptions(bool checked) {
 
         ui->groupBoxAdvanced->hide();
     }
-}
-
-FindDialog::~FindDialog()
-{
-    delete ui;
-    delete m_find;
 }
 
 Find* FindDialog::getFind() {
@@ -103,10 +142,17 @@ bool FindDialog::isAllTabsChecked() const {
     return ui->checkBoxAllTabs->isChecked();
 }
 
-void FindDialog::on_findNext_clicked() {
+void FindDialog::on_findNext_clicked()
+{
     if (!m_find) return;
-    qDebug() << "Searching for keyword:" << m_searchOptions->keyword;
 
+    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    if (keyword.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
+        return;
+    }
+
+    saveKeyword(keyword);  // Save without modifying UI
     m_find->setSearchOptions(*m_searchOptions);
     m_find->findNext();
 }
@@ -115,6 +161,13 @@ void FindDialog::on_findPrevious_clicked()
 {
     if (!m_find) return;
 
+    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    if (keyword.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
+        return;
+    }
+
+    saveKeyword(keyword);  // Save without modifying UI
     m_find->setSearchOptions(*m_searchOptions);
     m_find->findPrevious();
 }
@@ -123,6 +176,13 @@ void FindDialog::on_selectAll_clicked()
 {
     if (!m_find) return;
 
+    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    if (keyword.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
+        return;
+    }
+
+    saveKeyword(keyword);  // Save without modifying UI
     m_find->setSearchOptions(*m_searchOptions);
     m_find->selectAll();
 }
@@ -174,9 +234,6 @@ void FindDialog::on_checkBoxAllTabs_toggled(bool checked)
     m_searchOptions->allTabs = checked;
 }
 
-
-
-
 void FindDialog::setEditor(CodeEditor* editor) {
     m_editor = editor;               // Store the editor
     if (m_find) {                    // If m_find already exists, clean it up
@@ -184,11 +241,6 @@ void FindDialog::setEditor(CodeEditor* editor) {
     }
     m_find = new Find(editor);       // Initialize m_find with the editor
 }
-
-
-
-
-
 
 void FindDialog::showDialog(QWidget *parent) {
     FindDialog* dialog = new FindDialog(parent);

@@ -12,6 +12,7 @@ enum class FindMethod {
 // Struct to hold search options
 struct SearchOptions {
     QString keyword;               // The search keyword
+    QString replaceText;           // Text to replace with
     FindMethod findMethod;         // The search method (simple text, regex, special characters)
     bool matchWholeWord;           // Flag to indicate if we match the whole word
     bool matchCase;                // Flag to indicate case sensitivity

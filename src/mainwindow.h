@@ -6,6 +6,7 @@
 #include <QMainWindow>
 #include "document.h"
 #include "find/finddialog.h"
+#include "replace/replacedialog.h"
 #include "helpers.h"
 #include "mainwindow/formatting.h"
 #include "mainwindow/fileoperations.h"
@@ -149,6 +150,7 @@ private:
     RecentFiles* recentFiles;
     void applyColorCoding(Document* doc, bool isModified);
     void setActiveDocumentEditorInFindDialog();
+    void setActiveDocumentEditorInReplaceDialog();
 
     void setupIndentationMenu();
     QAction* action_Custom;
@@ -158,6 +160,7 @@ private:
     void loadIndentationSetting();  // Load and apply the saved setting
     IndentationManager* indentationManager;
     FindDialog* findDialog;
+    ReplaceDialog* replaceDialog;
     SearchOptions* m_searchOptions;
     Find* m_find = nullptr;
 };

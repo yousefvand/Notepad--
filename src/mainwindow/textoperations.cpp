@@ -15,6 +15,7 @@ TextOperations::TextOperations(QTabWidget* documentsTab)
     if (!m_documentsTab) {
         qDebug() << "Error: documentsTab is null!";
     }
+    m_eolType = Settings::instance()->loadSetting("EOL", "Type", "Unix").toString();
 }
 
 void TextOperations::undo() {
@@ -240,9 +241,9 @@ void TextOperations::duplicateCurrentLine() {
 
     cursor.movePosition(QTextCursor::EndOfLine);
 
-    if (Settings::instance()->eol() == Settings::OldMac) {
+    if (m_eolType == "OldMac") {
         cursor.insertText("\r" + selectedLine);
-    } else if (Settings::instance()->eol() == Settings::Windows) {
+    } else if (m_eolType == "Windows") {
         cursor.insertText("\r\n" + selectedLine);
     } else { // Unix
         cursor.insertText("\n" + selectedLine);

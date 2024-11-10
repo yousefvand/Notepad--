@@ -86,8 +86,8 @@ set(PROJECT_SOURCES
     src/find/find.h
     src/search/search.cpp
     src/search/search.h
-    src/search/searchcontroller.cpp
-    src/search/searchcontroller.h
+
+
     src/search/searchoptions.h
     ${PROJECT_UI}
 )

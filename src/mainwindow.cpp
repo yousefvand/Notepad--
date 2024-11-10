@@ -19,7 +19,8 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
     indentationManager(new IndentationManager(this)),
-    findDialog(new FindDialog(this))
+    findDialog(new FindDialog(this)),
+    replaceDialog(new ReplaceDialog(this))
 {
 
     ui->setupUi(this);  // Ensure the UI is set up before using it
@@ -327,7 +328,16 @@ void MainWindow::on_actionFind_previoud_triggered()
 
 void MainWindow::on_action_Replace_triggered()
 {
-    //ReplaceDialog::showDialog(this);
+    // Set the active document's editor in ReplaceDialog
+    setActiveDocumentEditorInReplaceDialog();
+
+    // Show the dialog without creating a new instance each time
+    if (!replaceDialog->isVisible()) {
+        replaceDialog->show();
+    } else {
+        replaceDialog->raise();  // Bring it to the front if it’s already open
+        replaceDialog->activateWindow();
+    }
 }
 
 void MainWindow::on_actionReplace_N_ext_triggered()
@@ -479,6 +489,27 @@ void MainWindow::setActiveDocumentEditorInFindDialog() {
         qWarning() << "Warning: No active document found.";
     }
 }
+
+// helper function
+void MainWindow::setActiveDocumentEditorInReplaceDialog() {
+    // Retrieve the active document from the current tab
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+
+    if (activeDocument) {
+        // Get the editor from the active document
+        CodeEditor* activeEditor = activeDocument->editor();  // Assumes Document::editor() returns a CodeEditor*
+
+        if (activeEditor) {
+            // Set the active editor in the find dialog
+            replaceDialog->setEditor(activeEditor);
+        } else {
+            qWarning() << "Warning: No active editor found in document.";
+        }
+    } else {
+        qWarning() << "Warning: No active document found.";
+    }
+}
+
 
 
 

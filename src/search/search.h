@@ -1,28 +1,23 @@
 #pragma once
 
+#include <QTextEdit>
 #include "searchoptions.h"
 #include "../codeeditor.h"
-#include <QTextEdit>
 
 class Search {
 public:
-    // Constructor and Destructor
-    explicit Search(CodeEditor* editor);
+    explicit Search(CodeEditor* editor = nullptr);
     virtual ~Search();
 
-    // Virtual functions for searching with default implementations
-    virtual bool findNext();            // Forward search placeholder
-    virtual bool findPrevious();        // Reverse search placeholder
+    void setSearchOptions(const SearchOptions& options);
+    void setEditor(CodeEditor* editor);  // Add setEditor declaration
 
-    // Virtual methods for managing search options and state
-    virtual void setSearchOptions(const SearchOptions &options);
-    virtual void highlightSearchResult();
-    virtual void resetSearchState();
-    virtual void selectAll();
+    virtual bool findNext();
+    virtual bool findPrevious();
 
 protected:
-    SearchOptions* m_options;           // Search options (keyword, method, etc.)
-    CodeEditor* m_editor;                // Pointer to the QTextEdit (text editor)
-    int m_currentPosition = 0;          // Current position in the text document
-    bool m_isSearchInProgress = false;  // Flag to prevent overlapping search operations
+    SearchOptions m_options;
+    CodeEditor* m_editor;   // Editor pointer of type CodeEditor
+    QTextCursor m_cursor;
+    QString expandSpecialCharacters(const QString& input) const;
 };
