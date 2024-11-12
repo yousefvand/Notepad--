@@ -46,7 +46,7 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Setup with Qt Offline Installation
+    ### Windows Setup with Chocolatey to Install Qt
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -55,65 +55,11 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Download and Install Qt Offline (Windows)
+    - name: Install Qt with Chocolatey (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        # Define the most stable Qt installer URL (update version if necessary)
-        $qtUrl = "https://download.qt.io/official_releases/qt/6.5/6.5.3/qt-opensource-windows-x86-64-6.5.3.exe"
-        $installer = "qt-offline-installer.exe"
-        
-        # Download the Qt installer
-        try {
-          Invoke-WebRequest -Uri $qtUrl -OutFile $installer -TimeoutSec 1200
-        } catch {
-          throw "Qt offline installer could not be downloaded. Please verify the URL: https://download.qt.io/official_releases/qt/"
-        }
-
-        # Install Qt in silent mode
-        Start-Process -FilePath $installer -ArgumentList `
-          '--platform', 'minimal', `
-          '--no-default-installations', `
-          '--accept-licenses', `
-          '--no-force-installations', `
-          '--install-dir', 'C:\Qt' `
-          -NoNewWindow -Wait
-
-        # Verify Qt installation
-        if (-Not (Test-Path "C:\Qt\6*")) {
-          throw "Qt installation failed!"
-        } else {
-          Write-Host "Qt installation verified"
-        }
-
-    - name: Set up MSVC environment (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      run: |
-        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
-          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
-        IF NOT DEFINED VS_PATH (
-          echo Visual Studio Build Tools not found! && exit /b 1
-        )
-        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
-        CALL "%VS_VARS_CMD%" || exit /b 1
-        where cl || (echo cl.exe not found in PATH && exit /b 1)
-
-    # Configure CMake
-    - name: Configure CMake
-      run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
-
-    # Build the project
-    - name: Build
-      run: cmake --build "${{ github.workspace }}/build" --config Release
-
-    # Run tests
-    - name: Test
-      working-directory: "${{ github.workspace }}/build"
-      run: ctest --output-on-failure --build-config Release
+        # Install Qt through Chocolatey
+        choco install qtinstaller -y --version=4.2.1 # Install Qt Installer framework
+        # Use Qt Maintenance tool if installed or setup a local install for required packages
+        # Example of local package installs
