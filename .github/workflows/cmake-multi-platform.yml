@@ -59,12 +59,16 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        # Define download URL for Qt offline installer
+        # Define the most stable Qt installer URL (update version if necessary)
         $qtUrl = "https://download.qt.io/official_releases/qt/6.5/6.5.3/qt-opensource-windows-x86-64-6.5.3.exe"
         $installer = "qt-offline-installer.exe"
         
         # Download the Qt installer
-        Invoke-WebRequest -Uri $qtUrl -OutFile $installer -TimeoutSec 1200
+        try {
+          Invoke-WebRequest -Uri $qtUrl -OutFile $installer -TimeoutSec 1200
+        } catch {
+          throw "Qt offline installer could not be downloaded. Please verify the URL: https://download.qt.io/official_releases/qt/"
+        }
 
         # Install Qt in silent mode
         Start-Process -FilePath $installer -ArgumentList `
