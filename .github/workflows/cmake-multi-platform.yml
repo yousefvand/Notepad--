@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -78,12 +78,12 @@ jobs:
             Expand-Archive -Path "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip" -DestinationPath $qtSourceDir
           }
 
-          # Configure and build Qt
-          Write-Host "Configuring and building Qt"
+          # Configure and build Qt using Ninja
+          Write-Host "Configuring and building Qt with Ninja"
           cd "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION\qtbase"
-          .\configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc
-          nmake
-          nmake install
+          .\configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+          cmake --build . --parallel
+          cmake --install .
 
           # Set environment variables for Qt
           Write-Host "Setting Qt environment variables"
