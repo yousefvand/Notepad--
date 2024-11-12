@@ -8,56 +8,81 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
 
-    env:
-      QT_VERSION: 6.5.3
-      QT_INSTALL_DIR: D:/a/Notepad--/Qt
-      BUILD_DIR: D:/a/Notepad--/Notepad--/build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install Qt
+      # Ubuntu Dependencies
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
+          echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
+
+      # macOS Dependencies
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install ninja qt
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
+
+      # Windows Setup and Qt Installation
+      - name: Install Qt (Windows)
+        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
           $qtInstallerUrl = "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe"
           $installerPath = "$env:TEMP\qt-unified-windows-x64-online.exe"
           Invoke-WebRequest -Uri $qtInstallerUrl -OutFile $installerPath -TimeoutSec 1200
-          # Run Qt installer
+          
+          # Install Qt in silent mode
           Start-Process -FilePath $installerPath -ArgumentList `
-            'install', '--no-default-installations', '--accept-licenses', `
-            '--no-force-installations', '--confirm-command', `
-            '-p', "qt.qt${{ env.QT_VERSION }}.win64_msvc2019_64", `
-            '--root', "${{ env.QT_INSTALL_DIR }}" `
+            'install', '--no-default-installations', '--accept-licenses', '--no-force-installations', '--confirm-command', `
+            '-p', 'qt.qt6.653.win64_msvc2019_64', '--root', 'C:\Qt' `
             -NoNewWindow -Wait
+          
           # Verify Qt installation
-          if (-Not (Test-Path "${{ env.QT_INSTALL_DIR }}\${{ env.QT_VERSION }}")) {
+          if (-Not (Test-Path "C:\Qt\6*")) {
             throw "Qt installation failed!"
           } else {
             Write-Host "Qt installation verified"
-          }
 
-      - name: Configure CMake
+      - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          cmake -B "${{ env.BUILD_DIR }}" `
-            -DCMAKE_CXX_COMPILER=cl `
-            -DCMAKE_C_COMPILER=cl `
-            -DCMAKE_BUILD_TYPE=Release `
-            -G "Ninja" `
-            -S "${{ github.workspace }}"
+          cmake -B "${{ github.workspace }}\build" -G "Ninja" -S "${{ github.workspace }}" `
+            -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl -DCMAKE_BUILD_TYPE=Release
         env:
-          Qt6_DIR: ${{ env.QT_INSTALL_DIR }}/6.5.3/msvc2019_64
-          QT_PLUGIN_PATH: ${{ env.QT_INSTALL_DIR }}/6.5.3/msvc2019_64/plugins
-          QML2_IMPORT_PATH: ${{ env.QT_INSTALL_DIR }}/6.5.3/msvc2019_64/qml
+          Qt6_DIR: C:\Qt\6.5.3\msvc2019_64
+          QT_PLUGIN_PATH: C:\Qt\6.5.3\msvc2019_64\plugins
+          QML2_IMPORT_PATH: C:\Qt\6.5.3\msvc2019_64\qml
 
-      - name: Build project
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
         shell: pwsh
-        run: cmake --build "${{ env.BUILD_DIR }}" --config Release
+        run: cmake --build "${{ github.workspace }}\build" --config Release
 
-      - name: Run tests
-        working-directory: "${{ env.BUILD_DIR }}"
+      - name: Run tests (Windows)
+        if: matrix.os == 'windows-latest'
         shell: pwsh
+        working-directory: "${{ github.workspace }}\build"
         run: ctest --output-on-failure --build-config Release
