@@ -43,8 +43,18 @@ jobs:
           brew install ninja qt
           echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-      # Windows setup with caching
-      - name: Setup and build Qt (Windows)
+      # Cache Qt Source for Windows
+      - name: Cache Qt Source
+        if: matrix.os == 'windows-latest'
+        uses: actions/cache@v3
+        with:
+          path: ${{ runner.temp }}\qt-source
+          key: qt-source-${{ env.QT_VERSION }}
+        env:
+          QT_VERSION: 6.5.3
+
+      # Windows setup with Visual Studio and Qt
+      - name: Set up Visual Studio and Download/Build Qt (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         env:
@@ -56,18 +66,11 @@ jobs:
           $env:Path += ";$vsPath\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64"
           & "$vsPath\Common7\Tools\VsDevCmd.bat"
 
-          # Use cache to avoid re-downloading and re-compiling Qt
-          Write-Host "Setting up cache for Qt"
-          $qtCacheKey = "qt-source-${{ env.QT_VERSION }}"
+          # Define source directory
           $qtSourceDir = "$env:TEMP\qt-source"
-          New-Item -ItemType Directory -Path $qtSourceDir
+          New-Item -ItemType Directory -Path $qtSourceDir -Force
 
-          - name: Cache Qt Source
-            uses: actions/cache@v3
-            with:
-              path: $qtSourceDir
-              key: $qtCacheKey
-
+          # Download Qt source if not cached
           if (!(Test-Path "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip")) {
             Write-Host "Downloading Qt Source"
             $qtSourceUrl = "https://download.qt.io/official_releases/qt/6.5/$env:QT_VERSION/single/qt-everywhere-src-$env:QT_VERSION.zip"
