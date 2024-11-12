@@ -46,7 +46,7 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Setup - Direct Download for Qt
+    ### Windows Setup with Basic Qt Installation
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -55,7 +55,7 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Download and Install Qt (Windows)
+    - name: Download and Install Qt Essentials (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
@@ -63,12 +63,14 @@ jobs:
         $installerPath = "$env:TEMP\qt-unified-windows-x64-online.exe"
         Invoke-WebRequest -Uri $qtInstallerUrl -OutFile $installerPath -TimeoutSec 1200
 
-        # Install Qt in silent mode without requiring Qt Account credentials
+        # Install only essential components without requiring a Qt Account
         Start-Process -FilePath $installerPath -ArgumentList `
           'install', `
-          '--no-default-installations', `
+          '-p', 'qt.qt6.653.win64_msvc2019_64', `
           '--accept-licenses', `
-          '--root', 'C:\Qt' `
+          '--confirm-command', `
+          '--root', 'C:\Qt', `
+          '--no-force-installations' `
           -NoNewWindow -Wait
 
         # Verify Qt installation by checking if the 'bin' folder exists
