@@ -64,6 +64,7 @@ jobs:
             throw "Qt installation failed!"
           } else {
             Write-Host "Qt installation verified"
+          }
 
       - name: Configure CMake (Windows)
         if: matrix.os == 'windows-latest'
