@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -29,7 +28,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Install dependencies on Ubuntu
+      # Ubuntu setup
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -37,39 +36,60 @@ jobs:
           sudo apt-get install -y ninja-build qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
           echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-      # Install dependencies on macOS
+      # macOS setup
       - name: Install dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           brew install ninja qt
           echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-      # Build and install Qt from source on Windows
-      - name: Install dependencies and build Qt from source (Windows)
+      # Windows setup with caching
+      - name: Setup and build Qt (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
+        env:
+          QT_VERSION: 6.5.3
         run: |
-          # Step 1: Download Qt source
-          $qtVersion = "6.5.3"
-          $qtSourceUrl = "https://download.qt.io/official_releases/qt/6.5/$qtVersion/single/qt-everywhere-src-$qtVersion.zip"
-          $qtSourcePath = "$env:TEMP\qt-everywhere-src.zip"
-          Invoke-WebRequest -Uri $qtSourceUrl -OutFile $qtSourcePath -TimeoutSec 1200
-          
-          # Step 2: Extract source
-          Expand-Archive -Path $qtSourcePath -DestinationPath $env:TEMP\qt-source
+          # Set up Visual Studio environment
+          Write-Host "Setting up Visual Studio environment"
+          $vsPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $env:Path += ";$vsPath\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64"
+          & "$vsPath\Common7\Tools\VsDevCmd.bat"
 
-          # Step 3: Configure and build
-          cd "$env:TEMP\qt-source\qt-everywhere-src-$qtVersion"
-          .\configure -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests
+          # Use cache to avoid re-downloading and re-compiling Qt
+          Write-Host "Setting up cache for Qt"
+          $qtCacheKey = "qt-source-${{ env.QT_VERSION }}"
+          $qtSourceDir = "$env:TEMP\qt-source"
+          New-Item -ItemType Directory -Path $qtSourceDir
+
+          - name: Cache Qt Source
+            uses: actions/cache@v3
+            with:
+              path: $qtSourceDir
+              key: $qtCacheKey
+
+          if (!(Test-Path "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip")) {
+            Write-Host "Downloading Qt Source"
+            $qtSourceUrl = "https://download.qt.io/official_releases/qt/6.5/$env:QT_VERSION/single/qt-everywhere-src-$env:QT_VERSION.zip"
+            Invoke-WebRequest -Uri $qtSourceUrl -OutFile "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip"
+            Expand-Archive -Path "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip" -DestinationPath $qtSourceDir
+          }
+
+          # Configure and build Qt
+          Write-Host "Configuring and building Qt"
+          cd "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION\qtbase"
+          .\configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc
           nmake
           nmake install
 
-          # Set up environment variables
+          # Set environment variables for Qt
+          Write-Host "Setting Qt environment variables"
           echo "Qt6_DIR=C:\Qt\lib\cmake\Qt6" >> $GITHUB_ENV
           echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $GITHUB_ENV
           echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $GITHUB_ENV
 
-      - name: Configure CMake
+      # CMake configuration and build for Windows
+      - name: Configure CMake (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
