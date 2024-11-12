@@ -46,7 +46,7 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Setup with Chocolatey to Install Qt
+    ### Windows Setup - Direct Download for Qt
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -55,11 +55,41 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Install Qt with Chocolatey (Windows)
+    - name: Download and Install Qt (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        # Install Qt through Chocolatey
-        choco install qtinstaller -y --version=4.2.1 # Install Qt Installer framework
-        # Use Qt Maintenance tool if installed or setup a local install for required packages
-        # Example of local package installs
+        $qtInstallerUrl = "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe"
+        $installerPath = "$env:TEMP\qt-unified-windows-x64-online.exe"
+        Invoke-WebRequest -Uri $qtInstallerUrl -OutFile $installerPath -TimeoutSec 1200
+
+        # Install Qt in silent mode without requiring Qt Account credentials
+        Start-Process -FilePath $installerPath -ArgumentList `
+          'install', `
+          '--no-default-installations', `
+          '--accept-licenses', `
+          '--root', 'C:\Qt' `
+          -NoNewWindow -Wait
+
+        # Verify Qt installation by checking if the 'bin' folder exists
+        if (-Not (Test-Path "C:\Qt\6*")) {
+          throw "Qt installation failed!"
+        } else {
+          Write-Host "Qt installation verified"
+        }
+
+    - name: Configure CMake
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+
+    - name: Build the project
+      run: cmake --build "${{ github.workspace }}/build" --config Release
+
+    - name: Run tests
+      working-directory: "${{ github.workspace }}/build"
+      run: ctest --output-on-failure --build-config Release
