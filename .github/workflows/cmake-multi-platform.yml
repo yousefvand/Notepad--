@@ -9,80 +9,113 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # Install Ninja and Qt on Ubuntu and macOS
-      - name: Install dependencies on Ubuntu and macOS
-        if: runner.os != 'Windows'
-        run: |
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            sudo apt-get update -y
-            sudo apt-get install -y ninja-build qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            brew update
-            brew install ninja qt
-          fi
-        env:
-          Qt6_DIR: /usr/local/opt/qt/lib/cmake/Qt6
-          QT_PLUGIN_PATH: /usr/local/opt/qt/plugins
-          QML2_IMPORT_PATH: /usr/local/opt/qt/qml
+    ### Ubuntu Dependencies
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
+        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-      - name: Install Ninja on Windows
-        if: runner.os == 'Windows'
-        run: choco install ninja -y
+    ### macOS Dependencies
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install ninja qt
+        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-      # Set up and Build Qt on Windows
-      - name: Set up and Build Qt on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        env:
-          QT_VERSION: 6.5.3
-        run: |
-          # Set up Visual Studio environment
-          $vsPath = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-          $env:Path += ";$vsPath\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64"
-          & "$vsPath\Common7\Tools\VsDevCmd.bat"
+    ### Windows Setup with Qt Source Compilation and Caching
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        choco install visualstudio2022buildtools -y
+        choco install ninja -y
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-          # Define source directory for caching
-          $qtSourceDir = "$env:TEMP\qt-source"
+    - name: Cache Qt Source (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.temp }}/qt-source
+        key: qt-source-6.5.3
+
+    - name: Download Qt Source (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        $qtSourceDir = "$env:TEMP\qt-source"
+        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+        if (-Not (Test-Path $qtZip)) {
+          Write-Host "Downloading Qt Source"
           New-Item -ItemType Directory -Path $qtSourceDir -Force
+          Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
+          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
+        }
 
-          # Check cache and download Qt source if necessary
-          if (!(Test-Path "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip")) {
-            Write-Host "Downloading Qt Source"
-            $qtSourceUrl = "https://download.qt.io/official_releases/qt/6.5/$env:QT_VERSION/single/qt-everywhere-src-$env:QT_VERSION.zip"
-            Invoke-WebRequest -Uri $qtSourceUrl -OutFile "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip"
-            Expand-Archive -Path "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION.zip" -DestinationPath $qtSourceDir
-          }
+    - name: Build and Install Qt (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
+          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
+        IF NOT DEFINED VS_PATH (
+          echo Visual Studio Build Tools not found! && exit /b 1
+        )
+        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+        CALL "%VS_VARS_CMD%" || exit /b 1
 
-          # Configure and build Qt using Ninja
-          cd "$qtSourceDir\qt-everywhere-src-$env:QT_VERSION\qtbase"
-          .\configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
-          cmake --build . --parallel
-          cmake --install .
+        # Configure and build Qt with Ninja
+        cd %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
+        configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        cmake --build . --parallel
+        cmake --install .
 
-          # Set environment variables for Qt
-          echo "Qt6_DIR=C:\Qt\lib\cmake\Qt6" >> $GITHUB_ENV
-          echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $GITHUB_ENV
-          echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $GITHUB_ENV
+    - name: Set Qt Environment Variables (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        echo "Qt6_DIR=C:\Qt\lib\cmake\Qt6" >> $env:GITHUB_ENV
+        echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
+        echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
 
-      # CMake configuration for all OSes
-      - name: Configure CMake
-        run: cmake -B build -G "Ninja" -S . -DCMAKE_BUILD_TYPE=Release
-        env:
-          Qt6_DIR: ${{ runner.os == 'Windows' && 'C:\Qt\lib\cmake\Qt6' || '/usr/local/opt/qt/lib/cmake/Qt6' }}
-          QT_PLUGIN_PATH: ${{ runner.os == 'Windows' && 'C:\Qt\plugins' || '/usr/local/opt/qt/plugins' }}
-          QML2_IMPORT_PATH: ${{ runner.os == 'Windows' && 'C:\Qt\qml' || '/usr/local/opt/qt/qml' }}
+    # Configure CMake
+    - name: Configure CMake
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
 
-      - name: Build Project
-        run: cmake --build build --config Release
+    # Build the project
+    - name: Build
+      run: cmake --build "${{ github.workspace }}/build" --config Release
 
-      - name: Run Tests
-        working-directory: build
-        run: ctest --output-on-failure
+    # Run tests
+    - name: Test
+      working-directory: "${{ github.workspace }}/build"
+      run: ctest --output-on-failure --build-config Release
