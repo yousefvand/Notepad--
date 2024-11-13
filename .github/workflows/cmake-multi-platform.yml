@@ -75,7 +75,7 @@ jobs:
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         }
 
-    - name: Build and Install Qt (Windows)
+    - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
@@ -87,8 +87,14 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
-        # Configure and build Qt with Ninja
+    - name: Build and Install Qt (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
         cd %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
+        IF NOT EXIST configure.bat (
+          echo "configure.bat not found!" && exit /b 1
+        )
         configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
         cmake --build . --parallel
         cmake --install .
