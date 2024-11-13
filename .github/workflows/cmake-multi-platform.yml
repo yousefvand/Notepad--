@@ -8,54 +8,17 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: macos-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Ubuntu setup
-      - name: Install dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
-          echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
+      - name: Install Ninja
+        run: choco install ninja -y
 
-      # macOS setup
-      - name: Install dependencies (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install ninja qt
-          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
-
-      # Cache Qt Source for Windows
-      - name: Cache Qt Source
-        if: matrix.os == 'windows-latest'
-        uses: actions/cache@v3
-        with:
-          path: ${{ runner.temp }}\qt-source
-          key: qt-source-${{ env.QT_VERSION }}
-        env:
-          QT_VERSION: 6.5.3
-
-      # Windows setup with Visual Studio and Qt
-      - name: Set up Visual Studio and Download/Build Qt (Windows)
-        if: matrix.os == 'windows-latest'
+      # Set up Visual Studio and Download/Build Qt
+      - name: Set up Visual Studio environment and Download/Build Qt
         shell: pwsh
         env:
           QT_VERSION: 6.5.3
@@ -91,9 +54,8 @@ jobs:
           echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $GITHUB_ENV
           echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $GITHUB_ENV
 
-      # CMake configuration and build for Windows
-      - name: Configure CMake (Windows)
-        if: matrix.os == 'windows-latest'
+      # CMake configuration and build for project
+      - name: Configure CMake
         shell: pwsh
         run: |
           cmake -B "${{ github.workspace }}\build" -G "Ninja" -S "${{ github.workspace }}" `
@@ -103,13 +65,11 @@ jobs:
           QT_PLUGIN_PATH: C:\Qt\plugins
           QML2_IMPORT_PATH: C:\Qt\qml
 
-      - name: Build project (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Build project
         shell: pwsh
         run: cmake --build "${{ github.workspace }}\build" --config Release
 
-      - name: Run tests (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Run tests
         shell: pwsh
         working-directory: "${{ github.workspace }}\build"
         run: ctest --output-on-failure --build-config Release
