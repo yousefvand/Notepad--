@@ -74,6 +74,10 @@ jobs:
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         }
+        # Confirm that configure.bat exists
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          throw "configure.bat not found after extraction!"
+        }
 
     - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
@@ -92,9 +96,6 @@ jobs:
       shell: cmd
       run: |
         cd %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
-        IF NOT EXIST configure.bat (
-          echo "configure.bat not found!" && exit /b 1
-        )
         configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
         cmake --build . --parallel
         cmake --install .
