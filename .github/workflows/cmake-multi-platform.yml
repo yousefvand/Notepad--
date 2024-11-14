@@ -68,7 +68,7 @@ jobs:
       run: |
         $qtSourceDir = "$env:TEMP\qt-source"
         $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
-        if (-Not (Test-Path $qtZip)) {
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3")) {
           Write-Host "Downloading Qt Source"
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
