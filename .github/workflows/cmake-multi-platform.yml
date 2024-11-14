@@ -29,7 +29,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    ### Ubuntu Dependencies
+    ### Ubuntu Dependencies (Unchanged)
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -39,14 +39,14 @@ jobs:
             qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    ### macOS Dependencies
+    ### macOS Dependencies (Unchanged)
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Setup with Qt Source Compilation and Caching
+    ### Windows Setup with Qt Source Compilation and Caching (Fixed)
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -111,7 +111,7 @@ jobs:
         echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
         echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
 
-    # Configure CMake
+    # Configure CMake (Unchanged)
     - name: Configure CMake
       run: |
         cmake -B "${{ github.workspace }}\build" \
@@ -121,11 +121,11 @@ jobs:
           -G "Ninja" \
           -S "${{ github.workspace }}"
 
-    # Build the project
+    # Build the project (Unchanged)
     - name: Build
       run: cmake --build "${{ github.workspace }}\build" --config Release
 
-    # Run tests
+    # Run tests (Unchanged)
     - name: Test
       working-directory: "${{ github.workspace }}\build"
       run: ctest --output-on-failure --build-config Release
