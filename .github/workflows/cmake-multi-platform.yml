@@ -79,6 +79,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
+        # Locate Visual Studio Build Tools
         FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
           -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
         IF NOT DEFINED VS_PATH (
@@ -92,7 +93,7 @@ jobs:
         IF NOT EXIST configure.bat (
           echo "configure.bat not found!" && exit /b 1
         )
-        configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
         cmake --build . --parallel
         cmake --install .
 
