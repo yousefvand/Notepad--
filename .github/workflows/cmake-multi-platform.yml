@@ -59,24 +59,24 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
       with:
-        path: ${{ runner.temp }}/qt-source
+        path: ${{ runner.temp }}\qt-source
         key: qt-source-6.5.3
 
-    - name: Download Qt Source (Windows)
+    - name: Download and Extract Qt Source (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
         $qtSourceDir = "$env:TEMP\qt-source"
         $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
-        if (-Not (Test-Path $qtZip)) {
-          Write-Host "Downloading Qt Source"
-          New-Item -ItemType Directory -Path $qtSourceDir -Force
-          Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
-          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
-        }
-        # Confirm that configure.bat exists
+        
         if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
-          throw "configure.bat not found after extraction!"
+          Write-Host "Qt source not cached or incomplete. Downloading and extracting..."
+          if (-Not (Test-Path $qtZip)) {
+            Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
+          }
+          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
+        } else {
+          Write-Host "Using cached Qt source."
         }
 
     - name: Set up MSVC environment (Windows)
@@ -96,6 +96,9 @@ jobs:
       shell: cmd
       run: |
         cd %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
+        IF NOT EXIST configure.bat (
+          echo "configure.bat not found!" && exit /b 1
+        )
         configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
         cmake --build . --parallel
         cmake --install .
@@ -111,7 +114,7 @@ jobs:
     # Configure CMake
     - name: Configure CMake
       run: |
-        cmake -B "${{ github.workspace }}/build" \
+        cmake -B "${{ github.workspace }}\build" \
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
           -DCMAKE_BUILD_TYPE=Release \
@@ -120,9 +123,9 @@ jobs:
 
     # Build the project
     - name: Build
-      run: cmake --build "${{ github.workspace }}/build" --config Release
+      run: cmake --build "${{ github.workspace }}\build" --config Release
 
     # Run tests
     - name: Test
-      working-directory: "${{ github.workspace }}/build"
+      working-directory: "${{ github.workspace }}\build"
       run: ctest --output-on-failure --build-config Release
