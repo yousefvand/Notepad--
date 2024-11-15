@@ -29,7 +29,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    ### Ubuntu Dependencies (Unchanged)
+    ### Ubuntu Dependencies
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -39,7 +39,7 @@ jobs:
             qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    ### macOS Dependencies (Unchanged)
+    ### macOS Dependencies
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
@@ -59,7 +59,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
       with:
-        path: ${{ runner.temp }}\qt-source
+        path: ${{ runner.temp }}/qt-source
         key: qt-source-6.5.3
 
     - name: Download Qt Source (Windows)
@@ -68,7 +68,7 @@ jobs:
       run: |
         $qtSourceDir = "$env:TEMP\qt-source"
         $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
-        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3")) {
+        if (-Not (Test-Path $qtZip)) {
           Write-Host "Downloading Qt Source"
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
@@ -79,6 +79,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
+        REM Locate Visual Studio Build Tools
         FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
           -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
         IF NOT DEFINED VS_PATH (
@@ -87,6 +88,7 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
+        REM Configure and build Qt
         cd %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
         IF NOT EXIST configure.bat (
           echo "configure.bat not found!" && exit /b 1
@@ -103,7 +105,7 @@ jobs:
         echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
         echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
 
-    # Configure CMake (Unchanged)
+    # Configure CMake
     - name: Configure CMake
       run: |
         cmake -B "${{ github.workspace }}/build" \
@@ -113,11 +115,11 @@ jobs:
           -G "Ninja" \
           -S "${{ github.workspace }}"
 
-    # Build the project (Unchanged)
+    # Build the project
     - name: Build
       run: cmake --build "${{ github.workspace }}/build" --config Release
 
-    # Run tests (Unchanged)
+    # Run tests
     - name: Test
       working-directory: "${{ github.workspace }}/build"
       run: ctest --output-on-failure --build-config Release
