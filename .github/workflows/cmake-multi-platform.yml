@@ -74,6 +74,9 @@ jobs:
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         }
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          throw "configure.bat not found in $qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
+        }
 
     - name: Build and Install Qt (Windows)
       if: matrix.os == 'windows-latest'
@@ -88,7 +91,7 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
-        REM Check if Qt source directory exists
+        REM Check if configure.bat exists
         IF NOT EXIST "%TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase\configure.bat" (
           echo "configure.bat not found in %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase" && exit /b 1
         )
