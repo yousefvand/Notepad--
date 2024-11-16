@@ -94,9 +94,12 @@ jobs:
         REM Configure and build Qt
         SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3
         cd "%QT_SOURCE%\qtbase"
+        IF NOT EXIST configure.bat (
+          echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
+        )
         call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
-        cmake --build "%QT_SOURCE%" --parallel
-        cmake --install "%QT_SOURCE%"
+        cmake --build "%QT_SOURCE%\qtbase" --parallel
+        cmake --install "%QT_SOURCE%\qtbase"
 
     - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
