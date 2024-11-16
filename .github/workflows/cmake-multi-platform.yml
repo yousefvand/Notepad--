@@ -91,14 +91,15 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
-        REM Check if configure.bat exists
-        IF NOT EXIST "%TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase\configure.bat" (
-          echo "configure.bat not found in %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase" && exit /b 1
+        REM Ensure configure.bat is accessible
+        SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
+        IF NOT EXIST "%QT_SOURCE%\configure.bat" (
+          echo "configure.bat not found in %QT_SOURCE%" && exit /b 1
         )
 
         REM Configure and build Qt
-        cd %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
-        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        cd "%QT_SOURCE%"
+        call "%QT_SOURCE%\configure.bat" -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
         cmake --build . --parallel
         cmake --install .
 
