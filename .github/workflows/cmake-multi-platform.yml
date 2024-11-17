@@ -74,6 +74,9 @@ jobs:
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         }
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          throw "configure.bat is missing after extraction. Verify the source archive and extraction process."
+        }
 
     - name: Build and Install Qt (Windows)
       if: matrix.os == 'windows-latest'
