@@ -10,6 +10,7 @@
 #include "helpers.h"
 #include "document.h"
 #include "codeeditor.h"
+#include "search/searchoptions.h"
 
 bool Helpers::isUntitledDocument(const QString& title) {
     // Static QRegularExpression to avoid repeated creation
@@ -176,7 +177,73 @@ bool Helpers::isValidRegularExpression(const QString& pattern) {
     return regex.isValid();
 }
 
+int Helpers::countKeywordsInLine(const QString& line, const SearchOptions& options) {
+    QString keyword = options.keyword;
+    if (keyword.isEmpty()) {
+        return 0;
+    }
 
+    QString pattern = options.matchWholeWord
+                          ? QString("\\b%1\\b").arg(QRegularExpression::escape(keyword))
+                          : QRegularExpression::escape(keyword);
 
+    QRegularExpression regex(pattern, options.matchCase
+                                          ? QRegularExpression::NoPatternOption
+                                          : QRegularExpression::CaseInsensitiveOption);
 
+    int count = 0;
+    QRegularExpressionMatchIterator it = regex.globalMatch(line);
+    while (it.hasNext()) {
+        it.next();
+        count++;
+    }
 
+    return count;
+}
+
+// FIXME: If user search for "hello" and a match found as "Hello" in retun string "hello" would return.
+QString Helpers::highlightKeywords(const QString& line, const SearchOptions& options) {
+    QString keyword = options.keyword;
+    if (keyword.isEmpty()) {
+        return line; // No keyword to highlight
+    }
+
+    // Build the regex pattern
+    QString pattern = options.matchWholeWord
+                          ? QString("\\b%1\\b").arg(QRegularExpression::escape(keyword)) // Whole word matching
+                          : QRegularExpression::escape(keyword); // Partial match
+
+    // Configure case sensitivity
+    QRegularExpression regex(pattern, options.matchCase
+                                          ? QRegularExpression::NoPatternOption
+                                          : QRegularExpression::CaseInsensitiveOption);
+
+    // Process the line and replace matches with highlighted versions
+    QString highlightedLine;
+    int lastIndex = 0;
+
+    QRegularExpressionMatchIterator it = regex.globalMatch(line);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+
+        // Append the part before the match
+        highlightedLine.append(line.mid(lastIndex, match.capturedStart() - lastIndex));
+
+        // Append the highlighted match
+        highlightedLine.append("<span style='background-color: yellow; color: black;'>");
+        highlightedLine.append(match.captured());
+        highlightedLine.append("</span>");
+
+        // Update the last index to the end of the match
+        lastIndex = match.capturedEnd();
+    }
+
+    // Append the remaining part of the line
+    highlightedLine.append(line.mid(lastIndex));
+
+    // Ensure no `<highlight>` tags exist
+    highlightedLine.replace("<highlight>", "");
+    highlightedLine.replace("</highlight>", "");
+
+    return highlightedLine;
+}

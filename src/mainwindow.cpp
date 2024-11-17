@@ -1,4 +1,5 @@
 #include <QTabBar>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QCheckBox>
 #include <QFileDialog>
@@ -14,6 +15,8 @@
 #include "indentation/indentationdialog.h"
 #include "find/finddialog.h"
 #include "replace/replacedialog.h"
+#include "systemfind/systemfinddialog.h"
+#include "systemreplace/systemreplacedialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -342,26 +345,63 @@ void MainWindow::on_action_Replace_triggered()
 
 void MainWindow::on_actionReplace_N_ext_triggered()
 {
-    qDebug() << "Implement on_actionReplace_N_ext_triggered";
-    // TODO: Implement
+    if (!replaceDialog->getReplace()) {
+        qDebug() << "replaceDialog is null.";
+        return;
+    }
+
+    replaceDialog->getReplace()->replaceNext();
 }
 
 void MainWindow::on_actionReplace_P_revious_triggered()
 {
-    qDebug() << "Implement on_actionReplace_P_revious_triggered";
-    // TODO: Implement
+    if (!replaceDialog->getReplace()) {
+        qDebug() << "findDialog is null.";
+        return;
+    }
+
+    replaceDialog->getReplace()->replacePrevious();
 }
 
-void MainWindow::on_actionFind_System_triggered()
-{
-    qDebug() << "Implement on_actionFind_System_triggered";
-    // TODO: Implement
+void MainWindow::on_actionFind_System_triggered() {
+    if (!m_systemFindDialog) {
+        // Create SystemFindDialog only if it doesn't already exist
+        m_systemFindDialog = new SystemFindDialog(this);
+        m_systemFindDialog->setWindowModality(Qt::NonModal);
+        m_systemFindDialog->show();
+    } else {
+        // Bring existing SystemFindDialog to the front
+        m_systemFindDialog->raise();
+        m_systemFindDialog->activateWindow();
+    }
+
+    // Check for SystemSearchResultDialog existence dynamically
+    QTimer::singleShot(0, this, [this]() {
+        SystemSearchResultDialog* m_systemSearchResultDialog =
+            m_systemFindDialog->findChild<SystemSearchResultDialog *>("SystemSearchResultDialog");
+        if (m_systemSearchResultDialog) {
+            qDebug() << "SystemSearchResultDialog found:" << m_systemSearchResultDialog;
+
+            // Ensure the connection is made only once
+            static bool isConnected = false;
+            if (!isConnected) {
+                connect(m_systemSearchResultDialog, &SystemSearchResultDialog::openFileAtMatch,
+                        this, &MainWindow::openSearchResult);
+                qDebug() << "Signal-Slot Connection Successful";
+                isConnected = true;
+            }
+        } else {
+            qDebug() << "SystemSearchResultDialog not found yet. Will retry...";
+            QTimer::singleShot(100, this, &MainWindow::on_actionFind_System_triggered);
+        }
+    });
 }
 
 void MainWindow::on_actionReplace_S_ystem_triggered()
 {
-    qDebug() << "Implement on_actionReplace_S_ystem_triggered";
-    // TODO: Implement
+    SystemReplaceDialog* systemReplaceDialog = new SystemReplaceDialog(this);
+    systemReplaceDialog->setWindowModality(Qt::NonModal);
+    systemReplaceDialog->show();
 }
 
 void MainWindow::on_actionGo_to_Line_in_Text_triggered()
@@ -394,6 +434,29 @@ void MainWindow::on_action_Find_triggered() {
 
 
 /* View Menu */
+
+
+
+
+
+
+
+
+
+
+
+void MainWindow::openSearchResult(const QString &filePath, int lineNumber) {
+    qDebug() << "openSearchResult called. File Path:" << filePath << ", Line Number:" << lineNumber;
+    fileOperations->openDocument(filePath);
+    Document* doc = getCurrentDocument();
+    if (doc && doc->editor()) { // FIXME: Document resets to first line.
+        doc->editor()->goToLine(lineNumber);
+        doc->editor()->highlightCurrentLine();
+    } else {
+        qWarning() << "Document or editor is null.";
+    }
+}
+
 
 
 

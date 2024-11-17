@@ -1,6 +1,7 @@
 #include "codeeditor.h"
 #include <QPainter>
 #include <QTextBlock>
+#include <QScrollBar>
 #include "helpers.h"
 
 CodeEditor::CodeEditor(QWidget *parent)
@@ -153,10 +154,83 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
 }
 
 void CodeEditor::applyIndentation(bool useTabs, int indentationWidth) {
-    // TODO: Implement indentation
-    qDebug() << "Indentation. Use Tabs: " << useTabs << ". Indentation width: " << indentationWidth;
+    QTextCursor cursor = textCursor();
+    QString indentation = useTabs ? "\t" : QString(indentationWidth, ' ');
+    cursor.insertText(indentation);
 }
 
 QTabWidget* CodeEditor::DocumentsTab() {
     return m_documentsTab;
 }
+
+void CodeEditor::highlightAllOccurrences(const QString& keyword) {
+    QList<QTextEdit::ExtraSelection> extraSelections;
+
+    QTextCursor cursor(document());
+    QTextCursor highlightCursor(document());
+    QTextCharFormat highlightFormat;
+    highlightFormat.setBackground(Qt::cyan);
+
+    while (!cursor.isNull() && !cursor.atEnd()) {
+        cursor = document()->find(keyword, cursor);
+        if (!cursor.isNull()) {
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = cursor;
+            selection.format = highlightFormat;
+            extraSelections.append(selection);
+        }
+    }
+
+    setExtraSelections(extraSelections);
+}
+
+void CodeEditor::goToLine(int lineNumber) {
+    if (lineNumber < 1 || lineNumber > document()->blockCount()) {
+        qWarning() << "Line number" << lineNumber << "is out of range.";
+        return;
+    }
+
+    QTextCursor cursor(document()->findBlockByNumber(lineNumber - 1));
+    setTextCursor(cursor);
+    centerCursor(); // Ensure the cursor is centered in the view
+
+    qDebug() << "Moved to line:" << lineNumber;
+
+    // Log current cursor position
+    qDebug() << "Cursor position after move:" << textCursor().position();
+}
+
+/*
+void CodeEditor::goToLine(int lineNumber) {
+    // Validate line number range
+    if (lineNumber < 1 || lineNumber > document()->blockCount()) {
+        qWarning() << "Line number" << lineNumber << "is out of range. Valid range: 1 to" << document()->blockCount();
+        return;
+    }
+
+    // Find the text block corresponding to the line number
+    QTextBlock block = document()->findBlockByNumber(lineNumber - 1);
+    if (!block.isValid()) {
+        qWarning() << "Invalid block for line number:" << lineNumber;
+        return;
+    }
+
+    // Set the text cursor to the block
+    QTextCursor cursor(block);
+    setTextCursor(cursor);
+
+    // Scroll to the block manually
+    QRectF blockRect = blockBoundingGeometry(block).translated(contentOffset());
+    verticalScrollBar()->setValue(static_cast<int>(blockRect.top()));
+
+    // Ensure the editor has focus (optional)
+    if (!hasFocus()) {
+        setFocus();
+    }
+
+    qDebug() << "Moved to line:" << lineNumber;
+    qDebug() << "Block position:" << block.position()
+             << "Block geometry:" << blockRect
+             << "Viewport height:" << viewport()->height();
+}
+*/

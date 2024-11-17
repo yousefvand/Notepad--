@@ -4,6 +4,7 @@
 #include <QTextEdit>
 #include "replace.h"
 #include "../codeeditor.h"
+#include "../search/searchoptions.h"
 
 namespace Ui {
 class ReplaceDialog;
@@ -17,13 +18,6 @@ public:
     explicit ReplaceDialog(QWidget *parent = nullptr);
     ~ReplaceDialog();
 
-    enum ReplaceMode {
-        PlainText,
-        RegularExpression,
-        SpecialCharacters
-    };
-
-    void performReplace();
     static void showDialog(QWidget *parent = nullptr);
     QString getFindText() const;
     QString getReplaceText() const;
@@ -38,10 +32,11 @@ public:
     SearchOptions* getSearchOptions();
 
 signals:
-    void replaceRequested(const QString& replaceText, bool matchCase, bool matchWholeWord, ReplaceDialog::ReplaceMode mode);
+    void replaceRequested(const QString& replaceText, bool matchCase, bool matchWholeWord, FindMethod mode);
 
 private slots:
     void toggleAdvancedOptions(bool checked);
+
     void onAdvancedOptionsToggled(bool checked);
 
     void on_findNext_clicked();
@@ -78,7 +73,7 @@ private slots:
 
 private:
     Ui::ReplaceDialog *ui;
-    ReplaceMode selectedReplaceMode() const;
+    FindMethod selectedFindMode() const;
     SearchOptions* m_searchOptions;
     Replace* m_replace;
     CodeEditor* m_editor = nullptr;

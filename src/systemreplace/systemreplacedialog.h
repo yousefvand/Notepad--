@@ -1,8 +1,39 @@
 #pragma once
+#include <QDialog>
+#include "systemreplace.h"
+#include "../search/searchoptions.h"
 
-class SystemReplaceDialog
+namespace Ui {
+class SystemReplaceDialog;
+}
+
+class SystemReplaceDialog : public QDialog
 {
+    Q_OBJECT
+
 public:
-    SystemReplaceDialog();
+    explicit SystemReplaceDialog(QWidget *parent = nullptr);
+    ~SystemReplaceDialog();
+
+private slots:
+    void onAdvancedOptionsToggled(bool checked);
+
+    void toggleAdvancedOptions(bool checked);
+
+private:
+    Ui::SystemReplaceDialog *ui;
+
+    FindMethod selectedFindMode() const;
+    SearchOptions* m_searchOptions;
+    SystemReplace* m_replace;
+    bool eventFilter(QObject *watched, QEvent *event);
+    void saveKeyword(const QString& keyword);
+    void saveReplaceWith(const QString& replaceWith);
+    void saveLocation(const QString& location);
+    void savePattern(const QString& pattern);
+    void populateComboBoxFind();
+    void populateComboBoxReplace();
+    void populateComboBoxLocation();
+    void populateComboBoxPattern();
 };
 

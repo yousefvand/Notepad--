@@ -12,6 +12,8 @@
 #include "mainwindow/fileoperations.h"
 #include "mainwindow/textoperations.h"
 #include "indentation/indentationmanager.h"
+#include "systemfind/systemfinddialog.h"
+#include "systemsearchresultdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -38,6 +40,9 @@ public:
 
 protected:
     void closeEvent(QCloseEvent* event) override;
+
+public slots:
+    void openSearchResult(const QString &filePath, int lineNumber);
 
 private slots:
     void on_action_New_triggered();
@@ -159,6 +164,8 @@ private:
     void saveIndentationSetting(const QString& setting);  // Save the selected option
     void loadIndentationSetting();  // Load and apply the saved setting
     IndentationManager* indentationManager;
+    SystemFindDialog* m_systemFindDialog = nullptr;
+    SystemSearchResultDialog* m_systemSearchResultDialog;
     FindDialog* findDialog;
     ReplaceDialog* replaceDialog;
     SearchOptions* m_searchOptions;

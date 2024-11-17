@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include "document.h"
+#include "search/searchoptions.h"
 
 class Document;
 
@@ -25,6 +26,8 @@ public:
     static void gotoLineInText(QWidget* parent, CodeEditor* editor);
     static void gotoLineInEditor(QWidget* parent, CodeEditor* editor);
     static bool isValidRegularExpression(const QString& pattern);
+    static int  countKeywordsInLine(const QString &line, const SearchOptions &searchOptions);
+    static QString highlightKeywords(const QString& line, const SearchOptions& options);
 
 private:
     bool validateDocument(Document* doc, QWidget* parent);
