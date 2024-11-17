@@ -75,7 +75,9 @@ jobs:
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         }
         if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
-          throw "configure.bat is missing after extraction. Verify the source archive and extraction process."
+          Write-Host "Error: configure.bat is missing in $qtSourceDir after extraction."
+          dir "$qtSourceDir"
+          throw "configure.bat not found. Verify extraction process."
         }
 
     - name: Build and Install Qt (Windows)
