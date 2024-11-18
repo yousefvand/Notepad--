@@ -62,7 +62,7 @@ jobs:
         path: ${{ runner.temp }}/qt-source
         key: qt-source-6.5.3
 
-    - name: Download and Extract Qt Source (Windows)
+    - name: Download Qt Source (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
@@ -99,9 +99,9 @@ jobs:
           echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
         )
         cd "%QT_SOURCE%\qtbase"
-        call "%QT_SOURCE%\qtbase\configure.bat" -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
-        cmake --build "%QT_SOURCE%\qtbase" --parallel
-        cmake --install "%QT_SOURCE%\qtbase"
+        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        cmake --build . --parallel
+        cmake --install .
 
     - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
