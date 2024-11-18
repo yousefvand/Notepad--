@@ -1,7 +1,9 @@
 #pragma once
 
+#include <QDebug>
 #include <QDialog>
 #include <QThreadPool>
+#include <QCloseEvent>
 #include "systemfind.h"
 #include "../search/searchoptions.h"
 #include "../systemsearchresultdialog.h"
@@ -23,6 +25,14 @@ public:
 
     void startSearch(const SearchOptions& options);
 
+protected:
+    void closeEvent(QCloseEvent *event) override {
+        qWarning() << "Window is closing. Cleaning up resources...";
+        cleanupResources();
+        // Optionally accept or ignore the event
+        event->accept(); // or event->ignore();
+    }
+
 signals:
     void updateProgress(int processedFiles, int totalFiles);
 
@@ -42,6 +52,7 @@ private slots:
 private:
     Ui::SystemFindDialog *ui;
 
+    void cleanupResources();
     FindMethod selectedFindMethod() const;
     SearchOptions* m_searchOptions;
     void populateComboBoxFind();

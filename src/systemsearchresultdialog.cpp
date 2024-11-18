@@ -34,6 +34,8 @@ SystemSearchResultDialog::SystemSearchResultDialog(QWidget *parent)
     header->resizeSection(0, width() * 0.8); // Set initial size for 80% width for File Path
     header->resizeSection(1, width() * 0.2); // Set initial size for 20% width for Matches
 
+    ui->resultTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->resultTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
 
     // Prevent editing and set double-click expansion
     ui->resultTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -55,60 +57,105 @@ SystemSearchResultDialog::~SystemSearchResultDialog()
     delete ui;
 }
 
-void SystemSearchResultDialog::addSearchResult(const FileSearchResults &result) {
-    QStandardItem *filePathItem = new QStandardItem(result.filePath);
-    int calculatedTotalMatchCount = 0;
-    int lineNumber = 1;
-
-    for (const QString &line : result.matchingLines) {
-        int keywordCount = Helpers::countKeywordsInLine(line, m_searchOptions);
-        if (keywordCount > 0) {
-            calculatedTotalMatchCount += keywordCount;
-            QString highlightedLine = Helpers::highlightKeywords(line, m_searchOptions);
-            QStandardItem *lineItem = new QStandardItem();
-            lineItem->setData(highlightedLine, Qt::DisplayRole);
-            lineItem->setData(lineNumber, Qt::UserRole);
-
-            QStandardItem *matchesItem = new QStandardItem(QString::number(keywordCount));
-            filePathItem->appendRow({lineItem, matchesItem});
-        }
-        lineNumber++;
-    }
-
-    QStandardItem *matchCountItem = new QStandardItem(QString::number(calculatedTotalMatchCount));
-    m_resultModel->appendRow({filePathItem, matchCountItem});
-
-    qDebug() << "File:" << result.filePath
-             << "Reported matches:" << result.matchCount
-             << "Calculated matches (subtree sum):" << calculatedTotalMatchCount;
+void SystemSearchResultDialog::cleanupResources() {
+    qInfo() << "Cleaning up resources. Closing window...";
 }
 
+void SystemSearchResultDialog::addSearchResult(const FileSearchResults &result) {
+    QStandardItem *filePathItem = new QStandardItem(result.filePath);
+    filePathItem->setFlags(filePathItem->flags() | Qt::ItemIsSelectable);
+
+    int calculatedTotalMatchCount = 0;
+    int firstKeywordLineNumber = -1; // Initialize to "not found"
+    int currentLineNumber = 1;       // Start counting lines from 1
+
+    for (const QString &line : result.matchingLines) {
+        // Count occurrences of the keyword in the line
+        int keywordCount = Helpers::countKeywordsInLine(line, m_searchOptions);
+
+        if (keywordCount > 0) {
+            calculatedTotalMatchCount += keywordCount;
+
+            // Highlight keywords in the line
+            QString highlightedLine = Helpers::highlightKeywords(line, m_searchOptions);
+
+            // Track the first line containing a keyword
+            if (firstKeywordLineNumber == -1) {
+                firstKeywordLineNumber = currentLineNumber;
+            }
+
+            // Create tree view items for the line and keyword count
+            QStandardItem *lineItem = new QStandardItem();
+            lineItem->setFlags(lineItem->flags() | Qt::ItemIsSelectable);
+            lineItem->setData(highlightedLine, Qt::DisplayRole);
+            lineItem->setData(currentLineNumber, Qt::UserRole);
+
+            QStandardItem *matchesItem = new QStandardItem(QString::number(keywordCount));
+            matchesItem->setFlags(matchesItem->flags() | Qt::ItemIsSelectable);
+
+            // Append the line and matches to the file path item
+            filePathItem->appendRow({lineItem, matchesItem});
+        }
+
+        currentLineNumber++; // Increment the line counter
+    }
+
+    // Add total matches as a separate item
+    QStandardItem *matchCountItem = new QStandardItem(QString::number(calculatedTotalMatchCount));
+    matchCountItem->setFlags(matchCountItem->flags() | Qt::ItemIsSelectable);
+    m_resultModel->appendRow({filePathItem, matchCountItem});
+
+    // Emit signal for the first keyword line if found
+    if (firstKeywordLineNumber != -1) {
+        qDebug() << "First keyword line number calculated:" << firstKeywordLineNumber
+                 << "for file:" << result.filePath;
+        emit openFileAtMatch(result.filePath, firstKeywordLineNumber);
+    } else {
+        qDebug() << "No keywords found in file:" << result.filePath;
+    }
+}
+
+// FIXME: Line number is wrong
 void SystemSearchResultDialog::handleDoubleClick(const QModelIndex &index) {
-    if (!index.isValid()) return;
+    if (!index.isValid()) {
+        qWarning() << "Invalid index detected in handleDoubleClick.";
+        return;
+    }
 
-    // Debug: Log the clicked index
-    qDebug() << "Double-click detected at index:" << index;
+    // Debug: Log the clicked index details
+    qDebug() << "Double-click detected at index:" << index << "Data:" << index.data(Qt::DisplayRole);
 
-    // Check if it's a sub-item
+    // Check if it's a sub-item by verifying its parent index
     QModelIndex parentIndex = index.parent();
     if (!parentIndex.isValid()) {
-        qDebug() << "Double-clicked on a top-level item.";
+        qDebug() << "Double-clicked on a top-level item (file path), ignoring.";
         return;
     }
 
     // Retrieve the file path from the parent item
-    QString filePath = m_resultModel->itemFromIndex(parentIndex)->text();
+    QStandardItem *parentItem = m_resultModel->itemFromIndex(parentIndex);
+    if (!parentItem) {
+        qWarning() << "Failed to retrieve parent item for index:" << index;
+        return;
+    }
+    QString filePath = parentItem->text();
 
     // Retrieve the line number from the clicked sub-item
-    int lineNumber = index.data(Qt::UserRole).toInt();
-    qDebug() << "Retrieved Line Number:" << lineNumber;
+    QVariant lineData = index.data(Qt::UserRole);
+    if (!lineData.isValid()) {
+        qWarning() << "No valid line number data for index:" << index;
+        return;
+    }
 
-    if (lineNumber > 0) {
-        //QMessageBox::information(this, "Double Click", QString("File: %1\nLine: %2").arg(filePath).arg(lineNumber));
-        qDebug() << "Emitting openFileAtMatch signal with File Path:" << filePath << "Line Number:" << lineNumber;
+    int lineNumber = lineData.toInt();
+    qDebug() << "File Path:" << filePath << "Retrieved Line Number:" << lineNumber;
+
+    if (lineNumber > 0) { // TODO: Remove MessageBox
+        QMessageBox::information(this, "Double Click", QString("File: %1\nLine: %2").arg(filePath).arg(lineNumber));
+        qDebug() << "Emitting openFileAtMatch signal for File Path:" << filePath << "Line Number:" << lineNumber;
         emit openFileAtMatch(filePath, lineNumber);
     } else {
-        qWarning() << "Line number conversion failed for index:" << index;
+        qWarning() << "Invalid line number detected for index:" << index;
     }
 }
 

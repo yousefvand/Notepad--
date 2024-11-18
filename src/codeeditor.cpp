@@ -184,9 +184,9 @@ void CodeEditor::highlightAllOccurrences(const QString& keyword) {
     setExtraSelections(extraSelections);
 }
 
-void CodeEditor::goToLine(int lineNumber) {
+void CodeEditor::goToLineInText(int lineNumber) {
     if (lineNumber < 1 || lineNumber > document()->blockCount()) {
-        qWarning() << "Line number" << lineNumber << "is out of range.";
+        qWarning() << "Line number: " << lineNumber << ". Line number is out of range.";
         return;
     }
 
@@ -200,37 +200,16 @@ void CodeEditor::goToLine(int lineNumber) {
     qDebug() << "Cursor position after move:" << textCursor().position();
 }
 
-/*
-void CodeEditor::goToLine(int lineNumber) {
-    // Validate line number range
-    if (lineNumber < 1 || lineNumber > document()->blockCount()) {
-        qWarning() << "Line number" << lineNumber << "is out of range. Valid range: 1 to" << document()->blockCount();
-        return;
+void CodeEditor::gotoLineInEditor(int lineNumber) {
+    // Ensure the line number is within the valid range
+    if (lineNumber > 0 && lineNumber <= blockCount()) {
+        QTextCursor cursor = textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, lineNumber - 1);
+        setTextCursor(cursor);
+        centerCursor();
+    } else {
+        qWarning() << "Invalid Line Number: " << lineNumber << " .The specified line is out of range.";
     }
-
-    // Find the text block corresponding to the line number
-    QTextBlock block = document()->findBlockByNumber(lineNumber - 1);
-    if (!block.isValid()) {
-        qWarning() << "Invalid block for line number:" << lineNumber;
-        return;
-    }
-
-    // Set the text cursor to the block
-    QTextCursor cursor(block);
-    setTextCursor(cursor);
-
-    // Scroll to the block manually
-    QRectF blockRect = blockBoundingGeometry(block).translated(contentOffset());
-    verticalScrollBar()->setValue(static_cast<int>(blockRect.top()));
-
-    // Ensure the editor has focus (optional)
-    if (!hasFocus()) {
-        setFocus();
-    }
-
-    qDebug() << "Moved to line:" << lineNumber;
-    qDebug() << "Block position:" << block.position()
-             << "Block geometry:" << blockRect
-             << "Viewport height:" << viewport()->height();
 }
-*/
+

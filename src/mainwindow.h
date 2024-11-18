@@ -156,6 +156,7 @@ private:
     void applyColorCoding(Document* doc, bool isModified);
     void setActiveDocumentEditorInFindDialog();
     void setActiveDocumentEditorInReplaceDialog();
+    void setupSearchResultDialogConnections();
 
     void setupIndentationMenu();
     QAction* action_Custom;

@@ -27,6 +27,11 @@ void SystemTextDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     QRect rect = option.rect;
     painter->setClipRect(rect);
 
+    // Handle selection background
+    if (option.state & QStyle::State_Selected) {
+        painter->fillRect(rect, option.palette.highlight());
+    }
+
     if (content.contains("<span")) {
         // Render HTML using QTextDocument
         QTextDocument doc;
@@ -40,6 +45,13 @@ void SystemTextDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         // Elide plain text if it exceeds the available space
         QFontMetrics metrics(option.font);
         QString elidedText = metrics.elidedText(content, Qt::ElideRight, rect.width());
+
+        // Set text color for selected state
+        if (option.state & QStyle::State_Selected) {
+            painter->setPen(option.palette.highlightedText().color());
+        } else {
+            painter->setPen(option.palette.text().color());
+        }
 
         // Draw the elided text
         painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, elidedText);

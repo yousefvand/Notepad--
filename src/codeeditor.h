@@ -22,7 +22,8 @@ public:
     void applyIndentation(bool useTabs, int indentationWidth);
     QTabWidget* DocumentsTab();
     void highlightAllOccurrences(const QString& keyword);
-    void goToLine(int lineNumber);
+    void goToLineInText(int lineNumber);
+    void gotoLineInEditor(int lineNumber);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

@@ -2,7 +2,9 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QCheckBox>
+#include <QPointer>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QPlainTextEdit>
 #include "mainwindow.h"
 #include "codeeditor.h"
@@ -364,35 +366,48 @@ void MainWindow::on_actionReplace_P_revious_triggered()
 }
 
 void MainWindow::on_actionFind_System_triggered() {
+    qDebug() << "on_actionFind_System_triggered called";
+
     if (!m_systemFindDialog) {
-        // Create SystemFindDialog only if it doesn't already exist
+        qDebug() << "Creating new SystemFindDialog";
+
         m_systemFindDialog = new SystemFindDialog(this);
         m_systemFindDialog->setWindowModality(Qt::NonModal);
+        m_systemFindDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+        // Reset pointer when dialog is destroyed
+        connect(m_systemFindDialog, &QObject::destroyed, this, [this]() {
+            qDebug() << "SystemFindDialog destroyed. Resetting pointer.";
+            m_systemFindDialog = nullptr;
+        });
+
+        // Ensure connections are established
+        setupSearchResultDialogConnections();
+
         m_systemFindDialog->show();
     } else {
-        // Bring existing SystemFindDialog to the front
+        qDebug() << "SystemFindDialog already exists. Bringing it to the front.";
         m_systemFindDialog->raise();
         m_systemFindDialog->activateWindow();
     }
+}
 
-    // Check for SystemSearchResultDialog existence dynamically
+void MainWindow::setupSearchResultDialogConnections() {
     QTimer::singleShot(0, this, [this]() {
         SystemSearchResultDialog* m_systemSearchResultDialog =
             m_systemFindDialog->findChild<SystemSearchResultDialog *>("SystemSearchResultDialog");
+
         if (m_systemSearchResultDialog) {
             qDebug() << "SystemSearchResultDialog found:" << m_systemSearchResultDialog;
 
-            // Ensure the connection is made only once
-            static bool isConnected = false;
-            if (!isConnected) {
-                connect(m_systemSearchResultDialog, &SystemSearchResultDialog::openFileAtMatch,
-                        this, &MainWindow::openSearchResult);
-                qDebug() << "Signal-Slot Connection Successful";
-                isConnected = true;
-            }
+            // Re-establish the signal-slot connection
+            connect(m_systemSearchResultDialog, &SystemSearchResultDialog::openFileAtMatch,
+                    this, &MainWindow::openSearchResult, Qt::UniqueConnection);
+
+            qDebug() << "Signal-Slot Connection for SystemSearchResultDialog re-established.";
         } else {
-            qDebug() << "SystemSearchResultDialog not found yet. Will retry...";
-            QTimer::singleShot(100, this, &MainWindow::on_actionFind_System_triggered);
+            qDebug() << "SystemSearchResultDialog not found. Retrying...";
+            QTimer::singleShot(100, this, &MainWindow::setupSearchResultDialogConnections);
         }
     });
 }
@@ -406,12 +421,22 @@ void MainWindow::on_actionReplace_S_ystem_triggered()
 
 void MainWindow::on_actionGo_to_Line_in_Text_triggered()
 {
-    Helpers::gotoLineInText(this, getCurrentDocument()->editor());
+    int lineNumber = QInputDialog::getInt(this, "Go to Line in Text", "Enter line number:");
+    if (lineNumber < 1) {
+        QMessageBox::warning(this, "Warning", "Enter a valid number.", QMessageBox::Ok);
+    } else {
+        getCurrentDocument()->editor()->goToLineInText(lineNumber);
+    }
 }
 
 void MainWindow::on_actionGo_to_Line_in_Editor_triggered()
 {
-    Helpers::gotoLineInEditor(this, getCurrentDocument()->editor());
+    int lineNumber = QInputDialog::getInt(this, "Go to Line in Editor", "Enter line number:");
+    if (lineNumber < 1) {
+        QMessageBox::warning(this, "Warning", "Enter a valid number.", QMessageBox::Ok);
+    } else {
+        getCurrentDocument()->editor()->gotoLineInEditor(lineNumber);
+    }
 }
 
 void MainWindow::on_action_Find_triggered() {
@@ -445,26 +470,32 @@ void MainWindow::on_action_Find_triggered() {
 
 
 
+/* Helper Functions */
+
+
+
+
+
+// FIXME: Wrong line selected
 void MainWindow::openSearchResult(const QString &filePath, int lineNumber) {
-    qDebug() << "openSearchResult called. File Path:" << filePath << ", Line Number:" << lineNumber;
-    fileOperations->openDocument(filePath);
-    Document* doc = getCurrentDocument();
-    if (doc && doc->editor()) { // FIXME: Document resets to first line.
-        doc->editor()->goToLine(lineNumber);
-        doc->editor()->highlightCurrentLine();
-    } else {
-        qWarning() << "Document or editor is null.";
+    qInfo() << "openSearchResult called. File Path:" << filePath << ", Line Number:" << lineNumber;
+    Document* doc = fileOperations->openDocument(filePath);
+    if (!doc || !doc->editor()) {
+        qFatal() << "Document or editor is null.";
+        return;
     }
+
+    // Use a weak pointer to ensure the document is still valid when the timer fires
+    QPointer<Document> safeDoc(doc);
+
+    QTimer::singleShot(200, this, [lineNumber, safeDoc]() {
+        if (safeDoc && safeDoc->editor()) {
+            safeDoc->editor()->goToLineInText(lineNumber);
+        } else {
+            qWarning() << "Document or editor is no longer available.";
+        }
+    });
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -473,7 +504,6 @@ void MainWindow::onActionZ80Triggered()
 {
     qDebug() << "Z80 action triggered!";
 }
-
 
 
 

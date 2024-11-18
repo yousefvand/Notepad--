@@ -50,6 +50,11 @@ SystemFindDialog::~SystemFindDialog()
     delete ui;
     delete m_find;
     delete m_searchOptions;
+    delete m_systemSearchResultDialog;
+}
+
+void SystemFindDialog::cleanupResources() {
+    qInfo() << "Cleaning up resources. Closing window...";
 }
 
 bool SystemFindDialog::eventFilter(QObject *watched, QEvent *event) {

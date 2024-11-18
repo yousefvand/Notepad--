@@ -23,8 +23,6 @@ public:
     static Document* getCurrentDocument(QTabWidget* documentsTab);
     static void showInformationMessage(const QString& message);
     static void notImplemented(QWidget* parent = nullptr);
-    static void gotoLineInText(QWidget* parent, CodeEditor* editor);
-    static void gotoLineInEditor(QWidget* parent, CodeEditor* editor);
     static bool isValidRegularExpression(const QString& pattern);
     static int  countKeywordsInLine(const QString &line, const SearchOptions &searchOptions);
     static QString highlightKeywords(const QString& line, const SearchOptions& options);

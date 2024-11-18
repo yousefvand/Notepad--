@@ -1,9 +1,11 @@
 #pragma once
 
+#include <QDebug>
 #include <QDialog>
 #include <QStandardItemModel>
 #include <QTreeView>
 #include <QModelIndex>
+#include <QCloseEvent>
 #include "search/searchoptions.h"
 
 QT_BEGIN_NAMESPACE
@@ -21,6 +23,14 @@ public:
     void addSearchResult(const FileSearchResults &result);
     void setSearchOptions(SearchOptions searchOptions);
 
+protected:
+    void closeEvent(QCloseEvent *event) override {
+        qWarning() << "Window is closing. Cleaning up resources...";
+        cleanupResources();
+        // Optionally accept or ignore the event
+        event->accept(); // or event->ignore();
+    }
+
 signals:
     void openFileAtMatch(const QString &filePath, int lineNumber);
 
@@ -31,6 +41,7 @@ private:
     int extractLineNumber(const QString &line) const;
 
     Ui::SystemSearchResultDialog *ui;
+    void cleanupResources();
     QStandardItemModel* m_resultModel;
     SearchOptions m_searchOptions;
     QStandardItemModel* m_treeModel;
