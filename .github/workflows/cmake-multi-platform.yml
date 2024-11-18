@@ -62,23 +62,29 @@ jobs:
         path: ${{ runner.temp }}/qt-source
         key: qt-source-6.5.3
 
-    - name: Download Qt Source (Windows)
+    - name: Download and Extract Qt Source (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
         $qtSourceDir = "$env:TEMP\qt-source"
         $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
-        if (-Not (Test-Path $qtZip)) {
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
           Write-Host "Downloading Qt Source"
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
+        }
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          Write-Host "Error: configure.bat is missing in $qtSourceDir after extraction."
+          dir "$qtSourceDir"
+          throw "configure.bat not found. Verify extraction process."
         }
 
     - name: Build and Install Qt (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
+        REM Locate Visual Studio Build Tools
         FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
           -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
         IF NOT DEFINED VS_PATH (
@@ -87,11 +93,15 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
-        # Configure and build Qt with Ninja
-        cd %TEMP%\qt-source\qt-everywhere-src-6.5.3\qtbase
-        configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
-        cmake --build . --parallel
-        cmake --install .
+        REM Configure and build Qt
+        SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3
+        IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
+          echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
+        )
+        cd "%QT_SOURCE%\qtbase"
+        call "%QT_SOURCE%\qtbase\configure.bat" -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        cmake --build "%QT_SOURCE%\qtbase" --parallel
+        cmake --install "%QT_SOURCE%\qtbase"
 
     - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
