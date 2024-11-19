@@ -96,11 +96,9 @@ jobs:
         )
         dir "%QT_SOURCE%\qtbase"
         cd "%QT_SOURCE%\qtbase"
-        call configure.bat -top-level ^
-          -prefix C:\Qt -release -opensource -confirm-license ^
-          -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja || exit /b 1
-        cmake --build . --parallel || exit /b 1
-        cmake --install . || exit /b 1
+        call "%CD%\configure.bat" -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        cmake --build . --parallel
+        cmake --install .
 
     - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
