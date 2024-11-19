@@ -89,6 +89,9 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
+        REM Set the PATH to include the Qt directory
+        SET PATH=%QT_SOURCE%\qtbase;%PATH%
+
         REM Configure and build Qt
         SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3
         IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
