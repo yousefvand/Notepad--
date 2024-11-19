@@ -23,7 +23,8 @@ public:
     explicit SystemFindDialog(QWidget *parent = nullptr);
     ~SystemFindDialog();
 
-    void startSearch(const SearchOptions& options);
+    void startSearchNext(const SearchOptions& options);
+    void startSearchPrevious(const SearchOptions& options);
 
 protected:
     void closeEvent(QCloseEvent *event) override {
@@ -49,6 +50,8 @@ private slots:
 
     void on_pushButtonBrowse_clicked();
 
+    void on_findPrevious_clicked();
+
 private:
     Ui::SystemFindDialog *ui;
 
@@ -65,7 +68,7 @@ private:
     void UpdateSearchOptions();
     void showResultDialog();
 
-    void countTextFiles(const QString& directory);
+    void countTextFiles(const QString& directory, const QRegularExpression& pattern);
     void processFile(const QString& filePath);
     int m_totalFiles = 0;
     int m_processedFiles = 0;

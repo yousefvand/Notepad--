@@ -194,35 +194,108 @@ void SystemFindDialog::on_pushButtonBrowse_clicked()
     }
 }
 
-void SystemFindDialog::startSearch(const SearchOptions& options) {
+void SystemFindDialog::startSearchNext(const SearchOptions& options) {
     if (!m_searchOptions) {
         m_searchOptions = new SearchOptions();
     }
     *m_searchOptions = options;
+
     m_processedFiles = 0;
     m_totalFiles = 0;
 
+    // Unescape the pattern provided by the user
+    QString unescapedPattern = m_searchOptions->pattern.replace("\\\\", "\\");
+    qDebug() << "[INFO] Search Options->Unescaped Pattern:" << unescapedPattern;
+
+    // Declare a static QRegularExpression
+    static QRegularExpression regex;
+    if (regex.pattern() != unescapedPattern || !regex.isValid()) {
+        regex.setPattern(unescapedPattern);
+        if (!regex.isValid()) {
+            qWarning() << "Invalid regex pattern:" << regex.errorString();
+            return;
+        }
+    }
+
     ui->m_progressBar->setValue(0);
-    countTextFiles(m_searchOptions->location);
+    countTextFiles(m_searchOptions->location, regex);
     ui->m_progressBar->setMaximum(m_totalFiles);
 
-    QDirIterator::IteratorFlags flags = m_searchOptions->includeSubdirectories ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags;
+    QDirIterator::IteratorFlags flags = m_searchOptions->includeSubdirectories
+                                            ? QDirIterator::Subdirectories
+                                            : QDirIterator::NoIteratorFlags;
+
     QDirIterator it(m_searchOptions->location, QDir::Files, flags);
 
     while (it.hasNext()) {
         QString filePath = it.next();
-        processFile(filePath);
+        QString fileName = QFileInfo(filePath).fileName();
+
+        if (regex.match(fileName).hasMatch()) {
+            processFile(filePath);
+        }
     }
 }
 
-void SystemFindDialog::countTextFiles(const QString& directory) {
+void SystemFindDialog::startSearchPrevious(const SearchOptions& options) {
+    if (!m_searchOptions) {
+        m_searchOptions = new SearchOptions();
+    }
+    *m_searchOptions = options;
+
+    m_processedFiles = 0;
+    m_totalFiles = 0;
+
+    // Unescape the pattern provided by the user
+    QString unescapedPattern = m_searchOptions->pattern.replace("\\\\", "\\");
+    qDebug() << "[INFO] Search Options->Unescaped Pattern:" << unescapedPattern;
+
+    // Declare a static QRegularExpression
+    static QRegularExpression regex;
+    if (regex.pattern() != unescapedPattern || !regex.isValid()) {
+        regex.setPattern(unescapedPattern);
+        if (!regex.isValid()) {
+            qWarning() << "Invalid regex pattern:" << regex.errorString();
+            return;
+        }
+    }
+
+    ui->m_progressBar->setValue(0);
+    countTextFiles(m_searchOptions->location, regex);
+    ui->m_progressBar->setMaximum(m_totalFiles);
+
+    QDirIterator::IteratorFlags flags = m_searchOptions->includeSubdirectories
+                                            ? QDirIterator::Subdirectories
+                                            : QDirIterator::NoIteratorFlags;
+
+    // Collect all files matching the pattern
+    QStringList matchingFiles;
+    QDirIterator it(m_searchOptions->location, QDir::Files, flags);
+    while (it.hasNext()) {
+        QString filePath = it.next();
+        QString fileName = QFileInfo(filePath).fileName();
+        if (regex.match(fileName).hasMatch()) {
+            matchingFiles.append(filePath);
+        }
+    }
+
+    // Reverse iterate through the list of matching files for "find previous"
+    for (auto filePath = matchingFiles.crbegin(); filePath != matchingFiles.crend(); ++filePath) {
+        processFile(*filePath);
+    }
+}
+
+void SystemFindDialog::countTextFiles(const QString& directory, const QRegularExpression& pattern) {
     QMimeDatabase mimeDb;
     QDirIterator it(directory, QDir::Files, QDirIterator::Subdirectories);
 
     while (it.hasNext()) {
         QString filePath = it.next();
+        QString fileName = QFileInfo(filePath).fileName();
         QMimeType mimeType = mimeDb.mimeTypeForFile(filePath);
-        if (mimeType.name().startsWith("text/")) {
+
+        // Match file name against the pattern
+        if (mimeType.name().startsWith("text/") && pattern.match(fileName).hasMatch()) {
             m_totalFiles++;
         }
     }
@@ -291,9 +364,13 @@ void SystemFindDialog::on_findNext_clicked()
 {
     UpdateSearchOptions();
     showResultDialog();
-    startSearch(*m_searchOptions);
+    startSearchNext(*m_searchOptions);
 }
 
-
-
+void SystemFindDialog::on_findPrevious_clicked()
+{
+    UpdateSearchOptions();
+    showResultDialog();
+    startSearchPrevious(*m_searchOptions);
+}
 

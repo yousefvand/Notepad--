@@ -29,7 +29,8 @@ FileSearchResults FileSearchWorker::searchInFile() {
 
     QTextStream in(&file);
     QRegularExpression pattern(m_options.keyword,
-                               m_options.matchCase ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
+                               m_options.matchCase ? QRegularExpression::NoPatternOption
+                                                   : QRegularExpression::CaseInsensitiveOption);
 
     int lineNumber = 0;
     while (!in.atEnd()) {
@@ -37,15 +38,29 @@ FileSearchResults FileSearchWorker::searchInFile() {
         QRegularExpressionMatchIterator it = pattern.globalMatch(line);
         bool hasMatch = false;
 
+        QString highlightedLine = line; // For highlighting
+
         while (it.hasNext()) {
             QRegularExpressionMatch match = it.next();
-            result.matchingLines.append(highlightMatches(line, pattern));
+
+            // Highlight the keywords in the line
+            highlightedLine = highlightMatches(line, pattern);
+
+            // Add the line number and the full line to `matches`
+            result.matches.append(qMakePair(lineNumber, highlightedLine));
+
             result.matchCount++;
             hasMatch = true;
         }
 
-        if (!hasMatch) lineNumber++;
+        if (hasMatch) {
+            // Append to `matchingLines` only if a match exists
+            result.matchingLines.append(highlightedLine);
+        }
+
+        lineNumber++;
     }
+
     return result;
 }
 

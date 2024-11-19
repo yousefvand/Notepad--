@@ -12,7 +12,6 @@ SystemSearchResultDialog::SystemSearchResultDialog(QWidget *parent)
     , m_resultModel(new QStandardItemModel(this))
 {
     ui->setupUi(this);
-    // FIXME: treeview is not selectable and should be.
 
     m_treeModel = new QStandardItemModel(this);
     ui->resultTreeView->setModel(m_treeModel);
@@ -61,59 +60,64 @@ void SystemSearchResultDialog::cleanupResources() {
     qInfo() << "Cleaning up resources. Closing window...";
 }
 
+// TODO: Pass SearchOptions to this function so it can highlight all keywords.
 void SystemSearchResultDialog::addSearchResult(const FileSearchResults &result) {
+    if (result.matches.isEmpty()) {
+        qWarning() << "No matches found for file:" << result.filePath;
+        return;
+    }
+
     QStandardItem *filePathItem = new QStandardItem(result.filePath);
     filePathItem->setFlags(filePathItem->flags() | Qt::ItemIsSelectable);
 
-    int calculatedTotalMatchCount = 0;
-    int firstKeywordLineNumber = -1; // Initialize to "not found"
-    int currentLineNumber = 1;       // Start counting lines from 1
+    QStandardItem *matchCountItem = new QStandardItem(QString::number(result.matchCount));
+    matchCountItem->setFlags(matchCountItem->flags() | Qt::ItemIsSelectable);
 
-    for (const QString &line : result.matchingLines) {
-        // Count occurrences of the keyword in the line
-        int keywordCount = Helpers::countKeywordsInLine(line, m_searchOptions);
+    int firstKeywordLineNumber = -1; // To track the first match line number
 
-        if (keywordCount > 0) {
-            calculatedTotalMatchCount += keywordCount;
+    // Iterate through the matches to populate the result model
+    for (const auto &[lineNumber, lineContent] : result.matches) {
+        // Highlight keywords with cyan
+        QString highlightedLine = lineContent;
+        QString pattern = QStringLiteral("<span style='background-color: yellow;'>%1</span>");
+        highlightedLine.replace(
+            QRegularExpression(QString("\\b%1\\b").arg(QRegularExpression::escape(m_searchOptions.keyword)),
+                               m_searchOptions.matchCase
+                                   ? QRegularExpression::NoPatternOption
+                                   : QRegularExpression::CaseInsensitiveOption),
+            pattern.arg(m_searchOptions.keyword));
 
-            // Highlight keywords in the line
-            QString highlightedLine = Helpers::highlightKeywords(line, m_searchOptions);
+        QStandardItem *lineItem = new QStandardItem();
+        lineItem->setFlags(lineItem->flags() | Qt::ItemIsSelectable);
+        lineItem->setData(highlightedLine, Qt::DisplayRole); // Highlighted line content
+        lineItem->setData(lineNumber + 1, Qt::UserRole); // Line number (1-based)
 
-            // Track the first line containing a keyword
-            if (firstKeywordLineNumber == -1) {
-                firstKeywordLineNumber = currentLineNumber;
-            }
+        QStandardItem *matchesItem = new QStandardItem(QString::number(1));
+        matchesItem->setFlags(matchesItem->flags() | Qt::ItemIsSelectable);
 
-            // Create tree view items for the line and keyword count
-            QStandardItem *lineItem = new QStandardItem();
-            lineItem->setFlags(lineItem->flags() | Qt::ItemIsSelectable);
-            lineItem->setData(highlightedLine, Qt::DisplayRole);
-            lineItem->setData(currentLineNumber, Qt::UserRole);
+        filePathItem->appendRow({lineItem, matchesItem});
 
-            QStandardItem *matchesItem = new QStandardItem(QString::number(keywordCount));
-            matchesItem->setFlags(matchesItem->flags() | Qt::ItemIsSelectable);
-
-            // Append the line and matches to the file path item
-            filePathItem->appendRow({lineItem, matchesItem});
+        // Store the first keyword's line number (1-based)
+        if (firstKeywordLineNumber == -1) {
+            firstKeywordLineNumber = lineNumber + 1; // Convert to 1-based
         }
-
-        currentLineNumber++; // Increment the line counter
     }
 
-    // Add total matches as a separate item
-    QStandardItem *matchCountItem = new QStandardItem(QString::number(calculatedTotalMatchCount));
-    matchCountItem->setFlags(matchCountItem->flags() | Qt::ItemIsSelectable);
+    // Add the file path and match count as a top-level item
     m_resultModel->appendRow({filePathItem, matchCountItem});
 
-    // Emit signal for the first keyword line if found
-    if (firstKeywordLineNumber != -1) {
-        qDebug() << "First keyword line number calculated:" << firstKeywordLineNumber
-                 << "for file:" << result.filePath;
-        emit openFileAtMatch(result.filePath, firstKeywordLineNumber);
-    } else {
-        qDebug() << "No keywords found in file:" << result.filePath;
+    qDebug() << "File:" << result.filePath
+             << "Reported matches:" << result.matchCount
+             << "First keyword line number:" << firstKeywordLineNumber;
+
+    // If needed, handle the first keyword line highlighting
+    if (firstKeywordLineNumber > 0) {
+        qDebug() << "First keyword found at line:" << firstKeywordLineNumber << "in file:" << result.filePath;
+        // Call the highlighting function here, if necessary
+        // Example: highlightLineInView(result.filePath, firstKeywordLineNumber);
     }
 }
+
 
 // FIXME: Line number is wrong
 void SystemSearchResultDialog::handleDoubleClick(const QModelIndex &index) {
@@ -151,7 +155,7 @@ void SystemSearchResultDialog::handleDoubleClick(const QModelIndex &index) {
     qDebug() << "File Path:" << filePath << "Retrieved Line Number:" << lineNumber;
 
     if (lineNumber > 0) { // TODO: Remove MessageBox
-        QMessageBox::information(this, "Double Click", QString("File: %1\nLine: %2").arg(filePath).arg(lineNumber));
+        //QMessageBox::information(this, "Double Click", QString("File: %1\nLine: %2").arg(filePath).arg(lineNumber));
         qDebug() << "Emitting openFileAtMatch signal for File Path:" << filePath << "Line Number:" << lineNumber;
         emit openFileAtMatch(filePath, lineNumber);
     } else {
