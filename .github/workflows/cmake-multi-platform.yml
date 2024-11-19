@@ -96,7 +96,7 @@ jobs:
         )
         dir "%QT_SOURCE%\qtbase"
         cd "%QT_SOURCE%\qtbase"
-        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        call "%CD%\configure.bat" -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
         cmake --build . --parallel
         cmake --install .
 
