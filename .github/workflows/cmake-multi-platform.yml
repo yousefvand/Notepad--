@@ -46,7 +46,7 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Setup
+    ### Windows Setup with Qt Source Compilation and Caching
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -62,7 +62,7 @@ jobs:
         path: ${{ runner.temp }}/qt-source
         key: qt-source-6.5.3
 
-    - name: Download Qt Source if Not Cached (Windows)
+    - name: Download Qt Source (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
@@ -89,15 +89,15 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
-        REM Build Qt from source
+        REM Configure and Build Qt
         SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3
         IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
           echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
         )
         cd "%QT_SOURCE%\qtbase"
-        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
-        cmake --build . --parallel
-        cmake --install .
+        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja || exit /b 1
+        cmake --build . --parallel || exit /b 1
+        cmake --install . || exit /b 1
 
     - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
@@ -107,6 +107,7 @@ jobs:
         echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
         echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
 
+    ### Configure CMake
     - name: Configure CMake
       run: |
         cmake -B "${{ github.workspace }}/build" \
@@ -116,9 +117,11 @@ jobs:
           -G "Ninja" \
           -S "${{ github.workspace }}"
 
+    ### Build Project
     - name: Build
       run: cmake --build "${{ github.workspace }}/build" --config Release
 
+    ### Run Tests
     - name: Test
       working-directory: "${{ github.workspace }}/build"
       run: ctest --output-on-failure --build-config Release
