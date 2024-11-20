@@ -55,7 +55,14 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Download Qt Source (Windows)
+    - name: Cache Qt Source (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.temp }}/qt-source
+        key: qt-source-6.5.3
+
+    - name: Download Qt Source if Not Cached (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
