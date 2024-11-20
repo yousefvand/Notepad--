@@ -96,7 +96,11 @@ jobs:
         )
         cd "%QT_SOURCE%\qtbase"
         call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
-        cmake --build . --parallel
+        cmake --build . --parallel || (
+          echo "Handling ninja build error: regenerating build files" &&
+          cmake -G "Ninja" -S "%QT_SOURCE%\qtbase" -B "%QT_SOURCE%\qtbase\build" &&
+          cmake --build "%QT_SOURCE%\qtbase\build" --parallel
+        )
         cmake --install .
 
     - name: Set Qt Environment Variables (Windows)
