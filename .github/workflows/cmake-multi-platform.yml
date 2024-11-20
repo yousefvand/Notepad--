@@ -46,7 +46,7 @@ jobs:
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Dependencies
+    ### Windows Setup
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -55,8 +55,8 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    ### Configure CMake
     - name: Configure CMake
+      if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
         cmake -B "%GITHUB_WORKSPACE%/build" ^
@@ -66,13 +66,13 @@ jobs:
           -G "Ninja" ^
           -S "%GITHUB_WORKSPACE%"
 
-    ### Build the Project
     - name: Build
+      if: matrix.os == 'windows-latest'
       shell: cmd
       run: cmake --build "%GITHUB_WORKSPACE%/build" --config Release
 
-    ### Run Tests
     - name: Test
+      if: matrix.os == 'windows-latest'
       shell: cmd
       working-directory: "%GITHUB_WORKSPACE%/build"
       run: ctest --output-on-failure --build-config Release
