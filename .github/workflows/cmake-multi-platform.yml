@@ -60,17 +60,17 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
       with:
-        path: D:\qt-source
-        key: ${{ runner.os }}-qt-source-6.5.3
+        path: D:/qt-source
+        key: windows-qt-source-6.5.3
 
     - name: Download Qt Source (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $qtSourceDir = "D:\qt-source"
-        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+        $qtSourceDir = "D:/qt-source"
+        $qtZip = "$qtSourceDir/qt-everywhere-src-6.5.3.zip"
 
-        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+        if (-Not (Test-Path "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase/configure.bat")) {
           Write-Host "Qt source not found in cache. Downloading..."
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
@@ -78,7 +78,7 @@ jobs:
         } else {
           Write-Host "Qt source found in cache."
         }
-        dir "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
+        dir "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase"
 
     - name: Build and Install Qt from Source (Windows)
       if: matrix.os == 'windows-latest'
@@ -94,7 +94,7 @@ jobs:
         CALL "%VS_VARS_CMD%" || exit /b 1
 
         REM Configure and build Qt
-        SET QT_SOURCE=D:\qt-source\qt-everywhere-src-6.5.3
+        SET QT_SOURCE=D:/qt-source/qt-everywhere-src-6.5.3
         IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
           echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
         )
