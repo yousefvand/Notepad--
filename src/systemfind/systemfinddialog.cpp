@@ -4,6 +4,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QMimeDatabase>
+#include <QMessageBox>
 #include "systemfinddialog.h"
 #include "../search/filesearchworker.h"
 #include "ui_systemfinddialog.h"
@@ -118,7 +119,7 @@ void SystemFindDialog::saveLocation(const QString& location)
     QStringList locations = Settings::instance()->loadSetting("Location", "Keywords", QStringList()).toStringList();
 
     if (!locations.contains(location)) {
-        locations.prepend(location); // Add keyword to the top of history list
+        locations.prepend(location); // Add location to the top of history list
         if (locations.size() > 10) {
             locations = locations.mid(0, 10); // Limit history to 10 items
         }
@@ -138,7 +139,7 @@ void SystemFindDialog::savePattern(const QString& pattern)
     QStringList patterns = Settings::instance()->loadSetting("Pattern", "Keywords", QStringList()).toStringList();
 
     if (!patterns.contains(pattern)) {
-        patterns.prepend(pattern); // Add keyword to the top of history list
+        patterns.prepend(pattern); // Add pattern to the top of history list
         if (patterns.size() > 10) {
             patterns = patterns.mid(0, 10); // Limit history to 10 items
         }
@@ -149,6 +150,27 @@ void SystemFindDialog::savePattern(const QString& pattern)
         ui->comboBoxPattern->clear();
         ui->comboBoxPattern->addItems(patterns);
         ui->comboBoxPattern->blockSignals(false);
+    }
+}
+
+void SystemFindDialog::saveHistory() {
+    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    if (keyword.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
+        return;
+    }
+    saveKeyword(keyword);
+
+    QString location = ui->comboBoxLocation->currentText().trimmed();
+    if (location.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please select a location.");
+        return;
+    }
+    saveLocation(location);
+
+    QString pattern = ui->comboBoxPattern->currentText().trimmed();
+    if (!pattern.isEmpty()) {
+        savePattern(pattern);
     }
 }
 
@@ -205,7 +227,7 @@ void SystemFindDialog::startSearchNext(const SearchOptions& options) {
 
     // Unescape the pattern provided by the user
     QString unescapedPattern = m_searchOptions->pattern.replace("\\\\", "\\");
-    qDebug() << "[INFO] Search Options->Unescaped Pattern:" << unescapedPattern;
+    qDebug() << "Search Options->Unescaped Pattern:" << unescapedPattern;
 
     // Declare a static QRegularExpression
     static QRegularExpression regex;
@@ -285,6 +307,49 @@ void SystemFindDialog::startSearchPrevious(const SearchOptions& options) {
     }
 }
 
+void SystemFindDialog::selectAll(const SearchOptions& options) {
+    if (!m_searchOptions) {
+        m_searchOptions = new SearchOptions();
+    }
+    *m_searchOptions = options;
+
+    m_processedFiles = 0;
+    m_totalFiles = 0;
+
+    // Unescape the pattern provided by the user
+    QString unescapedPattern = m_searchOptions->pattern.replace("\\\\", "\\");
+    qDebug() << "Search Options->Unescaped Pattern:" << unescapedPattern;
+
+    // Declare a static QRegularExpression
+    static QRegularExpression regex;
+    if (regex.pattern() != unescapedPattern || !regex.isValid()) {
+        regex.setPattern(unescapedPattern);
+        if (!regex.isValid()) {
+            qWarning() << "Invalid regex pattern:" << regex.errorString();
+            return;
+        }
+    }
+
+    ui->m_progressBar->setValue(0);
+    countTextFiles(m_searchOptions->location, regex);
+    ui->m_progressBar->setMaximum(m_totalFiles);
+
+    QDirIterator::IteratorFlags flags = m_searchOptions->includeSubdirectories
+                                            ? QDirIterator::Subdirectories
+                                            : QDirIterator::NoIteratorFlags;
+
+    QDirIterator it(m_searchOptions->location, QDir::Files, flags);
+
+    while (it.hasNext()) {
+        QString filePath = it.next();
+        QString fileName = QFileInfo(filePath).fileName();
+
+        if (regex.match(fileName).hasMatch()) {
+            processFile(filePath);
+        }
+    }
+}
+
 void SystemFindDialog::countTextFiles(const QString& directory, const QRegularExpression& pattern) {
     QMimeDatabase mimeDb;
     QDirIterator it(directory, QDir::Files, QDirIterator::Subdirectories);
@@ -322,6 +387,7 @@ void SystemFindDialog::handleFileProcessed(const FileSearchResults& result) {
     m_systemSearchResultDialog->addSearchResult(result);
 }
 
+// FIXME: ProgressBar doesn't work properly.
 void SystemFindDialog::updateProgressDisplay(int processedFiles, int totalFiles) {
     ui->m_progressBar->setValue(processedFiles);
     ui->m_statusLabel->setText(QString("Searching Files... %1/%2").arg(processedFiles).arg(totalFiles));
@@ -363,6 +429,7 @@ void SystemFindDialog::showResultDialog() {
 void SystemFindDialog::on_findNext_clicked()
 {
     UpdateSearchOptions();
+    saveHistory();
     showResultDialog();
     startSearchNext(*m_searchOptions);
 }
@@ -370,7 +437,16 @@ void SystemFindDialog::on_findNext_clicked()
 void SystemFindDialog::on_findPrevious_clicked()
 {
     UpdateSearchOptions();
+    saveHistory();
     showResultDialog();
     startSearchPrevious(*m_searchOptions);
+}
+
+void SystemFindDialog::on_selectAll_clicked()
+{
+    UpdateSearchOptions();
+    saveHistory();
+    showResultDialog();
+    selectAll(*m_searchOptions);
 }
 

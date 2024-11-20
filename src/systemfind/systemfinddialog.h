@@ -25,6 +25,7 @@ public:
 
     void startSearchNext(const SearchOptions& options);
     void startSearchPrevious(const SearchOptions& options);
+    void selectAll(const SearchOptions& options);
 
 protected:
     void closeEvent(QCloseEvent *event) override {
@@ -52,6 +53,8 @@ private slots:
 
     void on_findPrevious_clicked();
 
+    void on_selectAll_clicked();
+
 private:
     Ui::SystemFindDialog *ui;
 
@@ -64,6 +67,7 @@ private:
     void saveKeyword(const QString& keyword);
     void saveLocation(const QString& location);
     void savePattern(const QString& pattern);
+    void saveHistory();
     bool eventFilter(QObject *watched, QEvent *event);
     void UpdateSearchOptions();
     void showResultDialog();

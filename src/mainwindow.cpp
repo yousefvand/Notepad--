@@ -481,7 +481,7 @@ void MainWindow::openSearchResult(const QString &filePath, int lineNumber) {
     qInfo() << "openSearchResult called. File Path:" << filePath << ", Line Number:" << lineNumber;
     Document* doc = fileOperations->openDocument(filePath);
     if (!doc || !doc->editor()) {
-        qFatal() << "Document or editor is null.";
+        qFatal("Document or editor is null.");
         return;
     }
 
