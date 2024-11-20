@@ -49,17 +49,31 @@ jobs:
     ### Windows Setup
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
-      shell: cmd
+      shell: powershell
       run: |
         choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Set up MSVC environment (Windows)
+    - name: Download Qt Source (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        $qtSourceDir = "$env:TEMP\qt-source"
+        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          Write-Host "Downloading Qt Source"
+          New-Item -ItemType Directory -Path $qtSourceDir -Force
+          Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
+          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
+        }
+        dir "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
+
+    - name: Build and Install Qt from Source (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        REM Locate Visual Studio installation
+        REM Locate Visual Studio Build Tools
         FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
           -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
         IF NOT DEFINED VS_PATH (
@@ -67,26 +81,37 @@ jobs:
         )
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
-        where cl || (echo cl.exe not found in PATH && exit /b 1)
 
-    - name: Configure CMake (Windows)
+        REM Build Qt from source
+        SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3
+        IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
+          echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
+        )
+        cd "%QT_SOURCE%\qtbase"
+        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
+        cmake --build . --parallel
+        cmake --install .
+
+    - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
-      shell: cmd
+      shell: powershell
       run: |
-        cmake -B "%GITHUB_WORKSPACE%\build" ^
-          -DCMAKE_CXX_COMPILER=cl ^
-          -DCMAKE_C_COMPILER=cl ^
-          -DCMAKE_BUILD_TYPE=Release ^
-          -G "Ninja" ^
-          -S "%GITHUB_WORKSPACE%"
+        echo "Qt6_DIR=C:\Qt\lib\cmake\Qt6" >> $env:GITHUB_ENV
+        echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
+        echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
 
-    - name: Build (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      run: cmake --build "%GITHUB_WORKSPACE%\build" --config Release
+    - name: Configure CMake
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
 
-    - name: Test (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      working-directory: "%GITHUB_WORKSPACE%\build"
+    - name: Build
+      run: cmake --build "${{ github.workspace }}/build" --config Release
+
+    - name: Test
+      working-directory: "${{ github.workspace }}/build"
       run: ctest --output-on-failure --build-config Release
