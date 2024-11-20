@@ -60,7 +60,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: D:\qt-source
-        key: qt-source-6.5.3
+        key: ${{ runner.os }}-qt-source-6.5.3
 
     - name: Download Qt Source (Windows)
       if: matrix.os == 'windows-latest'
@@ -68,11 +68,14 @@ jobs:
       run: |
         $qtSourceDir = "D:\qt-source"
         $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+
         if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
-          Write-Host "Downloading Qt Source"
+          Write-Host "Qt source not found in cache. Downloading..."
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
+        } else {
+          Write-Host "Qt source found in cache."
         }
         dir "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
 
@@ -96,11 +99,7 @@ jobs:
         )
         cd "%QT_SOURCE%\qtbase"
         call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja
-        cmake --build . --parallel || (
-          echo "Handling ninja build error: regenerating build files" &&
-          cmake -G "Ninja" -S "%QT_SOURCE%\qtbase" -B "%QT_SOURCE%\qtbase\build" &&
-          cmake --build "%QT_SOURCE%\qtbase\build" --parallel
-        )
+        cmake --build . --parallel
         cmake --install .
 
     - name: Set Qt Environment Variables (Windows)
