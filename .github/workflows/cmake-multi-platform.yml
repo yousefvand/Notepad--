@@ -49,30 +49,44 @@ jobs:
     ### Windows Setup
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
-      shell: powershell
+      shell: cmd
       run: |
         choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    - name: Configure CMake
+    - name: Set up MSVC environment (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        cmake -B "%GITHUB_WORKSPACE%/build" ^
+        REM Locate Visual Studio installation
+        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
+          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
+        IF NOT DEFINED VS_PATH (
+          echo Visual Studio Build Tools not found! && exit /b 1
+        )
+        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+        CALL "%VS_VARS_CMD%" || exit /b 1
+        where cl || (echo cl.exe not found in PATH && exit /b 1)
+
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        cmake -B "%GITHUB_WORKSPACE%\build" ^
           -DCMAKE_CXX_COMPILER=cl ^
           -DCMAKE_C_COMPILER=cl ^
           -DCMAKE_BUILD_TYPE=Release ^
           -G "Ninja" ^
           -S "%GITHUB_WORKSPACE%"
 
-    - name: Build
+    - name: Build (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
-      run: cmake --build "%GITHUB_WORKSPACE%/build" --config Release
+      run: cmake --build "%GITHUB_WORKSPACE%\build" --config Release
 
-    - name: Test
+    - name: Test (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
-      working-directory: "%GITHUB_WORKSPACE%/build"
+      working-directory: "%GITHUB_WORKSPACE%\build"
       run: ctest --output-on-failure --build-config Release
