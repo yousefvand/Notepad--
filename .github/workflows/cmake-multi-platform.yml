@@ -29,23 +29,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    ### Ubuntu Dependencies
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build \
-            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
-        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
-
-    ### macOS Dependencies
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install ninja qt
-        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
-
     ### Windows Setup with Cached Qt Source Compilation
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -55,6 +38,8 @@ jobs:
         choco install ninja -y
         choco install python3 -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install llvm -y
+        pip install html5lib
 
     - name: Cache Qt Source (Windows)
       if: matrix.os == 'windows-latest'
@@ -99,7 +84,9 @@ jobs:
           echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
         )
         cd "%QT_SOURCE%\qtbase"
-        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja || exit /b 1
+        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
+          -DFEATURE_clang=ON ^
+          -DFEATURE_clangcpp=ON || exit /b 1
         IF NOT EXIST build.ninja (
           echo "build.ninja not generated. Exiting." && exit /b 1
         )
