@@ -55,7 +55,7 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         choco install python3 -y
-        choco install gperf -y
+        choco install bison -y
         choco install llvm -y
         pip install html5lib
 
@@ -102,8 +102,15 @@ jobs:
         call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
           -DFEATURE_clang=ON ^
           -DFEATURE_clangcpp=ON || exit /b 1
-        cmake --build . --parallel || exit /b 1
-        cmake --install . || exit /b 1
+
+        REM Verify if build.ninja exists
+        IF NOT EXIST build.ninja (
+          echo "Error: build.ninja not generated. Check configuration step for issues." && exit /b 1
+        )
+
+        REM Proceed with the build and install steps
+        ninja || exit /b 1
+        ninja install || exit /b 1
 
     - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
