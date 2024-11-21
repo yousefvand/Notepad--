@@ -29,41 +29,54 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    ### Windows Setup with Cached Qt Source Compilation
+    ### Ubuntu Dependencies
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
+        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
+
+    ### macOS Dependencies
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install ninja qt
+        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
+
+    ### Windows Setup
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
         choco install visualstudio2022buildtools -y
         choco install ninja -y
-        choco install python3 -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install llvm -y
+        choco install python3 -y
         pip install html5lib
 
     - name: Cache Qt Source (Windows)
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
       with:
-        path: D:/qt-source
-        key: windows-qt-source-6.5.3
+        path: ${{ runner.temp }}/qt-source
+        key: qt-source-6.5.3
 
-    - name: Download Qt Source (Windows)
+    - name: Download Qt Source if Not Cached (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $qtSourceDir = "D:/qt-source"
-        $qtZip = "$qtSourceDir/qt-everywhere-src-6.5.3.zip"
-
-        if (-Not (Test-Path "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase/configure.bat")) {
-          Write-Host "Qt source not found in cache. Downloading..."
+        $qtSourceDir = "$env:TEMP\qt-source"
+        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          Write-Host "Downloading Qt Source"
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
-        } else {
-          Write-Host "Qt source found in cache."
         }
-        dir "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase"
+        dir "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
 
     - name: Build and Install Qt from Source (Windows)
       if: matrix.os == 'windows-latest'
@@ -78,8 +91,8 @@ jobs:
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
 
-        REM Configure and build Qt
-        SET QT_SOURCE=D:/qt-source/qt-everywhere-src-6.5.3
+        REM Build Qt from source
+        SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3
         IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
           echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
         )
@@ -87,11 +100,8 @@ jobs:
         call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
           -DFEATURE_clang=ON ^
           -DFEATURE_clangcpp=ON || exit /b 1
-        IF NOT EXIST build.ninja (
-          echo "build.ninja not generated. Exiting." && exit /b 1
-        )
-        ninja || exit /b 1
-        ninja install || exit /b 1
+        cmake --build . --parallel
+        cmake --install .
 
     - name: Set Qt Environment Variables (Windows)
       if: matrix.os == 'windows-latest'
