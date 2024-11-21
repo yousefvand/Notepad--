@@ -134,9 +134,9 @@ jobs:
 
     # Build the project
     - name: Build
-      run: cmake --build "${{ github.workspace }}\build" --config Release
+      run: cmake --build "${{ github.workspace }}/build" --config Release
 
     # Run tests
     - name: Test
-      working-directory: "${{ github.workspace }}\build"
+      working-directory: "${{ github.workspace }}/build"
       run: ctest --output-on-failure --build-config Release
