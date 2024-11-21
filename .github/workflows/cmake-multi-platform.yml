@@ -57,26 +57,26 @@ jobs:
         choco install python3 -y
         pip install html5lib
 
-    - name: Cache Qt Source (Windows)
+    - name: Restore Qt Source Cache (Windows)
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
       with:
-        path: ${{ runner.temp }}/qt-source
+        path: D:/qt-source
         key: qt-source-6.5.3
 
-    - name: Download Qt Source if Not Cached (Windows)
+    - name: Download Qt Source if Cache Miss (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $qtSourceDir = "$env:TEMP\qt-source"
-        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
-        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+        $qtSourceDir = "D:/qt-source"
+        $qtZip = "$qtSourceDir/qt-everywhere-src-6.5.3.zip"
+        if (-Not (Test-Path "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase/configure.bat")) {
           Write-Host "Downloading Qt Source"
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         }
-        dir "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
+        dir "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase"
 
     - name: Build and Install Qt from Source (Windows)
       if: matrix.os == 'windows-latest'
@@ -92,7 +92,7 @@ jobs:
         CALL "%VS_VARS_CMD%" || exit /b 1
 
         REM Build Qt from source
-        SET QT_SOURCE=%TEMP%\qt-source\qt-everywhere-src-6.5.3
+        SET QT_SOURCE=D:/qt-source/qt-everywhere-src-6.5.3
         IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
           echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
         )
