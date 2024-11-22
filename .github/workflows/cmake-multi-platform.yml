@@ -104,7 +104,8 @@ jobs:
         call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
           -DFEATURE_clang=ON ^
           -DFEATURE_clangcpp=ON ^
-          -DLLVM_INSTALL_DIR="C:\Program Files\LLVM" || exit /b 1
+          -DLLVM_INSTALL_DIR=C:/Program Files/LLVM ^
+          -Wno-dev || exit /b 1
 
         REM Verify if build.ninja exists
         IF NOT EXIST build.ninja (
