@@ -1,3 +1,4 @@
+#include <QCoreApplication>
 #include "replace.h"
 
 bool Replace::replaceNext() {
