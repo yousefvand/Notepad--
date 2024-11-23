@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.0.52
+
+- Implemented:
+- Search Menu -> Find System completed
+
 ## 0.0.51
 
 - Implemented:

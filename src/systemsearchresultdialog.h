@@ -24,14 +24,10 @@ public:
     void setSearchOptions(SearchOptions searchOptions);
 
 protected:
-    void closeEvent(QCloseEvent *event) override {
-        qWarning() << "Window is closing. Cleaning up resources...";
-        cleanupResources();
-        // Optionally accept or ignore the event
-        event->accept(); // or event->ignore();
-    }
+    void closeEvent(QCloseEvent *event) override;
 
 signals:
+    void dialogClosed();
     void openFileAtMatch(const QString &filePath, int lineNumber);
 
 private slots:

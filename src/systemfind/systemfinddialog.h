@@ -5,6 +5,7 @@
 #include <QThreadPool>
 #include <QCloseEvent>
 #include "systemfind.h"
+#include <atomic>
 #include "../search/searchoptions.h"
 #include "../systemsearchresultdialog.h"
 
@@ -41,7 +42,7 @@ signals:
 private slots:
     void handleFileProcessed(const FileSearchResults& result);
 
-    void updateProgressDisplay(int processedFiles, int totalFiles);
+    void updateProgressDisplay(int processedFiles);
 
     void onAdvancedOptionsToggled(bool checked);
 
@@ -68,14 +69,14 @@ private:
     void saveLocation(const QString& location);
     void savePattern(const QString& pattern);
     void saveHistory();
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void UpdateSearchOptions();
     void showResultDialog();
 
-    void countTextFiles(const QString& directory, const QRegularExpression& pattern);
+    void countTextFiles(const QString& directory, bool includeSubdirectories, const QRegularExpression& pattern);
     void processFile(const QString& filePath);
-    int m_totalFiles = 0;
-    int m_processedFiles = 0;
+    QSet<QString> m_files;
+    std::atomic<int> m_processedFiles{0};
     QThreadPool m_threadPool;
     SystemFind* m_find;
     SystemSearchResultDialog* m_systemSearchResultDialog;

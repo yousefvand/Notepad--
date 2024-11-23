@@ -210,3 +210,9 @@ void SystemReplaceDialog::toggleAdvancedOptions(bool checked) {
 
 
 
+
+void SystemReplaceDialog::on_findNext_clicked()
+{
+
+}
+

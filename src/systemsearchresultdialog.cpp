@@ -56,8 +56,10 @@ SystemSearchResultDialog::~SystemSearchResultDialog()
     delete ui;
 }
 
-void SystemSearchResultDialog::cleanupResources() {
-    qInfo() << "Cleaning up resources. Closing window...";
+void SystemSearchResultDialog::closeEvent(QCloseEvent* event) {
+    emit dialogClosed();
+    QDialog::closeEvent(event);
+    event->accept();
 }
 
 // TODO: Pass SearchOptions to this function so it can highlight all keywords.
@@ -166,3 +168,5 @@ void SystemSearchResultDialog::handleDoubleClick(const QModelIndex &index) {
 void SystemSearchResultDialog::setSearchOptions(SearchOptions searchOptions) {
     m_searchOptions = searchOptions;
 }
+
+

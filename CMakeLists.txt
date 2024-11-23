@@ -73,31 +73,31 @@ set(PROJECT_SOURCES
     src/indentation/indentationdialog.h
     src/indentation/indentationmanager.cpp
     src/indentation/indentationmanager.h
-    src/find/finddialog.cpp
-    src/find/finddialog.h
     src/replace/replacedialog.cpp
     src/replace/replacedialog.h
     src/replace/replace.cpp
     src/replace/replace.h
-    src/find/find.cpp
-    src/find/find.h
     src/search/search.cpp
     src/search/search.h
     src/search/searchoptions.h
-    src/systemfind/systemfinddialog.cpp
-    src/systemfind/systemfinddialog.h
-    src/systemreplace/systemreplacedialog.cpp
-    src/systemreplace/systemreplacedialog.h
+    src/search/filesearchworker.cpp
+    src/search/filesearchworker.h
+    src/find/finddialog.cpp
+    src/find/finddialog.h
+    src/find/find.cpp
+    src/find/find.h
     src/systemfind/systemfind.cpp
     src/systemfind/systemfind.h
+    src/systemfind/systemfinddialog.cpp
+    src/systemfind/systemfinddialog.h
+    src/systemfind/richtextdelegate.cpp
+    src/systemfind/richtextdelegate.h
+    src/systemreplace/systemreplacedialog.cpp
+    src/systemreplace/systemreplacedialog.h
     src/systemreplace/systemreplace.cpp
     src/systemreplace/systemreplace.h
     src/systemsearchresultdialog.cpp
     src/systemsearchresultdialog.h
-    src/search/filesearchworker.cpp
-    src/search/filesearchworker.h
-    src/systemfind/richtextdelegate.cpp
-    src/systemfind/richtextdelegate.h
     src/systemtextdelegate.cpp
     src/systemtextdelegate.h
     ${PROJECT_UI}

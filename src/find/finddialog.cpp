@@ -146,7 +146,7 @@ void FindDialog::on_findNext_clicked()
 {
     if (!m_find) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -161,7 +161,7 @@ void FindDialog::on_findPrevious_clicked()
 {
     if (!m_find) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -176,7 +176,7 @@ void FindDialog::on_selectAll_clicked()
 {
     if (!m_find) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;

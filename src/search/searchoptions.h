@@ -4,6 +4,16 @@
 #include <QVector>
 #include <QPair>
 
+// Enum to represent the role
+enum class Role {
+    FindNext,
+    FindPrevious,
+    SelectAll,
+    ReplaceNext,
+    ReplacePrevious,
+    ReplaceAll
+};
+
 // Enum to represent the search method
 enum class FindMethod {
     SimpleText,
@@ -13,10 +23,11 @@ enum class FindMethod {
 
 // Struct to hold search options
 struct SearchOptions {
+    Role role;                     // Search role
     QString keyword;               // The search keyword
     QString replaceText;           // Text to replace with
     QString location;              // The path to look for files
-    QString pattern;               // The comma deliminated file patterns by * and ?
+    QString pattern;               // The regex for file name
     FindMethod findMethod;         // The search method (simple text, regex, special characters)
     bool matchWholeWord;           // Flag to indicate if we match the whole word
     bool matchCase;                // Flag to indicate case sensitivity

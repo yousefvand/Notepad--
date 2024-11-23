@@ -314,7 +314,7 @@ bool MainWindow::isSmartIndentChecked() const {
 void MainWindow::on_actionFind_Next_triggered()
 {
     if (!findDialog->getFind()) {
-        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        qDebug() << "findDialog is null.";
         return;
     }
 
@@ -324,7 +324,7 @@ void MainWindow::on_actionFind_Next_triggered()
 void MainWindow::on_actionFind_previoud_triggered()
 {
     if (!findDialog->getFind()) {
-        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        qDebug() << "findDialog is null.";
         return;
     }
 

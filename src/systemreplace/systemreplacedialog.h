@@ -20,6 +20,8 @@ private slots:
 
     void toggleAdvancedOptions(bool checked);
 
+    void on_findNext_clicked();
+
 private:
     Ui::SystemReplaceDialog *ui;
 
