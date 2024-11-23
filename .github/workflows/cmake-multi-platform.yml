@@ -56,6 +56,7 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         choco install python3 -y
         choco install gperf -y
+        choco install bison -y
         choco install llvm -y
         pip install html5lib
 
