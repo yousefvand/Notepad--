@@ -54,27 +54,27 @@ void FileOperations::openDocumentTriggered() {
     }
 }
 
-void FileOperations::openDocument(const QString& filePath) {
+Document* FileOperations::openDocument(const QString& filePath) {
     qDebug() << "Opening document: " << filePath;
 
     // Ensure m_mainWindow is valid
     if (!m_mainWindow) {
         qDebug() << "Error: MainWindow instance is null!";
-        return;
+        return nullptr;
     }
 
     // Ensure UI and documentsTab are valid
     auto ui = m_mainWindow->getUi();
     if (!ui || !ui->documentsTab) {
         qDebug() << "Error: UI or documentsTab is not initialized!";
-        return;
+        return nullptr;
     }
 
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "Error: Unable to open file: " << filePath;
         QMessageBox::warning(m_mainWindow, tr("Error"), tr("Failed to open the file."));
-        return;
+        return nullptr;
     }
 
     if (ui->documentsTab->count() > 0) {
@@ -108,6 +108,7 @@ void FileOperations::openDocument(const QString& filePath) {
 
     // Set the new document as the current tab
     ui->documentsTab->setCurrentWidget(newDoc);
+    return newDoc;
 }
 
 void FileOperations::newDocument() {

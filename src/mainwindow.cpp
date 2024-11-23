@@ -1,7 +1,10 @@
 #include <QTabBar>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QCheckBox>
+#include <QPointer>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QPlainTextEdit>
 #include "mainwindow.h"
 #include "codeeditor.h"
@@ -14,6 +17,8 @@
 #include "indentation/indentationdialog.h"
 #include "find/finddialog.h"
 #include "replace/replacedialog.h"
+#include "systemfind/systemfinddialog.h"
+#include "systemreplace/systemreplacedialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -309,7 +314,7 @@ bool MainWindow::isSmartIndentChecked() const {
 void MainWindow::on_actionFind_Next_triggered()
 {
     if (!findDialog->getFind()) {
-        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        qDebug() << "findDialog is null.";
         return;
     }
 
@@ -319,7 +324,7 @@ void MainWindow::on_actionFind_Next_triggered()
 void MainWindow::on_actionFind_previoud_triggered()
 {
     if (!findDialog->getFind()) {
-        qDebug() << "findDialog is null. Searching for keyword:" << findDialog->getSearchOptions()->keyword;
+        qDebug() << "findDialog is null.";
         return;
     }
 
@@ -342,36 +347,96 @@ void MainWindow::on_action_Replace_triggered()
 
 void MainWindow::on_actionReplace_N_ext_triggered()
 {
-    qDebug() << "Implement on_actionReplace_N_ext_triggered";
-    // TODO: Implement
+    if (!replaceDialog->getReplace()) {
+        qDebug() << "replaceDialog is null.";
+        return;
+    }
+
+    replaceDialog->getReplace()->replaceNext();
 }
 
 void MainWindow::on_actionReplace_P_revious_triggered()
 {
-    qDebug() << "Implement on_actionReplace_P_revious_triggered";
-    // TODO: Implement
+    if (!replaceDialog->getReplace()) {
+        qDebug() << "findDialog is null.";
+        return;
+    }
+
+    replaceDialog->getReplace()->replacePrevious();
 }
 
-void MainWindow::on_actionFind_System_triggered()
-{
-    qDebug() << "Implement on_actionFind_System_triggered";
-    // TODO: Implement
+void MainWindow::on_actionFind_System_triggered() {
+    qDebug() << "on_actionFind_System_triggered called";
+
+    if (!m_systemFindDialog) {
+        qDebug() << "Creating new SystemFindDialog";
+
+        m_systemFindDialog = new SystemFindDialog(this);
+        m_systemFindDialog->setWindowModality(Qt::NonModal);
+        m_systemFindDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+        // Reset pointer when dialog is destroyed
+        connect(m_systemFindDialog, &QObject::destroyed, this, [this]() {
+            qDebug() << "SystemFindDialog destroyed. Resetting pointer.";
+            m_systemFindDialog = nullptr;
+        });
+
+        // Ensure connections are established
+        setupSearchResultDialogConnections();
+
+        m_systemFindDialog->show();
+    } else {
+        qDebug() << "SystemFindDialog already exists. Bringing it to the front.";
+        m_systemFindDialog->raise();
+        m_systemFindDialog->activateWindow();
+    }
+}
+
+void MainWindow::setupSearchResultDialogConnections() {
+    QTimer::singleShot(0, this, [this]() {
+        SystemSearchResultDialog* m_systemSearchResultDialog =
+            m_systemFindDialog->findChild<SystemSearchResultDialog *>("SystemSearchResultDialog");
+
+        if (m_systemSearchResultDialog) {
+            qDebug() << "SystemSearchResultDialog found:" << m_systemSearchResultDialog;
+
+            // Re-establish the signal-slot connection
+            connect(m_systemSearchResultDialog, &SystemSearchResultDialog::openFileAtMatch,
+                    this, &MainWindow::openSearchResult, Qt::UniqueConnection);
+
+            qDebug() << "Signal-Slot Connection for SystemSearchResultDialog re-established.";
+        } else {
+            qDebug() << "SystemSearchResultDialog not found. Retrying...";
+            QTimer::singleShot(100, this, &MainWindow::setupSearchResultDialogConnections);
+        }
+    });
 }
 
 void MainWindow::on_actionReplace_S_ystem_triggered()
 {
-    qDebug() << "Implement on_actionReplace_S_ystem_triggered";
-    // TODO: Implement
+    SystemReplaceDialog* systemReplaceDialog = new SystemReplaceDialog(this);
+    systemReplaceDialog->setWindowModality(Qt::NonModal);
+    systemReplaceDialog->show();
 }
 
 void MainWindow::on_actionGo_to_Line_in_Text_triggered()
 {
-    Helpers::gotoLineInText(this, getCurrentDocument()->editor());
+    int lineNumber = QInputDialog::getInt(this, "Go to Line in Text", "Enter line number:");
+    if (lineNumber < 1) {
+        QMessageBox::warning(this, "Warning", "Enter a valid number.", QMessageBox::Ok);
+    } else {
+        getCurrentDocument()->editor()->goToLineInText(lineNumber);
+    }
 }
 
 void MainWindow::on_actionGo_to_Line_in_Editor_triggered()
 {
-    Helpers::gotoLineInEditor(this, getCurrentDocument()->editor());
+    int lineNumber = QInputDialog::getInt(this, "Go to Line in Editor", "Enter line number:");
+    if (lineNumber < 1) {
+        QMessageBox::warning(this, "Warning", "Enter a valid number.", QMessageBox::Ok);
+    } else {
+        getCurrentDocument()->editor()->gotoLineInEditor(lineNumber);
+    }
 }
 
 void MainWindow::on_action_Find_triggered() {
@@ -405,12 +470,40 @@ void MainWindow::on_action_Find_triggered() {
 
 
 
+/* Helper Functions */
+
+
+
+
+
+// FIXME: Wrong line selected
+void MainWindow::openSearchResult(const QString &filePath, int lineNumber) {
+    qInfo() << "openSearchResult called. File Path:" << filePath << ", Line Number:" << lineNumber;
+    Document* doc = fileOperations->openDocument(filePath);
+    if (!doc || !doc->editor()) {
+        qFatal("Document or editor is null.");
+        return;
+    }
+
+    // Use a weak pointer to ensure the document is still valid when the timer fires
+    QPointer<Document> safeDoc(doc);
+
+    QTimer::singleShot(200, this, [lineNumber, safeDoc]() {
+        if (safeDoc && safeDoc->editor()) {
+            safeDoc->editor()->goToLineInText(lineNumber);
+        } else {
+            qWarning() << "Document or editor is no longer available.";
+        }
+    });
+}
+
+
+
 
 void MainWindow::onActionZ80Triggered()
 {
     qDebug() << "Z80 action triggered!";
 }
-
 
 
 

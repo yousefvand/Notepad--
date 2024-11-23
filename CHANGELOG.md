@@ -1,5 +1,36 @@
 # Change Log
 
+## 0.0.53
+
+- Implemented:
+- Search Menu -> Find System revised
+
+
+## 0.0.52
+
+- Implemented:
+- Search Menu -> Find System completed
+
+## 0.0.51
+
+- Implemented:
+- Search Menu -> Find System (partially 4)
+
+## 0.0.50
+
+- Implemented:
+- Search Menu -> Find System (partially 3)
+
+## 0.0.49
+
+- Implemented:
+- Search Menu -> Find System (partially 2)
+
+## 0.0.48
+
+- Implemented:
+- Search Menu -> Find System (partially)
+
 ## 0.0.47
 
 - Implemented:

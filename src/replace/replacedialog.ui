@@ -120,12 +120,15 @@
      <rect>
       <x>18</x>
       <y>32</y>
-      <width>121</width>
+      <width>131</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>Replace &amp;plain text</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QRadioButton" name="replaceRegularExpression">
@@ -133,7 +136,7 @@
      <rect>
       <x>17</x>
       <y>60</y>
-      <width>221</width>
+      <width>231</width>
       <height>23</height>
      </rect>
     </property>

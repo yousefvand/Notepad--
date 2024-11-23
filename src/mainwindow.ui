@@ -1989,10 +1989,16 @@
    <property name="text">
     <string>Find &amp;System</string>
    </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
   </action>
   <action name="actionReplace_S_ystem">
    <property name="text">
     <string>Replace S&amp;ystem</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F5</string>
    </property>
   </action>
   <action name="actionGo_to_Line_in_Text">

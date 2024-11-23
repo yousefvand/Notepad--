@@ -17,7 +17,7 @@ public:
 
     static bool closeDocument(Document* doc);
     // This method moves the logic for opening a document from MainWindow
-    void openDocument(const QString& filePath);
+    Document* openDocument(const QString& filePath);
     void openDocumentTriggered();
     void newDocument();
     void openFolder(MainWindow* mainWindow);

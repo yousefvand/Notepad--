@@ -189,7 +189,7 @@ void ReplaceDialog::on_findNext_clicked()
 {
     if (!m_replace) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -204,7 +204,7 @@ void ReplaceDialog::on_replaceNext_clicked()
 {
     if (!m_replace) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -212,7 +212,7 @@ void ReplaceDialog::on_replaceNext_clicked()
 
     saveKeyword(keyword);  // Save without modifying UI
 
-    QString replaceWith = ui->comboBoxReplace->currentText().trimmed();
+    QString replaceWith = ui->comboBoxReplace->currentText();
     if (replaceWith.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a replace keyword.");
         return;
@@ -227,7 +227,7 @@ void ReplaceDialog::on_findPrevious_clicked()
 {
     if (!m_replace) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -242,7 +242,7 @@ void ReplaceDialog::on_replacePrevious_clicked()
 {
     if (!m_replace) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -250,7 +250,7 @@ void ReplaceDialog::on_replacePrevious_clicked()
 
     saveKeyword(keyword);  // Save without modifying UI
 
-    QString replaceWith = ui->comboBoxReplace->currentText().trimmed();
+    QString replaceWith = ui->comboBoxReplace->currentText();
     if (replaceWith.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a replace keyword.");
         return;
@@ -265,7 +265,7 @@ void ReplaceDialog::on_selectAll_clicked()
 {
     if (!m_replace) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -280,7 +280,7 @@ void ReplaceDialog::on_replaceAll_clicked()
 {
     if (!m_replace) return;
 
-    QString keyword = ui->comboBoxFind->currentText().trimmed();
+    QString keyword = ui->comboBoxFind->currentText();
     if (keyword.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a search keyword.");
         return;
@@ -288,7 +288,7 @@ void ReplaceDialog::on_replaceAll_clicked()
 
     saveKeyword(keyword);  // Save without modifying UI
 
-    QString replaceWith = ui->comboBoxReplace->currentText().trimmed();
+    QString replaceWith = ui->comboBoxReplace->currentText();
     if (replaceWith.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter a replace keyword.");
         return;

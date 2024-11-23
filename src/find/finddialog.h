@@ -4,6 +4,7 @@
 #include <QTextEdit>
 #include "find.h"
 #include "../codeeditor.h"
+#include "../search/searchoptions.h"
 
 namespace Ui {
 class FindDialog;
@@ -17,13 +18,6 @@ public:
     explicit FindDialog(QWidget *parent = nullptr);
     ~FindDialog();
 
-    enum FindMode {
-        PlainText,
-        RegularExpression,
-        SpecialCharacters
-    };
-
-    void performFind();
     static void showDialog(QWidget *parent = nullptr);
     QString getFindText() const;
     bool findPlainTextSelected() const;
@@ -37,7 +31,7 @@ public:
     SearchOptions* getSearchOptions();
 
 signals:
-    void findRequested(const QString& findText, bool matchCase, bool matchWholeWord, FindDialog::FindMode mode);
+    void findRequested(const QString& findText, bool matchCase, bool matchWholeWord, FindMethod mode);
 
 private slots:
 
@@ -69,7 +63,7 @@ private slots:
 
 private:
     Ui::FindDialog *ui;
-    FindMode selectedFindMode() const;
+    FindMethod selectedFindMethod() const;
     SearchOptions* m_searchOptions;
     Find* m_find;
     CodeEditor* m_editor = nullptr;
