@@ -1,6 +1,7 @@
 #include "codeeditor.h"
 #include <QPainter>
 #include <QTextBlock>
+#include <QScrollBar>
 #include "helpers.h"
 
 CodeEditor::CodeEditor(QWidget *parent)
@@ -153,10 +154,62 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
 }
 
 void CodeEditor::applyIndentation(bool useTabs, int indentationWidth) {
-    // TODO: Implement indentation
-    qDebug() << "Indentation. Use Tabs: " << useTabs << ". Indentation width: " << indentationWidth;
+    QTextCursor cursor = textCursor();
+    QString indentation = useTabs ? "\t" : QString(indentationWidth, ' ');
+    cursor.insertText(indentation);
 }
 
 QTabWidget* CodeEditor::DocumentsTab() {
     return m_documentsTab;
 }
+
+void CodeEditor::highlightAllOccurrences(const QString& keyword) {
+    QList<QTextEdit::ExtraSelection> extraSelections;
+
+    QTextCursor cursor(document());
+    QTextCursor highlightCursor(document());
+    QTextCharFormat highlightFormat;
+    highlightFormat.setBackground(Qt::cyan);
+
+    while (!cursor.isNull() && !cursor.atEnd()) {
+        cursor = document()->find(keyword, cursor);
+        if (!cursor.isNull()) {
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = cursor;
+            selection.format = highlightFormat;
+            extraSelections.append(selection);
+        }
+    }
+
+    setExtraSelections(extraSelections);
+}
+
+void CodeEditor::goToLineInText(int lineNumber) {
+    if (lineNumber < 1 || lineNumber > document()->blockCount()) {
+        qWarning() << "Line number: " << lineNumber << ". Line number is out of range.";
+        return;
+    }
+
+    QTextCursor cursor(document()->findBlockByNumber(lineNumber - 1));
+    setTextCursor(cursor);
+    centerCursor(); // Ensure the cursor is centered in the view
+
+    qDebug() << "Moved to line:" << lineNumber;
+
+    // Log current cursor position
+    qDebug() << "Cursor position after move:" << textCursor().position();
+}
+
+void CodeEditor::gotoLineInEditor(int lineNumber) {
+    // Ensure the line number is within the valid range
+    if (lineNumber > 0 && lineNumber <= blockCount()) {
+        QTextCursor cursor = textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, lineNumber - 1);
+        setTextCursor(cursor);
+        centerCursor();
+    } else {
+        qWarning() << "Invalid Line Number: " << lineNumber << " .The specified line is out of range.";
+    }
+}
+
