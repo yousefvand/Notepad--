@@ -21,12 +21,15 @@ public:
     void highlightCurrentLine();
     void applyIndentation(bool useTabs, int indentationWidth);
     QTabWidget* DocumentsTab();
+    void highlightAllOccurrences(const QString& keyword);
+    void goToLineInText(int lineNumber);
+    void gotoLineInEditor(int lineNumber);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
 signals:
-    void textChanged();
+    void textChanged(); // FIXME: Remove this line.
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
