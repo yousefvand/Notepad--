@@ -29,9 +29,10 @@ SystemSearchResultDialog::SystemSearchResultDialog(QWidget *parent)
     header->setSectionResizeMode(0, QHeaderView::Stretch); // File Path column stretches
     header->setSectionResizeMode(1, QHeaderView::Interactive); // Matches column fixed but adjustable
     header->setStretchLastSection(false);
+    header->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     header->setSectionsMovable(true);
-    header->resizeSection(0, width() * 0.8); // Set initial size for 80% width for File Path
-    header->resizeSection(1, width() * 0.2); // Set initial size for 20% width for Matches
+    header->resizeSection(0, width() * 0.9); // Set initial size for 90% width for File Path
+    header->resizeSection(1, width() * 0.1); // Set initial size for 10% width for Matches
 
     ui->resultTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->resultTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -120,7 +121,6 @@ void SystemSearchResultDialog::addSearchResult(const FileSearchResults &result) 
     }
 }
 
-
 // FIXME: Line number is wrong
 void SystemSearchResultDialog::handleDoubleClick(const QModelIndex &index) {
     if (!index.isValid()) {
@@ -169,4 +169,80 @@ void SystemSearchResultDialog::setSearchOptions(SearchOptions searchOptions) {
     m_searchOptions = searchOptions;
 }
 
+void SystemSearchResultDialog::traverseKeywords(bool backward) {
+    static int currentKeywordIndex = -1; // Tracks the current keyword index
+    static QModelIndex previousItemIndex; // Tracks the previously highlighted index
 
+    // Reset the highlight of the previous item if it exists
+    if (previousItemIndex.isValid()) {
+        QStandardItem* previousItem = m_resultModel->itemFromIndex(previousItemIndex);
+        if (previousItem) {
+            QString originalText = previousItem->data(Qt::UserRole + 1).toString();
+            if (!originalText.isEmpty()) {
+                previousItem->setData(originalText, Qt::EditRole); // Restore original text
+            }
+        }
+    }
+
+    // Count total matches to handle wraparound
+    int totalMatches = 0;
+    for (int row = 0; row < m_resultModel->rowCount(); ++row) {
+        QStandardItem* fileItem = m_resultModel->item(row, 0);
+        if (!fileItem) continue;
+        totalMatches += fileItem->rowCount();
+    }
+
+    // Adjust the keyword index based on the traversal direction
+    if (backward) {
+        currentKeywordIndex--;
+        if (currentKeywordIndex < 0) {
+            currentKeywordIndex = totalMatches - 1; // Wrap around to the last match
+        }
+    } else {
+        currentKeywordIndex++;
+        if (currentKeywordIndex >= totalMatches) {
+            currentKeywordIndex = 0; // Wrap around to the first match
+        }
+    }
+
+    // Find and highlight the corresponding match
+    int matchCounter = 0;
+    QModelIndex nextItemIndex;
+    for (int row = 0; row < m_resultModel->rowCount(); ++row) {
+        QStandardItem* fileItem = m_resultModel->item(row, 0);
+        if (!fileItem) continue;
+
+        for (int subRow = 0; subRow < fileItem->rowCount(); ++subRow) {
+            QStandardItem* lineItem = fileItem->child(subRow, 0);
+            if (!lineItem) continue;
+
+            if (matchCounter == currentKeywordIndex) {
+                nextItemIndex = m_resultModel->indexFromItem(lineItem);
+
+                // Highlight the keyword with a cyan background
+                QString lineText = lineItem->data(Qt::EditRole).toString();
+                QString originalText = lineItem->data(Qt::UserRole + 1).toString();
+                if (originalText.isEmpty()) {
+                    originalText = lineText;
+                    lineItem->setData(originalText, Qt::UserRole + 1); // Store original text
+                }
+
+                QString highlightedLine = originalText;
+                highlightedLine.replace(
+                    QRegularExpression(QString("\\b%1\\b").arg(QRegularExpression::escape(m_searchOptions.keyword))),
+                    QString("<span style='background-color: cyan; color: black;'>%1</span>").arg(m_searchOptions.keyword));
+
+                lineItem->setData(highlightedLine, Qt::EditRole);
+
+                // Scroll to and select the highlighted item
+                ui->resultTreeView->scrollTo(nextItemIndex);
+                ui->resultTreeView->setCurrentIndex(nextItemIndex);
+
+                previousItemIndex = nextItemIndex; // Save the current item for the next call
+                return;
+            }
+
+            matchCounter++;
+        }
+    }
+}

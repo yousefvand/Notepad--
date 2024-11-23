@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.53
+
+- Implemented:
+- Search Menu -> Find System revised
+
+
 ## 0.0.52
 
 - Implemented:

@@ -22,6 +22,7 @@ public:
 
     void addSearchResult(const FileSearchResults &result);
     void setSearchOptions(SearchOptions searchOptions);
+    void traverseKeywords(bool backward);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

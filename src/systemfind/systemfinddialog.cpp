@@ -477,18 +477,25 @@ void SystemFindDialog::on_findNext_clicked()
     m_searchOptions->role = Role::FindNext;
     UpdateSearchOptions();
     saveHistory();
+    if (!m_systemSearchResultDialog) {
+        startSearchNext(*m_searchOptions);
+    } else {
+        m_systemSearchResultDialog->traverseKeywords(false);
+    }
     showResultDialog();
-    startSearchNext(*m_searchOptions);
 }
 
 void SystemFindDialog::on_findPrevious_clicked()
 {
-    m_files.clear();
     m_searchOptions->role = Role::FindPrevious;
     UpdateSearchOptions();
     saveHistory();
+    if (!m_systemSearchResultDialog) {
+        startSearchPrevious(*m_searchOptions);
+    } else {
+        m_systemSearchResultDialog->traverseKeywords(true);
+    }
     showResultDialog();
-    startSearchPrevious(*m_searchOptions);
 }
 
 void SystemFindDialog::on_selectAll_clicked()
