@@ -1,51 +1,3 @@
-name: CI Build
-
-on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main]
-
-jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: macos-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    ### Ubuntu Dependencies
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build \
-            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
-        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
-
-    ### macOS Dependencies
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install ninja qt
-        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
-
     ### Windows Setup
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -54,89 +6,65 @@ jobs:
         choco install visualstudio2022buildtools -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install python3 -y
+        choco install gperf -y
+        choco install llvm -y
+        pip install html5lib
 
-    - name: Configure CMake
+    - name: Restore Qt Source Cache (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      with:
+        path: D:\qt-source
+        key: qt-source-6.5.3
+        enableCrossOsArchive: false
+
+    - name: Download Qt Source if Cache Miss (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
       run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
+        $qtSourceDir = "D:\qt-source"
+        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          Write-Host "Cache not found. Downloading Qt Source..."
+          New-Item -ItemType Directory -Path $qtSourceDir -Force
+          Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
+          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
+        } else {
+          Write-Host "Qt source found in cache."
+        }
+        dir "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
 
-    - name: Build
-      run: cmake --build "${{ github.workspace }}/build" --config Release
+    - name: Build and Install Qt from Source (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        REM Locate Visual Studio Build Tools
+        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
+          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
+        IF NOT DEFINED VS_PATH (
+          echo Visual Studio Build Tools not found! && exit /b 1
+        )
+        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+        CALL "%VS_VARS_CMD%" || exit /b 1
 
-    - name: Test
-      working-directory: "${{ github.workspace }}/build"
-      run: ctest --output-on-failure --build-config Release
-### Windows Setup
-- name: Install dependencies (Windows)
-if: matrix.os == 'windows-latest'
-shell: powershell
-run: |
-  choco install visualstudio2022buildtools -y
-  choco install ninja -y
-  choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-  choco install python3 -y
-  choco install gperf -y
-  choco install llvm -y
-  pip install html5lib
+        REM Build Qt from source
+        SET QT_SOURCE=D:\qt-source\qt-everywhere-src-6.5.3
+        IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
+          echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
+        )
+        cd "%QT_SOURCE%\qtbase"
+        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
+          -DFEATURE_clang=ON ^
+          -DFEATURE_clangcpp=ON ^
+          -DLLVM_INSTALL_DIR="C:/Program Files/LLVM" ^
+          -Wno-dev || exit /b 1
 
-- name: Restore Qt Source Cache (Windows)
-if: matrix.os == 'windows-latest'
-uses: actions/cache@v3
-with:
-  path: D:\qt-source
-  key: qt-source-6.5.3
-  enableCrossOsArchive: false
+        REM Verify if build.ninja exists
+        IF NOT EXIST build.ninja (
+          echo "Error: build.ninja not generated. Check configuration step for issues." && exit /b 1
+        )
 
-- name: Download Qt Source if Cache Miss (Windows)
-if: matrix.os == 'windows-latest'
-shell: powershell
-run: |
-  $qtSourceDir = "D:\qt-source"
-  $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
-  if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
-    Write-Host "Cache not found. Downloading Qt Source..."
-    New-Item -ItemType Directory -Path $qtSourceDir -Force
-    Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
-    Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
-  } else {
-    Write-Host "Qt source found in cache."
-  }
-  dir "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase"
-
-- name: Build and Install Qt from Source (Windows)
-if: matrix.os == 'windows-latest'
-shell: cmd
-run: |
-  REM Locate Visual Studio Build Tools
-  FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
-    -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
-  IF NOT DEFINED VS_PATH (
-    echo Visual Studio Build Tools not found! && exit /b 1
-  )
-  SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
-  CALL "%VS_VARS_CMD%" || exit /b 1
-
-  REM Build Qt from source
-  SET QT_SOURCE=D:\qt-source\qt-everywhere-src-6.5.3
-  IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
-    echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
-  )
-  cd "%QT_SOURCE%\qtbase"
-  call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
-    -DFEATURE_clang=ON ^
-    -DFEATURE_clangcpp=ON ^
-    -DLLVM_INSTALL_DIR="C:/Program Files/LLVM" ^
-    -Wno-dev || exit /b 1
-
-  REM Verify if build.ninja exists
-  IF NOT EXIST build.ninja (
-    echo "Error: build.ninja not generated. Check configuration step for issues." && exit /b 1
-  )
-
-  REM Proceed with the build and install steps
-  ninja || exit /b 1
-  ninja install || exit /b 1
+        REM Proceed with the build and install steps
+        ninja || exit /b 1
+        ninja install || exit /b 1
