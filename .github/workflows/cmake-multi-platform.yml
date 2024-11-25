@@ -65,7 +65,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: D:\qt-source
-        key: qt-source-6.5.3-windows
+        key: qt-source-6.5.3
         restore-keys: |
           qt-source-
 
@@ -97,6 +97,17 @@ jobs:
         )
         SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         CALL "%VS_VARS_CMD%" || exit /b 1
+
+        REM Validate required tools
+        IF NOT EXIST "C:\Program Files\LLVM\bin\clang.exe" (
+          echo "LLVM tools not found! Check LLVM installation." && exit /b 1
+        )
+        IF NOT EXIST "C:\Program Files\gperf\gperf.exe" (
+          echo "gperf not found! Check gperf installation." && exit /b 1
+        )
+        IF NOT EXIST "C:\Program Files\bison\bison.exe" (
+          echo "bison not found! Check bison installation." && exit /b 1
+        )
 
         REM Build Qt from source
         SET QT_SOURCE=D:\qt-source\qt-everywhere-src-6.5.3
