@@ -66,12 +66,22 @@ jobs:
         $bisonPath = "C:\ProgramData\chocolatey\bin\bison.exe"
         if (-not (Test-Path $bisonPath)) {
           Write-Host "bison is not available via Chocolatey. Installing manually..."
-          $bisonUrl = "https://sourceforge.net/projects/gnuwin32/files/bison/2.4.1/bison-2.4.1-bin.zip/download"
+          $bisonUrl = "https://downloads.sourceforge.net/project/gnuwin32/bison/2.4.1/bison-2.4.1-bin.zip"
           $bisonDir = "C:\bison"
           $bisonZip = "$bisonDir\bison.zip"
           New-Item -ItemType Directory -Path $bisonDir -Force
-          Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonZip
-          Expand-Archive -Path $bisonZip -DestinationPath $bisonDir
+          
+          # Download the file
+          Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonZip -UseBasicParsing
+          
+          # Ensure the ZIP file exists and is valid
+          if (-not (Test-Path $bisonZip)) {
+            Write-Host "Error: bison ZIP file was not downloaded correctly."
+            exit 1
+          }
+          
+          # Extract the ZIP archive
+          Expand-Archive -Path $bisonZip -DestinationPath $bisonDir -Force
           $env:PATH += ";$bisonDir\bin"
           [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
         } else {
