@@ -77,7 +77,7 @@ jobs:
           $success = $false
           while (-not $success -and $retryCount -lt $maxRetries) {
             try {
-              Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonZip -UseBasicParsing
+              Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonZip -UseBasicParsing -MaximumRedirection 5
               $success = $true
             } catch {
               $retryCount++
@@ -92,13 +92,19 @@ jobs:
             exit 1
           }
           
-          # Extract the ZIP archive
-          try {
-            Expand-Archive -Path $bisonZip -DestinationPath $bisonDir -Force
-          } catch {
-            Write-Host "Error extracting bison ZIP file. Exiting."
+          # Extract the ZIP archive using 7-Zip
+          $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
+          if (-not (Test-Path $sevenZipPath)) {
+            choco install 7zip -y
+          }
+          Start-Process -FilePath $sevenZipPath -ArgumentList "x `"$bisonZip`" -o`"$bisonDir`" -y" -NoNewWindow -Wait
+          
+          # Ensure extraction succeeded
+          if (-not (Test-Path "$bisonDir\bin\bison.exe")) {
+            Write-Host "Error: bison could not be extracted. Exiting."
             exit 1
           }
+          
           $env:PATH += ";$bisonDir\bin"
           [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
         } else {
