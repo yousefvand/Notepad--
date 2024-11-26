@@ -60,16 +60,30 @@ jobs:
         choco install llvm -y
         pip install html5lib
 
-    - name: Validate gperf Installation
+    - name: Validate Required Tools
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
+        $bisonPath = (Get-Command bison).Source
         $gperfPath = (Get-Command gperf).Source
+        $clangPath = (Get-Command clang).Source
+        if (-not $bisonPath) {
+          Write-Host "bison is not available in the PATH. Reinstalling..."
+          choco install bison -y
+        } else {
+          Write-Host "bison found at $bisonPath"
+        }
         if (-not $gperfPath) {
           Write-Host "gperf is not available in the PATH. Reinstalling..."
           choco install gperf -y
         } else {
           Write-Host "gperf found at $gperfPath"
+        }
+        if (-not $clangPath) {
+          Write-Host "clang is not available in the PATH. Check LLVM installation."
+          exit 1
+        } else {
+          Write-Host "clang found at $clangPath"
         }
 
     - name: Restore Qt Source Cache (Windows)
