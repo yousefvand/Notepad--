@@ -66,7 +66,7 @@ jobs:
         $bisonPath = "C:\ProgramData\chocolatey\bin\bison.exe"
         if (-not (Test-Path $bisonPath)) {
           Write-Host "bison is not available via Chocolatey. Installing manually..."
-          $bisonUrl = "https://downloads.sourceforge.net/project/gnuwin32/bison/2.4.1/bison-2.4.1-bin.zip"
+          $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.zip"  # Reliable mirror
           $bisonDir = "C:\bison"
           $bisonZip = "$bisonDir\bison.zip"
           New-Item -ItemType Directory -Path $bisonDir -Force
@@ -77,14 +77,10 @@ jobs:
           $success = $false
           while (-not $success -and $retryCount -lt $maxRetries) {
             try {
-              Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonZip -UseBasicParsing -MaximumRedirection 5
-              
-              # Validate content type
-              $fileType = Get-Content $bisonZip -TotalCount 1
-              if ($fileType -match "html|error") {
-                throw "Downloaded file is not a valid archive"
+              $response = Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonZip -UseBasicParsing
+              if ($response.Headers["Content-Type"] -notmatch "application/zip") {
+                throw "Downloaded file is not a ZIP archive"
               }
-              
               $success = $true
             } catch {
               $retryCount++
@@ -92,7 +88,7 @@ jobs:
               Start-Sleep -Seconds 5
             }
           }
-
+  
           # Ensure the ZIP file exists and is valid
           if (-not (Test-Path $bisonZip) -or (Get-Item $bisonZip).Length -lt 100000) {
             Write-Host "Error: bison ZIP file is invalid or incomplete. Exiting."
