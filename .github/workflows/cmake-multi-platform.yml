@@ -60,31 +60,38 @@ jobs:
         choco install llvm -y
         pip install html5lib
 
-    - name: Validate Required Tools
+    - name: Validate and Add Missing Tools to PATH (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $bisonPath = (Get-Command bison).Source
-        $gperfPath = (Get-Command gperf).Source
-        $clangPath = (Get-Command clang).Source
-        if (-not $bisonPath) {
-          Write-Host "bison is not available in the PATH. Reinstalling..."
+        $bisonPath = "C:\ProgramData\chocolatey\bin\bison.exe"
+        $gperfPath = "C:\ProgramData\chocolatey\bin\gperf.exe"
+        $clangPath = "C:\Program Files\LLVM\bin\clang.exe"
+        
+        if (-not (Test-Path $bisonPath)) {
+          Write-Host "bison is not available. Reinstalling..."
           choco install bison -y
         } else {
           Write-Host "bison found at $bisonPath"
         }
-        if (-not $gperfPath) {
-          Write-Host "gperf is not available in the PATH. Reinstalling..."
+        
+        if (-not (Test-Path $gperfPath)) {
+          Write-Host "gperf is not available. Reinstalling..."
           choco install gperf -y
         } else {
           Write-Host "gperf found at $gperfPath"
         }
-        if (-not $clangPath) {
-          Write-Host "clang is not available in the PATH. Check LLVM installation."
+        
+        if (-not (Test-Path $clangPath)) {
+          Write-Host "clang is not available. Check LLVM installation."
           exit 1
         } else {
           Write-Host "clang found at $clangPath"
         }
+
+        # Add tools to PATH
+        $env:PATH += ";C:\ProgramData\chocolatey\bin;C:\Program Files\LLVM\bin"
+        [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
 
     - name: Restore Qt Source Cache (Windows)
       if: matrix.os == 'windows-latest'
