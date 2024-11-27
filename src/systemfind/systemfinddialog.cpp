@@ -38,8 +38,6 @@ SystemFindDialog::SystemFindDialog(QWidget *parent)
     // Connect advancedOptions checkbox to toggle advanced options visibility
     connect(ui->advancedOptions, &QCheckBox::toggled, this, &SystemFindDialog::toggleAdvancedOptions);
 
-    m_searchOptions->findMethod = FindMethod::SimpleText; // default method
-
     ui->comboBoxFind->installEventFilter(this);
     ui->comboBoxLocation->installEventFilter(this);
     ui->comboBoxPattern->installEventFilter(this);

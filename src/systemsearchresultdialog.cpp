@@ -1,14 +1,15 @@
 #include "systemsearchresultdialog.h"
 #include "ui_systemsearchresultdialog.h"
-#include "helpers.h"
 #include "systemtextdelegate.h"
 #include <QRegularExpression>
 #include <QStandardItem>
 #include <QMessageBox>
+#include <QFile>
 
 SystemSearchResultDialog::SystemSearchResultDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::SystemSearchResultDialog)
+    , m_unsavedChanges(false)
     , m_resultModel(new QStandardItemModel(this))
 {
     ui->setupUi(this);
@@ -57,10 +58,67 @@ SystemSearchResultDialog::~SystemSearchResultDialog()
     delete ui;
 }
 
-void SystemSearchResultDialog::closeEvent(QCloseEvent* event) {
-    emit dialogClosed();
-    QDialog::closeEvent(event);
-    event->accept();
+void SystemSearchResultDialog::markUnsavedChanges() {
+    m_unsavedChanges = true;
+}
+
+bool SystemSearchResultDialog::hasUnsavedChanges() const {
+    return m_unsavedChanges;
+}
+
+bool SystemSearchResultDialog::saveChanges() {
+    for (auto it = m_modifiedFiles.begin(); it != m_modifiedFiles.end(); ++it) {
+        QFile file(it.key());
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(it.key()));
+            return false; // Abort saving if a file fails
+        }
+
+        QTextStream out(&file);
+        out << it.value(); // Write the modified content
+        file.close();
+    }
+
+    m_unsavedChanges = false;
+    m_modifiedFiles.clear(); // Clear the tracked changes after saving
+    return true;
+}
+
+void SystemSearchResultDialog::closeEvent(QCloseEvent *event) {
+    if (hasUnsavedChanges()) {
+        QMessageBox::StandardButton response = QMessageBox::warning(
+            this,
+            tr("Unsaved Changes"),
+            tr("You have unsaved changes. Do you want to save them?"),
+            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+            QMessageBox::Cancel
+            );
+
+        switch (response) {
+        case QMessageBox::Save:
+            if (saveChanges()) {
+                emit dialogClosed();
+                QDialog::closeEvent(event);
+                event->accept(); // Allow closing
+            } else {
+                event->ignore(); // Cancel closing if saving fails
+            }
+            break;
+        case QMessageBox::Discard:
+            emit dialogClosed();
+            QDialog::closeEvent(event);
+            event->accept(); // Allow closing
+            break;
+        case QMessageBox::Cancel:
+        default:
+            event->ignore(); // Cancel closing
+            break;
+        }
+    } else {
+        emit dialogClosed();
+        QDialog::closeEvent(event);
+        event->accept(); // No unsaved changes, allow closing
+    }
 }
 
 // TODO: Pass SearchOptions to this function so it can highlight all keywords.
@@ -156,8 +214,7 @@ void SystemSearchResultDialog::handleDoubleClick(const QModelIndex &index) {
     int lineNumber = lineData.toInt();
     qDebug() << "File Path:" << filePath << "Retrieved Line Number:" << lineNumber;
 
-    if (lineNumber > 0) { // TODO: Remove MessageBox
-        //QMessageBox::information(this, "Double Click", QString("File: %1\nLine: %2").arg(filePath).arg(lineNumber));
+    if (lineNumber > 0) {
         qDebug() << "Emitting openFileAtMatch signal for File Path:" << filePath << "Line Number:" << lineNumber;
         emit openFileAtMatch(filePath, lineNumber);
     } else {
@@ -245,4 +302,175 @@ void SystemSearchResultDialog::traverseKeywords(bool backward) {
             matchCounter++;
         }
     }
+}
+
+QString SystemSearchResultDialog::removeHtmlTags(const QString& text) {
+    static const QRegularExpression htmlTagRegex("<[^>]*>");
+    QString cleanedText = text;
+    cleanedText.remove(htmlTagRegex);
+    return cleanedText;
+}
+
+void SystemSearchResultDialog::traverseAndReplaceKeywords(bool backward) {
+    static int currentKeywordIndex = -1; // Tracks the current keyword index
+    static QModelIndex previousItemIndex; // Tracks the previously highlighted index
+
+    // Calculate total matches
+    int totalMatches = 0;
+    for (int row = 0; row < m_resultModel->rowCount(); ++row) {
+        QStandardItem* fileItem = m_resultModel->item(row, 0);
+        if (!fileItem) continue;
+        totalMatches += fileItem->rowCount(); // Count sub-items (lines)
+    }
+
+    // Adjust the index for forward or backward traversal
+    if (backward) {
+        currentKeywordIndex--;
+        if (currentKeywordIndex < 0) currentKeywordIndex = totalMatches - 1; // Wrap to the last match
+    } else {
+        currentKeywordIndex++;
+        if (currentKeywordIndex >= totalMatches) currentKeywordIndex = 0; // Wrap to the first match
+    }
+
+    qDebug() << "Total matches:" << totalMatches;
+    qDebug() << "Current keyword index:" << currentKeywordIndex;
+
+    // Traverse matches
+    int matchCounter = 0;
+    QModelIndex nextItemIndex;
+    for (int row = 0; row < m_resultModel->rowCount(); ++row) {
+        QStandardItem* fileItem = m_resultModel->item(row, 0);
+        if (!fileItem) continue;
+
+        QString filePath = fileItem->text();
+        QString fileContent = m_modifiedFiles.value(filePath);
+
+        for (int subRow = 0; subRow < fileItem->rowCount(); ++subRow) {
+            QStandardItem* lineItem = fileItem->child(subRow, 0);
+            if (!lineItem) continue;
+
+            if (matchCounter == currentKeywordIndex) {
+                nextItemIndex = m_resultModel->indexFromItem(lineItem);
+
+                // Retrieve the line content and line number
+                QString lineText = lineItem->data(Qt::EditRole).toString();
+                int lineNumber = lineItem->data(Qt::UserRole).toInt() - 1; // Convert to 0-based index
+
+                qDebug() << "Processing line:" << lineText << "at line number:" << lineNumber;
+
+                // Remove <highlight> tags from the line
+                QString cleanLine = lineText;
+                static QRegularExpression htmlTagRegex("<[^>]*>");
+                cleanLine.remove(htmlTagRegex);
+                qDebug() << "Cleaned line text:" << cleanLine;
+
+                // Replace keyword in the cleaned line content
+                QRegularExpression regex(
+                    QString("\\b%1\\b").arg(QRegularExpression::escape(m_searchOptions.keyword)),
+                    m_searchOptions.matchCase ? QRegularExpression::NoPatternOption
+                                              : QRegularExpression::CaseInsensitiveOption
+                    );
+
+                QString replacedText = cleanLine;
+                replacedText.replace(regex, m_searchOptions.replaceText);
+                qDebug() << "Replaced line text:" << replacedText;
+
+                if (replacedText != cleanLine) {
+                    // Update tree view
+                    lineItem->setData(replacedText, Qt::EditRole);
+                    qDebug() << "Updated line in tree view to:" << replacedText;
+
+                    // Update in-memory file content
+                    QStringList fileLines = fileContent.split('\n');
+                    if (lineNumber >= 0 && lineNumber < fileLines.size()) {
+                        fileLines[lineNumber] = replacedText;
+                        m_modifiedFiles[filePath] = fileLines.join('\n');
+                        qDebug() << "Updated file content in memory for:" << filePath;
+                    }
+
+                    markUnsavedChanges();
+                } else {
+                    qDebug() << "No replacement made for line:" << cleanLine;
+                }
+
+                // Scroll to and select the item
+                ui->resultTreeView->scrollTo(nextItemIndex);
+                ui->resultTreeView->setCurrentIndex(nextItemIndex);
+
+                previousItemIndex = nextItemIndex; // Save current item index
+                return;
+            }
+
+            matchCounter++;
+        }
+    }
+
+    qDebug() << "Traversal completed. No match found for current index:" << currentKeywordIndex;
+}
+
+void SystemSearchResultDialog::replaceAllKeywords() {
+    qDebug() << "Starting replace all keywords";
+
+    // Iterate over all rows in the result model
+    for (int row = 0; row < m_resultModel->rowCount(); ++row) {
+        QStandardItem* fileItem = m_resultModel->item(row, 0);
+        if (!fileItem) continue;
+
+        QString filePath = fileItem->text();
+        QString fileContent = m_modifiedFiles.value(filePath);
+        QStringList fileLines = fileContent.split('\n');
+        bool fileModified = false;
+
+        // Iterate over sub-items (lines) in each file
+        for (int subRow = 0; subRow < fileItem->rowCount(); ++subRow) {
+            QStandardItem* lineItem = fileItem->child(subRow, 0);
+            if (!lineItem) continue;
+
+            // Retrieve the line content and line number
+            QString lineText = lineItem->data(Qt::EditRole).toString();
+            int lineNumber = lineItem->data(Qt::UserRole).toInt() - 1; // Convert to 0-based index
+
+            qDebug() << "Processing line:" << lineText << "at line number:" << lineNumber;
+
+            // Remove <highlight> tags from the line
+            QString cleanLine = lineText;
+            static QRegularExpression htmlTagRegex("<[^>]*>");
+            cleanLine.remove(htmlTagRegex);
+            qDebug() << "Cleaned line text:" << cleanLine;
+
+            // Replace keyword in the cleaned line content
+            QRegularExpression regex(
+                QString("\\b%1\\b").arg(QRegularExpression::escape(m_searchOptions.keyword)),
+                m_searchOptions.matchCase ? QRegularExpression::NoPatternOption
+                                          : QRegularExpression::CaseInsensitiveOption
+                );
+
+            QString replacedText = cleanLine;
+            replacedText.replace(regex, m_searchOptions.replaceText);
+            qDebug() << "Replaced line text:" << replacedText;
+
+            if (replacedText != cleanLine) {
+                // Update tree view
+                lineItem->setData(replacedText, Qt::EditRole);
+                qDebug() << "Updated line in tree view to:" << replacedText;
+
+                // Update in-memory file content
+                if (lineNumber >= 0 && lineNumber < fileLines.size()) {
+                    fileLines[lineNumber] = replacedText;
+                    fileModified = true;
+                }
+            } else {
+                qDebug() << "No replacement made for line:" << cleanLine;
+            }
+        }
+
+        // If the file was modified, update m_modifiedFiles
+        if (fileModified) {
+            m_modifiedFiles[filePath] = fileLines.join('\n');
+            qDebug() << "Updated file content in memory for:" << filePath;
+        }
+    }
+
+    markUnsavedChanges(); // Ensure unsaved changes are marked
+    qDebug() << "Replace all keywords completed.";
 }

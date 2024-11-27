@@ -23,6 +23,12 @@ public:
     void addSearchResult(const FileSearchResults &result);
     void setSearchOptions(SearchOptions searchOptions);
     void traverseKeywords(bool backward);
+    void traverseAndReplaceKeywords(bool backward);
+    void replaceAllKeywords();
+
+    void markUnsavedChanges();
+    bool saveChanges();
+    bool hasUnsavedChanges() const;
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -38,8 +44,11 @@ private:
     int extractLineNumber(const QString &line) const;
 
     Ui::SystemSearchResultDialog *ui;
+    bool m_unsavedChanges;
+    QMap<QString, QString> m_modifiedFiles;
     void cleanupResources();
     QStandardItemModel* m_resultModel;
     SearchOptions m_searchOptions;
     QStandardItemModel* m_treeModel;
+    QString removeHtmlTags(const QString& text);
 };

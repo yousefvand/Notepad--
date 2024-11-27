@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.0.54
+
+- Implemented:
+- Search Menu -> Finished
+
 ## 0.0.53
 
 - Implemented:
