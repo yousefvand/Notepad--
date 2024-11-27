@@ -68,17 +68,18 @@ jobs:
           Write-Host "bison is not available via Chocolatey. Installing manually..."
           $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.tar.gz"  # Reliable tarball source
           $bisonDir = "C:\bison"
-          $bisonTar = "$bisonDir\bison.tar.gz"
+          $bisonTarGz = "$bisonDir\bison.tar.gz"
+          $bisonTar = "$bisonDir\bison.tar"
           $bisonExtractDir = "$bisonDir\bison-3.8.2"
           New-Item -ItemType Directory -Path $bisonDir -Force
-          
+
           # Retry logic for downloading the file
           $maxRetries = 3
           $retryCount = 0
           $success = $false
           while (-not $success -and $retryCount -lt $maxRetries) {
             try {
-              Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonTar -UseBasicParsing
+              Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonTarGz -UseBasicParsing
               $success = $true
             } catch {
               $retryCount++
@@ -86,26 +87,35 @@ jobs:
               Start-Sleep -Seconds 5
             }
           }
-  
-          # Ensure the TAR file exists and is valid
-          if (-not (Test-Path $bisonTar) -or (Get-Item $bisonTar).Length -lt 100000) {
-            Write-Host "Error: bison TAR file is invalid or incomplete. Exiting."
+
+          # Ensure the TAR.GZ file exists and is valid
+          if (-not (Test-Path $bisonTarGz) -or (Get-Item $bisonTarGz).Length -lt 100000) {
+            Write-Host "Error: bison TAR.GZ file is invalid or incomplete. Exiting."
             exit 1
           }
-  
-          # Extract the TAR archive using 7-Zip
+
+          # Extract GZIP layer using 7-Zip
           $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
           if (-not (Test-Path $sevenZipPath)) {
             choco install 7zip -y
           }
+          Start-Process -FilePath $sevenZipPath -ArgumentList "e `"$bisonTarGz`" -o`"$bisonDir`" -y" -NoNewWindow -Wait
+
+          # Ensure TAR file exists
+          if (-not (Test-Path $bisonTar)) {
+            Write-Host "Error: bison TAR file could not be extracted. Exiting."
+            exit 1
+          }
+
+          # Extract TAR archive using 7-Zip
           Start-Process -FilePath $sevenZipPath -ArgumentList "x `"$bisonTar`" -o`"$bisonDir`" -y" -NoNewWindow -Wait
-  
+
           # Ensure extraction succeeded
           if (-not (Test-Path "$bisonExtractDir")) {
             Write-Host "Error: bison could not be extracted. Exiting."
             exit 1
           }
-          
+
           # Add bison binary to PATH
           $env:PATH += ";$bisonExtractDir\bin"
           [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
