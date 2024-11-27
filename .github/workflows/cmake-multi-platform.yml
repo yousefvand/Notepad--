@@ -66,9 +66,10 @@ jobs:
         $bisonPath = "C:\ProgramData\chocolatey\bin\bison.exe"
         if (-not (Test-Path $bisonPath)) {
           Write-Host "bison is not available via Chocolatey. Installing manually..."
-          $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.zip"  # Reliable mirror
+          $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.tar.gz"  # Reliable tarball source
           $bisonDir = "C:\bison"
-          $bisonZip = "$bisonDir\bison.zip"
+          $bisonTar = "$bisonDir\bison.tar.gz"
+          $bisonExtractDir = "$bisonDir\bison-3.8.2"
           New-Item -ItemType Directory -Path $bisonDir -Force
           
           # Retry logic for downloading the file
@@ -77,10 +78,7 @@ jobs:
           $success = $false
           while (-not $success -and $retryCount -lt $maxRetries) {
             try {
-              $response = Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonZip -UseBasicParsing
-              if ($response.Headers["Content-Type"] -notmatch "application/zip") {
-                throw "Downloaded file is not a ZIP archive"
-              }
+              Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonTar -UseBasicParsing
               $success = $true
             } catch {
               $retryCount++
@@ -89,26 +87,27 @@ jobs:
             }
           }
   
-          # Ensure the ZIP file exists and is valid
-          if (-not (Test-Path $bisonZip) -or (Get-Item $bisonZip).Length -lt 100000) {
-            Write-Host "Error: bison ZIP file is invalid or incomplete. Exiting."
+          # Ensure the TAR file exists and is valid
+          if (-not (Test-Path $bisonTar) -or (Get-Item $bisonTar).Length -lt 100000) {
+            Write-Host "Error: bison TAR file is invalid or incomplete. Exiting."
             exit 1
           }
   
-          # Extract the ZIP archive using 7-Zip
+          # Extract the TAR archive using 7-Zip
           $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
           if (-not (Test-Path $sevenZipPath)) {
             choco install 7zip -y
           }
-          Start-Process -FilePath $sevenZipPath -ArgumentList "x `"$bisonZip`" -o`"$bisonDir`" -y" -NoNewWindow -Wait
+          Start-Process -FilePath $sevenZipPath -ArgumentList "x `"$bisonTar`" -o`"$bisonDir`" -y" -NoNewWindow -Wait
   
           # Ensure extraction succeeded
-          if (-not (Test-Path "$bisonDir\bin\bison.exe")) {
+          if (-not (Test-Path "$bisonExtractDir")) {
             Write-Host "Error: bison could not be extracted. Exiting."
             exit 1
           }
           
-          $env:PATH += ";$bisonDir\bin"
+          # Add bison binary to PATH
+          $env:PATH += ";$bisonExtractDir\bin"
           [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
         } else {
           Write-Host "bison found at $bisonPath"
