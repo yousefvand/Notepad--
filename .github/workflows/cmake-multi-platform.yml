@@ -56,31 +56,87 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         choco install python3 -y
         choco install llvm -y
+        choco install gperf -y
+        pip install html5lib
 
-    - name: Validate and Add Missing Tools to PATH (Windows)
+    - name: Cache Qt Source (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      with:
+        path: D:\qt-source
+        key: qt-source-6.5.3
+        restore-keys: qt-source-
+
+    - name: Download Qt Source if Missing (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $gperfPath = "C:\ProgramData\chocolatey\bin\gperf.exe"
-        $clangPath = "C:\Program Files\LLVM\bin\clang.exe"
-        
-        if (-not (Test-Path $gperfPath)) {
-          Write-Host "gperf is not available. Reinstalling..."
-          choco install gperf -y
+        $qtSourceDir = "D:\qt-source"
+        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+
+        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+          Write-Host "Qt source not found in cache. Downloading..."
+          New-Item -ItemType Directory -Path $qtSourceDir -Force
+          Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
+          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         } else {
-          Write-Host "gperf found at $gperfPath"
-        }
-        
-        if (-not (Test-Path $clangPath)) {
-          Write-Host "clang is not available. Check LLVM installation."
-          exit 1
-        } else {
-          Write-Host "clang found at $clangPath"
+          Write-Host "Qt source found in cache."
         }
 
-        # Add tools to PATH
-        $env:PATH += ";C:\ProgramData\chocolatey\bin;C:\Program Files\LLVM\bin"
-        [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
+    - name: Build and Install Qt from Source (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        REM Locate Visual Studio Build Tools
+        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
+          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
+        IF NOT DEFINED VS_PATH (
+          echo Visual Studio Build Tools not found! && exit /b 1
+        )
+        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+        CALL "%VS_VARS_CMD%" || exit /b 1
 
-    # Restore Qt Source Cache and Build Workflow Continues...
-    # <Unchanged from previous sections for Windows-specific Qt source and build steps>
+        REM Build Qt from source
+        SET QT_SOURCE=D:\qt-source\qt-everywhere-src-6.5.3
+        IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
+          echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
+        )
+        cd "%QT_SOURCE%\qtbase"
+        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
+          -DFEATURE_clang=ON ^
+          -DFEATURE_clangcpp=ON ^
+          -DLLVM_INSTALL_DIR="C:/Program Files/LLVM" ^
+          -Wno-dev || exit /b 1
+
+        REM Verify if build.ninja exists
+        IF NOT EXIST build.ninja (
+          echo "Error: build.ninja not generated. Check configuration step for issues." && exit /b 1
+        )
+
+        REM Proceed with the build and install steps
+        ninja || exit /b 1
+        ninja install || exit /b 1
+
+    - name: Set Qt Environment Variables (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        echo "Qt6_DIR=C:\Qt\lib\cmake\Qt6" >> $env:GITHUB_ENV
+        echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
+        echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
+
+    - name: Configure CMake
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+
+    - name: Build
+      run: cmake --build "${{ github.workspace }}/build" --config Release
+
+    - name: Test
+      working-directory: "${{ github.workspace }}/build"
+      run: ctest --output-on-failure --build-config Release
