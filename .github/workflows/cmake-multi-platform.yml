@@ -55,73 +55,7 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         choco install python3 -y
-        choco install gperf -y
         choco install llvm -y
-        pip install html5lib
-
-    - name: Install bison manually if missing
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        $bisonPath = "C:\ProgramData\chocolatey\bin\bison.exe"
-        if (-not (Test-Path $bisonPath)) {
-          Write-Host "bison is not available via Chocolatey. Installing manually..."
-          $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.tar.gz"  # Reliable tarball source
-          $bisonDir = "C:\bison"
-          $bisonTarGz = "$bisonDir\bison.tar.gz"
-          $bisonTar = "$bisonDir\bison.tar"
-          $bisonExtractDir = "$bisonDir\bison-3.8.2"
-          New-Item -ItemType Directory -Path $bisonDir -Force
-
-          # Retry logic for downloading the file
-          $maxRetries = 3
-          $retryCount = 0
-          $success = $false
-          while (-not $success -and $retryCount -lt $maxRetries) {
-            try {
-              Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonTarGz -UseBasicParsing
-              $success = $true
-            } catch {
-              $retryCount++
-              Write-Host "Download failed. Retrying ($retryCount/$maxRetries)..."
-              Start-Sleep -Seconds 5
-            }
-          }
-
-          # Ensure the TAR.GZ file exists and is valid
-          if (-not (Test-Path $bisonTarGz) -or (Get-Item $bisonTarGz).Length -lt 100000) {
-            Write-Host "Error: bison TAR.GZ file is invalid or incomplete. Exiting."
-            exit 1
-          }
-
-          # Extract GZIP layer using 7-Zip
-          $sevenZipPath = "C:\Program Files\7-Zip\7z.exe"
-          if (-not (Test-Path $sevenZipPath)) {
-            choco install 7zip -y
-          }
-          Start-Process -FilePath $sevenZipPath -ArgumentList "e `"$bisonTarGz`" -o`"$bisonDir`" -y" -NoNewWindow -Wait
-
-          # Ensure TAR file exists
-          if (-not (Test-Path $bisonTar)) {
-            Write-Host "Error: bison TAR file could not be extracted. Exiting."
-            exit 1
-          }
-
-          # Extract TAR archive using 7-Zip
-          Start-Process -FilePath $sevenZipPath -ArgumentList "x `"$bisonTar`" -o`"$bisonDir`" -y" -NoNewWindow -Wait
-
-          # Ensure extraction succeeded
-          if (-not (Test-Path "$bisonExtractDir")) {
-            Write-Host "Error: bison could not be extracted. Exiting."
-            exit 1
-          }
-
-          # Add bison binary to PATH
-          $env:PATH += ";$bisonExtractDir\bin"
-          [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
-        } else {
-          Write-Host "bison found at $bisonPath"
-        }
 
     - name: Validate and Add Missing Tools to PATH (Windows)
       if: matrix.os == 'windows-latest'
@@ -146,7 +80,7 @@ jobs:
 
         # Add tools to PATH
         $env:PATH += ";C:\ProgramData\chocolatey\bin;C:\Program Files\LLVM\bin"
-        [System.EnvironmentVariableTarget]::Process)
+        [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
 
     # Restore Qt Source Cache and Build Workflow Continues...
     # <Unchanged from previous sections for Windows-specific Qt source and build steps>
