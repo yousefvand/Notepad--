@@ -21,7 +21,7 @@ jobs:
           - os: ubuntu-latest
             artifact_extension: tar.gz
           - os: macos-latest
-            artifact_extension: zip  # Wrap dmg in zip
+            artifact_extension: zip
           - os: windows-latest
             artifact_extension: zip
 
@@ -73,7 +73,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd "${{ github.workspace }}/build"
-        tar -czvf application.tar.gz .
+        tar --exclude='./.*' -czvf application.tar.gz .
       shell: bash
 
     - name: Package application (macOS)
@@ -88,7 +88,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         cd "${{ github.workspace }}/build"
-        zip -r application.zip .
+        Compress-Archive -Path . -DestinationPath application.zip
 
     # Upload built artifacts
     - name: Upload artifact
@@ -100,7 +100,7 @@ jobs:
   create-release:
     needs: build-and-release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'  # Only create releases on push events
+    if: github.event_name == 'push'
     steps:
     - name: Create a Release
       id: create_release
