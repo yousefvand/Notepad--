@@ -39,6 +39,7 @@ FileSearchResults FileSearchWorker::searchInFile() {
         bool hasMatch = false;
 
         QString highlightedLine = line; // For highlighting
+        qInfo() << "Highlight line from threadpool worker: " << highlightedLine;
 
         while (it.hasNext()) {
             QRegularExpressionMatch match = it.next();
@@ -65,6 +66,29 @@ FileSearchResults FileSearchWorker::searchInFile() {
 }
 
 QString FileSearchWorker::highlightMatches(const QString& line, const QRegularExpression& pattern) {
-    QString highlighted = line;
-    return highlighted.replace(pattern, "<highlight>" + m_options.keyword + "</highlight>");
+    qInfo() << "highlightMatches input line: " << line;
+    QString highlighted;
+    int lastIndex = 0; // Track the last processed index in the line
+
+    // Find all matches in the line
+    QRegularExpressionMatchIterator it = pattern.globalMatch(line);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+
+        // Append text from the last index to the current match start
+        highlighted.append(line.mid(lastIndex, match.capturedStart(0) - lastIndex));
+
+        // Wrap the matched text with <highlight> tags
+        highlighted.append(QStringLiteral("<highlight>%1</highlight>").arg(match.captured(0)));
+
+        // Update the last processed index
+        lastIndex = match.capturedEnd(0);
+    }
+
+    // Append any remaining text after the last match
+    highlighted.append(line.mid(lastIndex));
+    qInfo() << "highlightMatches output line: " << line;
+
+    return highlighted;
 }
+

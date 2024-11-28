@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.55
+
+- Search & Replace Menu -> Fixed casing in search
+
 ## 0.0.54
 
 - Implemented:
