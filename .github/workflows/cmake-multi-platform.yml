@@ -23,18 +23,18 @@ jobs:
 
       # Install dependencies
       - name: Install dependencies on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev ninja-build cmake
 
       - name: Install dependencies on macOS
-        if: matrix.os == 'macos-latest'
+        if: ${{ matrix.os == 'macos-latest' }}
         run: |
           brew install qt ninja cmake
 
       - name: Install dependencies on Windows
-        if: matrix.os == 'windows-latest'
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
           choco install qt --version=6.5.3 -y
           choco install ninja -y
@@ -49,37 +49,58 @@ jobs:
         shell: pwsh
 
       # Configure CMake
-      - name: Configure CMake
+      - name: Configure CMake on Ubuntu
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          cmake -B "${{ github.workspace }}/build" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -G "Ninja" \
-            -S "${{ github.workspace }}"
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
+        shell: bash
+
+      - name: Configure CMake on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
+        shell: bash
+
+      - name: Configure CMake on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          cmake -B build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -G "Ninja" `
+            -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
+            -S .
+        shell: pwsh
 
       # Build
-      - name: Build
-        run: |
-          cmake --build "${{ github.workspace }}/build" --parallel
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+      - name: Build on Ubuntu
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: cmake --build build --parallel
+        shell: bash
+
+      - name: Build on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: cmake --build build --parallel
+        shell: bash
+
+      - name: Build on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: cmake --build build --parallel
+        shell: pwsh
 
       # Package the application
       - name: Package application on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          tar -czf Notepad--.tar.gz -C "${{ github.workspace }}/build" .
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: tar -czf Notepad--.tar.gz -C build .
         shell: bash
 
       - name: Package application on macOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          hdiutil create -volname Notepad-- -srcfolder "${{ github.workspace }}/build" -ov -format UDZO Notepad--.dmg
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: hdiutil create -volname Notepad-- -srcfolder build -ov -format UDZO Notepad--.dmg
         shell: bash
 
       - name: Package application on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          Compress-Archive -Path "${{ github.workspace }}\build\*" -DestinationPath "Notepad--.zip"
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: Compress-Archive -Path build\* -DestinationPath Notepad--.zip
         shell: pwsh
 
       # Upload artifacts
