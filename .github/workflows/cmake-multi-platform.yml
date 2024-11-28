@@ -11,26 +11,30 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Ubuntu-specific steps
       - name: Install dependencies on Ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev ninja-build cmake
 
+      # macOS-specific steps
       - name: Install dependencies on macOS
         if: matrix.os == 'macos-latest'
         run: |
           brew install qt ninja cmake
 
+      # Windows-specific steps
       - name: Install dependencies on Windows
         if: matrix.os == 'windows-latest'
         run: |
@@ -51,25 +55,24 @@ jobs:
           cmake -B "${{ github.workspace }}/build" \
             -DCMAKE_BUILD_TYPE=Release \
             -G "Ninja" \
-            -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" \
             -S "${{ github.workspace }}"
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
       - name: Build
         run: |
           cmake --build "${{ github.workspace }}/build" --parallel
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
       - name: Package application
         run: |
-          if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
+          if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
             tar -czf Notepad--.tar.gz -C "${{ github.workspace }}/build" .
-          elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+          elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
             hdiutil create -volname Notepad-- -srcfolder "${{ github.workspace }}/build" -ov -format UDZO Notepad--.dmg
-          elif [[ ${{ matrix.os }} == 'windows-latest' ]]; then
+          else
             Compress-Archive -Path "${{ github.workspace }}\build\*" -DestinationPath "Notepad--.zip"
           fi
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -106,7 +109,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifacts/
-          asset_name: Notepad---${{ matrix.os }}.tar.gz
-          asset_name: Notepad---${{ matrix.os }}.dmg
-          asset_name: Notepad---${{ matrix.os }}.zip
+          asset_name: Notepad--${{ matrix.os }}.tar.gz
+          asset_name: Notepad--${{ matrix.os }}.dmg
+          asset_name: Notepad--${{ matrix.os }}.zip
           content_type: application/octet-stream
