@@ -29,24 +29,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Ubuntu Dependencies
+    # Ubuntu Setup
     - name: Set up dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
+            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    # macOS Dependencies
+    # macOS Setup
     - name: Set up dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Windows Dependencies
+    # Windows Setup
     - name: Set up dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
@@ -64,15 +64,16 @@ jobs:
           -G "Ninja" \
           -S "${{ github.workspace }}"
 
-    # Build application
+    # Build Application
     - name: Build application
       run: cmake --build "${{ github.workspace }}/build" --config Release
 
-    # Package application
+    # Package Application
     - name: Package application (Linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cd "${{ github.workspace }}/build"
+        rsync -a "${{ github.workspace }}/build/" "/tmp/build_copy/"
+        cd /tmp/build_copy
         tar --exclude='./.*' -czvf application.tar.gz .
       shell: bash
 
@@ -90,12 +91,14 @@ jobs:
         cd "${{ github.workspace }}/build"
         Compress-Archive -Path . -DestinationPath application.zip
 
-    # Upload built artifacts
+    # Upload Artifacts
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: application-${{ matrix.os }}
-        path: ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
+        path: |
+          ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
+          /tmp/build_copy/application.tar.gz # For Ubuntu temporary path
 
   create-release:
     needs: build-and-release
@@ -117,6 +120,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/build/application-*.*
+        asset_path: |
+          ${{ github.workspace }}/build/application-${{ matrix.os }}.${{ matrix.artifact_extension }}
         asset_name: application-${{ matrix.os }}.${{ matrix.artifact_extension }}
         asset_content_type: application/octet-stream
