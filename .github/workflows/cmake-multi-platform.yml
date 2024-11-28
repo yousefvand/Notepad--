@@ -10,85 +10,107 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_extension: tar.gz
+          - os: macos-latest
+            artifact_extension: zip
+          - os: windows-latest
+            artifact_extension: zip
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up dependencies on Ubuntu
-        if: ${{ runner.os == 'Linux' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y software-properties-common
-          sudo add-apt-repository ppa:qt/qt6 -y
-          sudo apt-get update
-          sudo apt-get install -y \
-            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
-            qt6-declarative-dev qt6-websockets-dev \
-            libgl-dev libglu1-mesa-dev libx11-dev libxi-dev libxrandr-dev \
-            libxext-dev libxfixes-dev libxcb-glx0-dev ninja-build cmake
+    # Install dependencies based on OS
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
 
-      - name: Set up dependencies on macOS
-        if: ${{ runner.os == 'macOS' }}
-        run: |
-          brew update
-          brew install qt cmake ninja
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew update
+        brew install ninja qt
 
-      - name: Set up dependencies on Windows
-        if: ${{ runner.os == 'Windows' }}
-        run: |
-          choco install cmake ninja qt --no-progress -y
-          echo "::add-path::C:\\Qt\\6.5.3\\msvc2019_64\\bin"
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install qt --version=6.5.3 -y
+        choco install ninja -y
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-      - name: Configure CMake
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+    # Configure CMake
+    - name: Configure CMake (Ubuntu and macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+      shell: bash
 
-      - name: Build with Ninja
-        run: cmake --build build
-        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake -B "${{ github.workspace }}\build" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -G "Ninja" `
+          -S "${{ github.workspace }}"
+      shell: pwsh
 
-      - name: Package application
-        run: |
-          mkdir release
-          if [ "${{ runner.os }}" == "Linux" ]; then
-            tar -czvf release/application.tar.gz -C build .
-          elif [ "${{ runner.os }}" == "macOS" ]; then
-            hdiutil create release/application.dmg -srcfolder build
-          elif [ "${{ runner.os }}" == "Windows" ]; then
-            7z a release/application.zip build\*
-          fi
-        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+    # Build Application
+    - name: Build application (Ubuntu and macOS)
+      if: matrix.os != 'windows-latest'
+      run: cmake --build "${{ github.workspace }}/build" --config Release
+      shell: bash
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: application-${{ runner.os }}
-          path: release/
+    - name: Build application (Windows)
+      if: matrix.os == 'windows-latest'
+      run: cmake --build "${{ github.workspace }}\build" --config Release
+      shell: pwsh
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: application-${{ runner.os }}
-          path: artifacts/
-      - name: Create GitHub release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: |
-            artifacts/application-Linux.tar.gz
-            artifacts/application-macOS.dmg
-            artifacts/application-Windows.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.run_id }}
-          release_name: Release ${{ github.run_id }}
-          draft: false
+    # Package Application
+    - name: Package application (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        BUILD_DIR="${{ github.workspace }}/build"
+        TEMP_DIR="/tmp/build_copy"
+        rm -rf $TEMP_DIR
+        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
+        cd $TEMP_DIR
+        tar -czvf application.tar.gz ./*
+        mv application.tar.gz $BUILD_DIR/
+
+    - name: Package application (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd "${{ github.workspace }}/build"
+        hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
+        zip application.zip application.dmg
+
+    - name: Package application (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd "${{ github.workspace }}\build"
+        Compress-Archive -Path . -DestinationPath application.zip
+      shell: pwsh
+
+    # Upload Artifacts
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: application-${{ matrix.os }}
+        path: |
+          ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
