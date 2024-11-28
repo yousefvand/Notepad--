@@ -20,13 +20,10 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact_extension: tar.gz
-            shell: bash
           - os: macos-latest
             artifact_extension: zip
-            shell: bash
           - os: windows-latest
             artifact_extension: zip
-            shell: pwsh
 
     steps:
     - name: Checkout code
@@ -54,18 +51,34 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
     # Configure CMake
-    - name: Configure CMake
+    - name: Configure CMake (Ubuntu and macOS)
+      if: matrix.os != 'windows-latest'
       run: |
         cmake -B "${{ github.workspace }}/build" \
           -DCMAKE_BUILD_TYPE=Release \
           -G "Ninja" \
           -S "${{ github.workspace }}"
-      shell: ${{ matrix.shell }}
+      shell: bash
+
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake -B "${{ github.workspace }}\build" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -G "Ninja" `
+          -S "${{ github.workspace }}"
+      shell: pwsh
 
     # Build Application
-    - name: Build application
+    - name: Build application (Ubuntu and macOS)
+      if: matrix.os != 'windows-latest'
       run: cmake --build "${{ github.workspace }}/build" --config Release
-      shell: ${{ matrix.shell }}
+      shell: bash
+
+    - name: Build application (Windows)
+      if: matrix.os == 'windows-latest'
+      run: cmake --build "${{ github.workspace }}\build" --config Release
+      shell: pwsh
 
     # Package Application
     - name: Package application (Ubuntu)
@@ -88,8 +101,9 @@ jobs:
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cd "${{ github.workspace }}/build"
+        cd "${{ github.workspace }}\build"
         Compress-Archive -Path . -DestinationPath application.zip
+      shell: pwsh
 
     # Upload Artifacts
     - name: Upload artifact
