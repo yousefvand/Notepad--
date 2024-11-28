@@ -21,7 +21,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Install dependencies
       - name: Install dependencies on Ubuntu
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
@@ -48,76 +47,40 @@ jobs:
           $env:CMAKE_PREFIX_PATH = "$QtPath\lib\cmake"
         shell: pwsh
 
-      # Configure CMake
-      - name: Configure CMake on Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Configure CMake
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-        shell: bash
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-      - name: Configure CMake on macOS
-        if: ${{ matrix.os == 'macos-latest' }}
+      - name: Build application
+        run: cmake --build build --parallel
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+
+      - name: Package application
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-        shell: bash
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            tar -czf Notepad--_linux.tar.gz -C build .
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            hdiutil create -volname Notepad-- -srcfolder build -ov -format UDZO Notepad--_macos.dmg
+          elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+            Compress-Archive -Path build\* -DestinationPath Notepad--_windows.zip
+          fi
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-      - name: Configure CMake on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          cmake -B build `
-            -DCMAKE_BUILD_TYPE=Release `
-            -G "Ninja" `
-            -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
-            -S .
-        shell: pwsh
-
-      # Build
-      - name: Build on Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: cmake --build build --parallel
-        shell: bash
-
-      - name: Build on macOS
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: cmake --build build --parallel
-        shell: bash
-
-      - name: Build on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: cmake --build build --parallel
-        shell: pwsh
-
-      # Package the application
-      - name: Package application on Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: tar -czf Notepad--.tar.gz -C build .
-        shell: bash
-
-      - name: Package application on macOS
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: hdiutil create -volname Notepad-- -srcfolder build -ov -format UDZO Notepad--.dmg
-        shell: bash
-
-      - name: Package application on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: Compress-Archive -Path build\* -DestinationPath Notepad--.zip
-        shell: pwsh
-
-      # Upload artifacts
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}-artifact
           path: |
-            Notepad--.tar.gz
-            Notepad--.dmg
-            Notepad--.zip
+            Notepad--_linux.tar.gz
+            Notepad--_macos.dmg
+            Notepad--_windows.zip
 
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download build artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           path: ./artifacts
@@ -138,8 +101,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts
-          asset_name: Notepad--_${{ matrix.os }}.tar.gz
-          asset_name: Notepad--_${{ matrix.os }}.dmg
-          asset_name: Notepad--_${{ matrix.os }}.zip
+          asset_path: ./artifacts/Notepad--_linux.tar.gz
+          asset_name: Notepad--_linux.tar.gz
+          content_type: application/gzip
+
+      - name: Upload macOS release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/Notepad--_macos.dmg
+          asset_name: Notepad--_macos.dmg
           content_type: application/octet-stream
+
+      - name: Upload Windows release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/Notepad--_windows.zip
+          asset_name: Notepad--_windows.zip
+          content_type: application/zip
