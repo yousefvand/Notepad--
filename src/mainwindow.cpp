@@ -67,6 +67,8 @@ MainWindow::~MainWindow() {
     delete ui;
     delete fileOperations;
     delete textOperations;
+    delete m_systemFindDialog;
+    delete m_systemReplaceDialog;
 }
 
 Ui::MainWindow* MainWindow::getUi() const {
@@ -366,7 +368,6 @@ void MainWindow::on_actionReplace_P_revious_triggered()
 }
 
 void MainWindow::on_actionFind_System_triggered() {
-    qDebug() << "on_actionFind_System_triggered called";
 
     if (!m_systemFindDialog) {
         qDebug() << "Creating new SystemFindDialog";
@@ -382,7 +383,7 @@ void MainWindow::on_actionFind_System_triggered() {
         });
 
         // Ensure connections are established
-        setupSearchResultDialogConnections();
+        setupSearchResultDialogConnectionsForFind();
 
         m_systemFindDialog->show();
     } else {
@@ -392,7 +393,33 @@ void MainWindow::on_actionFind_System_triggered() {
     }
 }
 
-void MainWindow::setupSearchResultDialogConnections() {
+void MainWindow::on_actionReplace_S_ystem_triggered()
+{
+    if (!m_systemReplaceDialog) {
+        qDebug() << "Creating new SystemReplaceDialog";
+
+        m_systemReplaceDialog = new SystemReplaceDialog(this);
+        m_systemReplaceDialog->setWindowModality(Qt::NonModal);
+        m_systemReplaceDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+        // Reset pointer when dialog is destroyed
+        connect(m_systemReplaceDialog, &QObject::destroyed, this, [this]() {
+            qDebug() << "SystemReplaceDialog destroyed. Resetting pointer.";
+            m_systemReplaceDialog = nullptr;
+        });
+
+        // Ensure connections are established
+        setupSearchResultDialogConnectionsForReplace();
+
+        m_systemReplaceDialog->show();
+    } else {
+        qDebug() << "SystemReplaceDialog already exists. Bringing it to the front.";
+        m_systemReplaceDialog->raise();
+        m_systemReplaceDialog->activateWindow();
+    }
+}
+
+void MainWindow::setupSearchResultDialogConnectionsForFind() {
     QTimer::singleShot(0, this, [this]() {
         SystemSearchResultDialog* m_systemSearchResultDialog =
             m_systemFindDialog->findChild<SystemSearchResultDialog *>("SystemSearchResultDialog");
@@ -402,21 +429,34 @@ void MainWindow::setupSearchResultDialogConnections() {
 
             // Re-establish the signal-slot connection
             connect(m_systemSearchResultDialog, &SystemSearchResultDialog::openFileAtMatch,
-                    this, &MainWindow::openSearchResult, Qt::UniqueConnection);
+                    this, &MainWindow::openSearchResult);
 
             qDebug() << "Signal-Slot Connection for SystemSearchResultDialog re-established.";
         } else {
             qDebug() << "SystemSearchResultDialog not found. Retrying...";
-            QTimer::singleShot(100, this, &MainWindow::setupSearchResultDialogConnections);
+            QTimer::singleShot(100, this, &MainWindow::setupSearchResultDialogConnectionsForFind);
         }
     });
 }
 
-void MainWindow::on_actionReplace_S_ystem_triggered()
-{
-    SystemReplaceDialog* systemReplaceDialog = new SystemReplaceDialog(this);
-    systemReplaceDialog->setWindowModality(Qt::NonModal);
-    systemReplaceDialog->show();
+void MainWindow::setupSearchResultDialogConnectionsForReplace() {
+    QTimer::singleShot(0, this, [this]() {
+        SystemSearchResultDialog* m_systemSearchResultDialog =
+            m_systemReplaceDialog->findChild<SystemSearchResultDialog *>("SystemSearchResultDialog");
+
+        if (m_systemSearchResultDialog) {
+            qDebug() << "SystemSearchResultDialog found:" << m_systemSearchResultDialog;
+
+            // Re-establish the signal-slot connection
+            connect(m_systemSearchResultDialog, &SystemSearchResultDialog::openFileAtMatch,
+                    this, &MainWindow::openSearchResult);
+
+            qDebug() << "Signal-Slot Connection for SystemSearchResultDialog re-established.";
+        } else {
+            qDebug() << "SystemSearchResultDialog not found. Retrying...";
+            QTimer::singleShot(100, this, &MainWindow::setupSearchResultDialogConnectionsForReplace);
+        }
+    });
 }
 
 void MainWindow::on_actionGo_to_Line_in_Text_triggered()

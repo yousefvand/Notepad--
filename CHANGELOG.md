@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.56
+
+- Search & Replace Menu -> Fixed double click on results
+
 ## 0.0.55
 
 - Search & Replace Menu -> Fixed casing in search
