@@ -29,7 +29,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Install dependencies based on OS
+    # Ubuntu Section
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -38,10 +38,68 @@ jobs:
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
             qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync cmake
 
+    - name: Configure CMake (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+      shell: bash
+
+    - name: Build application (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cmake --build "${{ github.workspace }}/build" --config Release
+      shell: bash
+
+    - name: Package application (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        BUILD_DIR="${{ github.workspace }}/build"
+        TEMP_DIR="/tmp/build_copy"
+        rm -rf $TEMP_DIR
+        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
+        cd $TEMP_DIR
+        tar -czvf application.tar.gz ./*
+
+    # macOS Section
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt cmake
+
+    - name: Configure CMake (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+      shell: bash
+
+    - name: Build application (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cmake --build "${{ github.workspace }}/build" --config Release
+      shell: bash
+
+    - name: Package application (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd "${{ github.workspace }}/build"
+        hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
+        zip application.zip application.dmg
+
+    # Windows Section
+    - name: Verify Visual Studio Installation
+      if: matrix.os == 'windows-latest'
+      run: |
+        echo "Checking for Visual Studio Build Tools..."
+        dir "C:\Program Files (x86)\Microsoft Visual Studio" /b
+        dir "C:\Program Files\Microsoft Visual Studio" /b
+        dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build" /b || exit 1
+      shell: cmd
 
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -51,35 +109,6 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         choco install visualstudio2022buildtools -y --install-arguments \
           '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
-
-    # Debug Visual Studio paths on Windows
-    - name: Debug Visual Studio paths
-      if: matrix.os == 'windows-latest'
-      run: |
-        echo "Checking for Visual Studio Build Tools installation..."
-        dir "C:\Program Files (x86)\Microsoft Visual Studio" /b
-        dir "C:\Program Files\Microsoft Visual Studio" /b
-        for /d %%G in ("C:\Program Files (x86)\Microsoft Visual Studio\*") do (
-          if exist "%%G\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
-            echo "Found vcvars64.bat in %%G"
-          )
-        )
-        for /d %%G in ("C:\Program Files\Microsoft Visual Studio\*") do (
-          if exist "%%G\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
-            echo "Found vcvars64.bat in %%G"
-          )
-        )
-      shell: cmd
-
-    # Configure CMake
-    - name: Configure CMake (Ubuntu and macOS)
-      if: matrix.os != 'windows-latest'
-      run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
-      shell: bash
 
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
@@ -92,33 +121,13 @@ jobs:
           -S D:\a\Notepad--\Notepad--
       shell: cmd
 
-    # Build Application
-    - name: Build application (Ubuntu and macOS)
-      if: matrix.os != 'windows-latest'
-      run: cmake --build "${{ github.workspace }}/build" --config Release
-      shell: bash
-
     - name: Build application (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake --build D:\a\Notepad--\Notepad--\build --config Release
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
+        cmake --build D:\a\Notepad--\Notepad--\build --config Release
       shell: cmd
 
-    # Package Application
-    - name: Package application (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        BUILD_DIR="${{ github.workspace }}/build"
-        TEMP_DIR="/tmp/build_copy"
-        rm -rf $TEMP_DIR
-        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
-        cd $TEMP_DIR
-        tar -czvf application.tar.gz ./*
-    - name: Package application (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        cd "${{ github.workspace }}/build"
-        hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
-        zip application.zip application.dmg
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
