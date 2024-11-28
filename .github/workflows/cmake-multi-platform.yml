@@ -1,36 +1,36 @@
-name: CI Build
+name: Build and Release
 
 on:
   push:
-    branches: [main, dev]
+    branches:
+      - main
+      - dev
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
           - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
+            artifact_extension: tar.gz
           - os: macos-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+            artifact_extension: zip  # Wrap dmg in zip
+          - os: windows-latest
+            artifact_extension: zip
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    ### Ubuntu Dependencies
-    - name: Install dependencies (Ubuntu)
+    # Ubuntu Dependencies
+    - name: Set up dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
@@ -39,126 +39,84 @@ jobs:
             qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
         echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    ### macOS Dependencies
-    - name: Install dependencies (macOS)
+    # macOS Dependencies
+    - name: Set up dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    ### Windows Setup
-    - name: Install dependencies (Windows)
+    # Windows Dependencies
+    - name: Set up dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        choco install visualstudio2022buildtools -y
+        choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install python3 -y
-        choco install llvm -y
-        choco install gperf -y
-        pip install html5lib
+        echo "CMAKE_PREFIX_PATH=C:\Qt\6.5.3\msvc2019_64\lib\cmake" >> $env:GITHUB_ENV
 
-    - name: Cache Qt Source (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: actions/cache@v3
-      with:
-        path: D:/qt-source
-        key: qt-source-6.5.3
-        restore-keys: qt-source-
-
-    - name: Download Qt Source if Missing (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        $qtSourceDir = "D:/qt-source"
-        $qtZip = "$qtSourceDir/qt-everywhere-src-6.5.3.zip"
-
-        if (-Not (Test-Path "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase/configure.bat")) {
-          Write-Host "Qt source not found in cache. Downloading..."
-          New-Item -ItemType Directory -Path $qtSourceDir -Force
-          Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
-          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
-        } else {
-          Write-Host "Qt source found in cache."
-        }
-
-    - name: Install bison Manually (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        $bisonPath = "C:/ProgramData/chocolatey/bin/bison.exe"
-        if (-not (Test-Path $bisonPath)) {
-          Write-Host "bison is not available. Installing manually..."
-          $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.tar.gz"
-          $bisonDir = "D:/bison"
-          $bisonTar = "$bisonDir/bison.tar.gz"
-          $bisonExtractDir = "$bisonDir/bison-3.8.2"
-          New-Item -ItemType Directory -Path $bisonDir -Force
-
-          # Download and extract bison
-          Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonTar -UseBasicParsing
-          tar -xvf $bisonTar -C $bisonDir
-          $env:PATH += ";$bisonExtractDir/bin"
-          [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
-        } else {
-          Write-Host "bison found at $bisonPath"
-        }
-
-    - name: Build and Install Qt from Source (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      run: |
-        REM Locate Visual Studio Build Tools
-        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
-          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
-        IF NOT DEFINED VS_PATH (
-          echo Visual Studio Build Tools not found! && exit /b 1
-        )
-        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
-        CALL "%VS_VARS_CMD%" || exit /b 1
-
-        REM Build Qt from source
-        SET QT_SOURCE=D:/qt-source/qt-everywhere-src-6.5.3
-        IF NOT EXIST "%QT_SOURCE%/qtbase/configure.bat" (
-          echo "configure.bat not found in %QT_SOURCE%/qtbase" && exit /b 1
-        )
-        cd "%QT_SOURCE%/qtbase"
-        call configure.bat -top-level -prefix C:/Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
-          -DFEATURE_clang=ON ^
-          -DFEATURE_clangcpp=ON ^
-          -DLLVM_INSTALL_DIR="C:/Program Files/LLVM" ^
-          -Wno-dev || exit /b 1
-
-        REM Verify if build.ninja exists
-        IF NOT EXIST build.ninja (
-          echo "Error: build.ninja not generated. Check configuration step for issues." && exit /b 1
-        )
-
-        REM Proceed with the build and install steps
-        ninja || exit /b 1
-        ninja install || exit /b 1
-
-    - name: Set Qt Environment Variables (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        echo "Qt6_DIR=C:/Qt/lib/cmake/Qt6" >> $env:GITHUB_ENV
-        echo "QT_PLUGIN_PATH=C:/Qt/plugins" >> $env:GITHUB_ENV
-        echo "QML2_IMPORT_PATH=C:/Qt/qml" >> $env:GITHUB_ENV
-
+    # Configure CMake
     - name: Configure CMake
       run: |
         cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
           -DCMAKE_BUILD_TYPE=Release \
           -G "Ninja" \
           -S "${{ github.workspace }}"
 
-    - name: Build
+    # Build application
+    - name: Build application
       run: cmake --build "${{ github.workspace }}/build" --config Release
 
-    - name: Test
-      working-directory: "${{ github.workspace }}/build"
-      run: ctest --output-on-failure --build-config Release
+    # Package application
+    - name: Package application (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd "${{ github.workspace }}/build"
+        tar -czvf application.tar.gz .
+      shell: bash
+
+    - name: Package application (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd "${{ github.workspace }}/build"
+        hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
+        zip application.zip application.dmg
+      shell: bash
+
+    - name: Package application (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd "${{ github.workspace }}/build"
+        zip -r application.zip .
+
+    # Upload built artifacts
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: application-${{ matrix.os }}
+        path: ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
+
+  create-release:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'  # Only create releases on push events
+    steps:
+    - name: Create a Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/build/application-*.*
+        asset_name: application-${{ matrix.os }}.${{ matrix.artifact_extension }}
+        asset_content_type: application/octet-stream
