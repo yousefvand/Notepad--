@@ -59,8 +59,16 @@ jobs:
         echo "Checking for Visual Studio Build Tools installation..."
         dir "C:\Program Files (x86)\Microsoft Visual Studio" /b
         dir "C:\Program Files\Microsoft Visual Studio" /b
-        dir "C:\Program Files (x86)\Microsoft Visual Studio\*\*\BuildTools\VC\Auxiliary\Build\vcvars64.bat" /b
-        dir "C:\Program Files\Microsoft Visual Studio\*\*\BuildTools\VC\Auxiliary\Build\vcvars64.bat" /b
+        for /d %%G in ("C:\Program Files (x86)\Microsoft Visual Studio\*") do (
+          if exist "%%G\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
+            echo "Found vcvars64.bat in %%G"
+          )
+        )
+        for /d %%G in ("C:\Program Files\Microsoft Visual Studio\*") do (
+          if exist "%%G\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
+            echo "Found vcvars64.bat in %%G"
+          )
+        )
       shell: cmd
 
     # Configure CMake
