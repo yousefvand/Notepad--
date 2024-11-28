@@ -89,7 +89,6 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
       shell: cmd
-
     - name: Verify Visual Studio Installation
       if: matrix.os == 'windows-latest'
       run: |
@@ -101,7 +100,6 @@ jobs:
             Write-Output "Found Visual Studio Build Tools at $vcvarsPath"
         }
       shell: pwsh
-
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
@@ -112,14 +110,12 @@ jobs:
           -G Ninja ^
           -S D:\a\Notepad--\Notepad--
       shell: cmd
-
     - name: Build application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
         cmake --build D:\a\Notepad--\Notepad--\build --config Release
       shell: cmd
-
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
