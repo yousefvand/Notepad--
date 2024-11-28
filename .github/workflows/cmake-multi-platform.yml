@@ -37,51 +37,47 @@ jobs:
         sudo apt-get install -y ninja-build \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
             qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
-      shell: bash
-
     - name: Configure CMake (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-      shell: bash
-
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
     - name: Build application (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      run: cmake --build build --config Release
-      shell: bash
-
+      run: cmake --build "${{ github.workspace }}/build" --config Release
     - name: Package application (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cd build
-        tar -czvf application.tar.gz .
-      shell: bash
+        BUILD_DIR="${{ github.workspace }}/build"
+        TEMP_DIR="/tmp/build_copy"
+        rm -rf $TEMP_DIR
+        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
+        cd $TEMP_DIR
+        tar -czvf application.tar.gz ./*
 
     # macOS Section
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
-      shell: bash
-
     - name: Configure CMake (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-      shell: bash
-
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
     - name: Build application (macOS)
       if: matrix.os == 'macos-latest'
-      run: cmake --build build --config Release
-      shell: bash
-
+      run: cmake --build "${{ github.workspace }}/build" --config Release
     - name: Package application (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        cd build
+        cd "${{ github.workspace }}/build"
         hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
         zip application.zip application.dmg
-      shell: bash
 
     # Windows Section
     - name: Install dependencies (Windows)
@@ -94,13 +90,12 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
       shell: cmd
 
-    - name: Verify Visual Studio Build Tools
+    - name: Verify Visual Studio Installation
       if: matrix.os == 'windows-latest'
       run: |
         $vcvarsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
         if (!(Test-Path $vcvarsPath)) {
-            Write-Output "Visual Studio Build Tools not found at $vcvarsPath. Installation failed or incorrect path."
-            Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Filter vcvars64.bat
+            Write-Output "Visual Studio Build Tools not found at $vcvarsPath. Attempting installation again."
             exit 1
         } else {
             Write-Output "Found Visual Studio Build Tools at $vcvarsPath"
@@ -111,24 +106,24 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
-        cmake -B build ^
+        cmake -B D:\a\Notepad--\Notepad--\build ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_PREFIX_PATH="C:\Qt\6.5.3\msvc2019_64\lib\cmake" ^
           -G Ninja ^
-          -S .
+          -S D:\a\Notepad--\Notepad--
       shell: cmd
 
     - name: Build application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
-        cmake --build build --config Release
+        cmake --build D:\a\Notepad--\Notepad--\build --config Release
       shell: cmd
 
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cd build
+        cd D:\a\Notepad--\Notepad--\build
         Compress-Archive -Path . -DestinationPath application.zip
       shell: cmd
 
@@ -137,4 +132,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: application-${{ matrix.os }}
-        path: build/application.${{ matrix.artifact_extension }}
+        path: |
+          ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
+          /tmp/build_copy/application.tar.gz
