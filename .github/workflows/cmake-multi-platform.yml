@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build and Release Notepad--
 
 on:
   push:
@@ -10,109 +10,101 @@ on:
       - main
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ${{ matrix.os }}
-
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            artifact_extension: tar.gz
-          - os: macos-latest
-            artifact_extension: zip
-          - os: windows-latest
-            artifact_extension: zip
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Install dependencies based on OS
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build \
-            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
+      - name: Install dependencies (Ubuntu and macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
+            sudo apt-get update
+            sudo apt-get install -y qt6-base-dev ninja-build cmake
+          elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+            brew install qt ninja cmake
+          fi
 
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install ninja qt
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install qt --version=6.5.3 -y
+          choco install ninja -y
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+          $QtPath = (Get-ChildItem -Directory 'C:\Qt\6.5.3' | Where-Object { $_.Name -match 'mingw.*' }).FullName
+          if (-not $QtPath) {
+            Write-Error "Could not find a valid Qt installation for MinGW."
+            exit 1
+          }
+          Write-Host "Using Qt path: $QtPath"
+          $env:CMAKE_PREFIX_PATH = "$QtPath\lib\cmake"
+        shell: pwsh
 
-    - name: Install dependencies (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        choco install qt --version=6.5.3 -y
-        choco install ninja -y
-        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-      shell: pwsh
+      - name: Configure CMake
+        run: |
+          cmake -B "${{ github.workspace }}/build" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G "Ninja" \
+            -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" \
+            -S "${{ github.workspace }}"
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-    # Configure CMake
-    - name: Configure CMake (Ubuntu and macOS)
-      if: matrix.os != 'windows-latest'
-      run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
-      shell: bash
+      - name: Build
+        run: cmake --build "${{ github.workspace }}/build" --parallel
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-    - name: Configure CMake (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        $env:CMAKE_PREFIX_PATH = "C:\Qt\6.5.3\msvc2019_64\lib\cmake"
-        cmake -B "${{ github.workspace }}\build" `
-          -DCMAKE_BUILD_TYPE=Release `
-          -G "Ninja" `
-          -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
-          -S "${{ github.workspace }}"
-      shell: pwsh
+      - name: Package application
+        run: |
+          if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
+            tar -czf Notepad--.tar.gz -C "${{ github.workspace }}/build" .
+          elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+            hdiutil create -volname Notepad-- -srcfolder "${{ github.workspace }}/build" -ov -format UDZO Notepad--.dmg
+          elif [[ ${{ matrix.os }} == 'windows-latest' ]]; then
+            powershell Compress-Archive -Path "${{ github.workspace }}\build\*" -DestinationPath "Notepad--.zip"
+          fi
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-    # Build Application
-    - name: Build application (Ubuntu and macOS)
-      if: matrix.os != 'windows-latest'
-      run: cmake --build "${{ github.workspace }}/build" --config Release
-      shell: bash
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}-artifact
+          path: |
+            Notepad--.tar.gz
+            Notepad--.dmg
+            Notepad--.zip
 
-    - name: Build application (Windows)
-      if: matrix.os == 'windows-latest'
-      run: cmake --build "${{ github.workspace }}\build" --config Release
-      shell: pwsh
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
 
-    # Package Application
-    - name: Package application (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        BUILD_DIR="${{ github.workspace }}/build"
-        TEMP_DIR="/tmp/build_copy"
-        rm -rf $TEMP_DIR
-        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
-        cd $TEMP_DIR
-        tar -czvf application.tar.gz ./*
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_id }}
+          release_name: Release ${{ github.run_id }}
+          draft: false
+          prerelease: false
 
-    - name: Package application (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        cd "${{ github.workspace }}/build"
-        hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
-        zip application.zip application.dmg
-
-    - name: Package application (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        cd "${{ github.workspace }}\build"
-        Compress-Archive -Path . -DestinationPath application.zip
-      shell: pwsh
-
-    # Upload Artifacts
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: application-${{ matrix.os }}
-        path: |
-          ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
-          /tmp/build_copy/application.tar.gz
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/
+          asset_name: ${{ matrix.os }}-Notepad--.tar.gz
+          asset_name: ${{ matrix.os }}-Notepad--.dmg
+          asset_name: ${{ matrix.os }}-Notepad--.zip
+          content_type: application/octet-stream
