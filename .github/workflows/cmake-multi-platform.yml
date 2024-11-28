@@ -14,26 +14,25 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies on Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install dependencies (Ubuntu)
+        if: ${{ runner.os == 'Linux' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev ninja-build cmake
 
-      - name: Install dependencies on macOS
-        if: ${{ matrix.os == 'macos-latest' }}
+      - name: Install dependencies (macOS)
+        if: ${{ runner.os == 'macOS' }}
         run: |
           brew install qt ninja cmake
 
-      - name: Install dependencies on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
+      - name: Install dependencies (Windows)
+        if: ${{ runner.os == 'Windows' }}
         run: |
           choco install qt --version=6.5.3 -y
           choco install ninja -y
@@ -50,27 +49,27 @@ jobs:
       - name: Configure CMake
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
       - name: Build application
         run: cmake --build build --parallel
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
       - name: Package application
         run: |
-          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          if [[ $RUNNER_OS == "Linux" ]]; then
             tar -czf Notepad--_linux.tar.gz -C build .
-          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+          elif [[ $RUNNER_OS == "macOS" ]]; then
             hdiutil create -volname Notepad-- -srcfolder build -ov -format UDZO Notepad--_macos.dmg
-          elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+          elif [[ $RUNNER_OS == "Windows" ]]; then
             Compress-Archive -Path build\* -DestinationPath Notepad--_windows.zip
           fi
-        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}-artifact
+          name: ${{ runner.os }}-artifact
           path: |
             Notepad--_linux.tar.gz
             Notepad--_macos.dmg
@@ -79,6 +78,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -95,7 +95,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload release assets
+      - name: Upload Linux release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
