@@ -29,77 +29,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Ubuntu Section
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build \
-            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync cmake
-
-    - name: Configure CMake (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
-      shell: bash
-
-    - name: Build application (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        cmake --build "${{ github.workspace }}/build" --config Release
-      shell: bash
-
-    - name: Package application (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        BUILD_DIR="${{ github.workspace }}/build"
-        TEMP_DIR="/tmp/build_copy"
-        rm -rf $TEMP_DIR
-        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
-        cd $TEMP_DIR
-        tar -czvf application.tar.gz ./*
-
-    # macOS Section
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install ninja qt cmake
-
-    - name: Configure CMake (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
-      shell: bash
-
-    - name: Build application (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        cmake --build "${{ github.workspace }}/build" --config Release
-      shell: bash
-
-    - name: Package application (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        cd "${{ github.workspace }}/build"
-        hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
-        zip application.zip application.dmg
-
     # Windows Section
-    - name: Verify Visual Studio Installation
+    - name: Check Visual Studio Build Tools Path
       if: matrix.os == 'windows-latest'
       run: |
         echo "Checking for Visual Studio Build Tools..."
         dir "C:\Program Files (x86)\Microsoft Visual Studio" /b
         dir "C:\Program Files\Microsoft Visual Studio" /b
-        dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build" /b || exit 1
-      shell: cmd
+        if not exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
+          echo "Visual Studio Build Tools not found in default path."
+          exit 1
+        )
 
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -141,5 +81,4 @@ jobs:
       with:
         name: application-${{ matrix.os }}
         path: |
-          ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
-          /tmp/build_copy/application.tar.gz
+          D:\a\Notepad--\Notepad--\build\application.${{ matrix.artifact_extension }}
