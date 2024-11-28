@@ -51,13 +51,6 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    # Set up MSVC environment on Windows
-    - name: Set up MSVC environment
-      if: matrix.os == 'windows-latest'
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-        $env:CMAKE_PREFIX_PATH = "C:\Qt\6.5.3\msvc2019_64\lib\cmake"
-
     # Configure CMake
     - name: Configure CMake (Ubuntu and macOS)
       if: matrix.os != 'windows-latest'
@@ -71,6 +64,7 @@ jobs:
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
+        cmd /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && `
         cmake -B "${{ github.workspace }}\build" `
           -DCMAKE_BUILD_TYPE=Release `
           -DCMAKE_PREFIX_PATH="C:\Qt\6.5.3\msvc2019_64\lib\cmake" `
