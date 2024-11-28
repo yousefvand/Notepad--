@@ -2,9 +2,12 @@ name: Build and Release
 
 on:
   push:
-    branches: [main, dev]
+    branches:
+      - main
+      - dev
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build-and-release:
@@ -44,16 +47,18 @@ jobs:
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
+        choco install visualstudio2022buildtools -y --install-arguments \
+          '--add Microsoft.VisualStudio.Workload.VCTools --quiet --norestart'
         choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-    # Debug and verify environment for Windows
-    - name: Debug environment paths (Windows)
+    # Debug and verify Visual Studio paths
+    - name: Debug Visual Studio paths
       if: matrix.os == 'windows-latest'
       run: |
         echo "Checking Visual Studio paths..."
-        if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
+        if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
           echo "Found vcvars64.bat"
         ) else (
           echo "vcvars64.bat not found"
@@ -74,12 +79,12 @@ jobs:
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
         cmake -B D:\a\Notepad--\Notepad--\build ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_PREFIX_PATH="C:\Qt\6.5.3\msvc2019_64\lib\cmake" ^
           -G Ninja ^
-          -S D:\a\Notepad--\Notepad-- 
+          -S D:\a\Notepad--\Notepad--
       shell: cmd
 
     # Build Application
