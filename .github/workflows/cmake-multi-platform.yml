@@ -21,20 +21,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Ubuntu-specific steps
+      # Install dependencies
       - name: Install dependencies on Ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev ninja-build cmake
 
-      # macOS-specific steps
       - name: Install dependencies on macOS
         if: matrix.os == 'macos-latest'
         run: |
           brew install qt ninja cmake
 
-      # Windows-specific steps
       - name: Install dependencies on Windows
         if: matrix.os == 'windows-latest'
         run: |
@@ -50,30 +48,41 @@ jobs:
           $env:CMAKE_PREFIX_PATH = "$QtPath\lib\cmake"
         shell: pwsh
 
+      # Configure CMake
       - name: Configure CMake
         run: |
           cmake -B "${{ github.workspace }}/build" \
             -DCMAKE_BUILD_TYPE=Release \
             -G "Ninja" \
             -S "${{ github.workspace }}"
-        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
+      # Build
       - name: Build
         run: |
           cmake --build "${{ github.workspace }}/build" --parallel
-        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-      - name: Package application
+      # Package the application
+      - name: Package application on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
-            tar -czf Notepad--.tar.gz -C "${{ github.workspace }}/build" .
-          elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
-            hdiutil create -volname Notepad-- -srcfolder "${{ github.workspace }}/build" -ov -format UDZO Notepad--.dmg
-          else
-            Compress-Archive -Path "${{ github.workspace }}\build\*" -DestinationPath "Notepad--.zip"
-          fi
+          tar -czf Notepad--.tar.gz -C "${{ github.workspace }}/build" .
         shell: bash
 
+      - name: Package application on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          hdiutil create -volname Notepad-- -srcfolder "${{ github.workspace }}/build" -ov -format UDZO Notepad--.dmg
+        shell: bash
+
+      - name: Package application on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          Compress-Archive -Path "${{ github.workspace }}\build\*" -DestinationPath "Notepad--.zip"
+        shell: pwsh
+
+      # Upload artifacts
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -108,8 +117,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/
-          asset_name: Notepad--${{ matrix.os }}.tar.gz
-          asset_name: Notepad--${{ matrix.os }}.dmg
-          asset_name: Notepad--${{ matrix.os }}.zip
+          asset_path: ./artifacts
+          asset_name: Notepad--_${{ matrix.os }}.tar.gz
+          asset_name: Notepad--_${{ matrix.os }}.dmg
+          asset_name: Notepad--_${{ matrix.os }}.zip
           content_type: application/octet-stream
