@@ -20,17 +20,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies (Ubuntu and macOS)
-        if: matrix.os != 'windows-latest'
+      - name: Install dependencies on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
-            sudo apt-get update
-            sudo apt-get install -y qt6-base-dev ninja-build cmake
-          elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
-            brew install qt ninja cmake
-          fi
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev ninja-build cmake
 
-      - name: Install dependencies (Windows)
+      - name: Install dependencies on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install qt ninja cmake
+
+      - name: Install dependencies on Windows
         if: matrix.os == 'windows-latest'
         run: |
           choco install qt --version=6.5.3 -y
@@ -55,7 +56,8 @@ jobs:
         shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
       - name: Build
-        run: cmake --build "${{ github.workspace }}/build" --parallel
+        run: |
+          cmake --build "${{ github.workspace }}/build" --parallel
         shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
       - name: Package application
@@ -65,7 +67,7 @@ jobs:
           elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
             hdiutil create -volname Notepad-- -srcfolder "${{ github.workspace }}/build" -ov -format UDZO Notepad--.dmg
           elif [[ ${{ matrix.os }} == 'windows-latest' ]]; then
-            powershell Compress-Archive -Path "${{ github.workspace }}\build\*" -DestinationPath "Notepad--.zip"
+            Compress-Archive -Path "${{ github.workspace }}\build\*" -DestinationPath "Notepad--.zip"
           fi
         shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
@@ -104,7 +106,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifacts/
-          asset_name: ${{ matrix.os }}-Notepad--.tar.gz
-          asset_name: ${{ matrix.os }}-Notepad--.dmg
-          asset_name: ${{ matrix.os }}-Notepad--.zip
+          asset_name: Notepad---${{ matrix.os }}.tar.gz
+          asset_name: Notepad---${{ matrix.os }}.dmg
+          asset_name: Notepad---${{ matrix.os }}.zip
           content_type: application/octet-stream
