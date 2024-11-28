@@ -64,12 +64,12 @@ jobs:
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cmd /c "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && `
+        cmd /c ""C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && `
         cmake -B "${{ github.workspace }}\build" `
           -DCMAKE_BUILD_TYPE=Release `
           -DCMAKE_PREFIX_PATH="C:\Qt\6.5.3\msvc2019_64\lib\cmake" `
           -G "Ninja" `
-          -S "${{ github.workspace }}"
+          -S "${{ github.workspace }}"" 
       shell: pwsh
 
     # Build Application
