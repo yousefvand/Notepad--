@@ -63,7 +63,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: actions/cache@v3
       with:
-        path: D:\qt-source
+        path: D:/qt-source
         key: qt-source-6.5.3
         restore-keys: qt-source-
 
@@ -71,16 +71,38 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        $qtSourceDir = "D:\qt-source"
-        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
+        $qtSourceDir = "D:/qt-source"
+        $qtZip = "$qtSourceDir/qt-everywhere-src-6.5.3.zip"
 
-        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
+        if (-Not (Test-Path "$qtSourceDir/qt-everywhere-src-6.5.3/qtbase/configure.bat")) {
           Write-Host "Qt source not found in cache. Downloading..."
           New-Item -ItemType Directory -Path $qtSourceDir -Force
           Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         } else {
           Write-Host "Qt source found in cache."
+        }
+
+    - name: Install bison Manually (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        $bisonPath = "C:/ProgramData/chocolatey/bin/bison.exe"
+        if (-not (Test-Path $bisonPath)) {
+          Write-Host "bison is not available. Installing manually..."
+          $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.tar.gz"
+          $bisonDir = "D:/bison"
+          $bisonTar = "$bisonDir/bison.tar.gz"
+          $bisonExtractDir = "$bisonDir/bison-3.8.2"
+          New-Item -ItemType Directory -Path $bisonDir -Force
+
+          # Download and extract bison
+          Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonTar -UseBasicParsing
+          tar -xvf $bisonTar -C $bisonDir
+          $env:PATH += ";$bisonExtractDir/bin"
+          [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
+        } else {
+          Write-Host "bison found at $bisonPath"
         }
 
     - name: Build and Install Qt from Source (Windows)
@@ -97,12 +119,12 @@ jobs:
         CALL "%VS_VARS_CMD%" || exit /b 1
 
         REM Build Qt from source
-        SET QT_SOURCE=D:\qt-source\qt-everywhere-src-6.5.3
-        IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
-          echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
+        SET QT_SOURCE=D:/qt-source/qt-everywhere-src-6.5.3
+        IF NOT EXIST "%QT_SOURCE%/qtbase/configure.bat" (
+          echo "configure.bat not found in %QT_SOURCE%/qtbase" && exit /b 1
         )
-        cd "%QT_SOURCE%\qtbase"
-        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
+        cd "%QT_SOURCE%/qtbase"
+        call configure.bat -top-level -prefix C:/Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
           -DFEATURE_clang=ON ^
           -DFEATURE_clangcpp=ON ^
           -DLLVM_INSTALL_DIR="C:/Program Files/LLVM" ^
@@ -121,9 +143,9 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        echo "Qt6_DIR=C:\Qt\lib\cmake\Qt6" >> $env:GITHUB_ENV
-        echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
-        echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
+        echo "Qt6_DIR=C:/Qt/lib/cmake/Qt6" >> $env:GITHUB_ENV
+        echo "QT_PLUGIN_PATH=C:/Qt/plugins" >> $env:GITHUB_ENV
+        echo "QML2_IMPORT_PATH=C:/Qt/qml" >> $env:GITHUB_ENV
 
     - name: Configure CMake
       run: |
