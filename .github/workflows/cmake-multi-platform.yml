@@ -57,6 +57,7 @@ jobs:
         choco install python3 -y
         choco install llvm -y
         choco install gperf -y
+        pip install html5lib
 
     - name: Cache Qt Source (Windows)
       if: matrix.os == 'windows-latest'
@@ -80,28 +81,6 @@ jobs:
           Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
         } else {
           Write-Host "Qt source found in cache."
-        }
-
-    - name: Install bison Manually (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        $bisonPath = "C:/ProgramData/chocolatey/bin/bison.exe"
-        if (-not (Test-Path $bisonPath)) {
-          Write-Host "bison is not available. Installing manually..."
-          $bisonUrl = "https://mirrors.kernel.org/gnu/bison/bison-3.8.2.tar.gz"
-          $bisonDir = "D:/bison"
-          $bisonTar = "$bisonDir/bison.tar.gz"
-          $bisonExtractDir = "$bisonDir/bison-3.8.2"
-          New-Item -ItemType Directory -Path $bisonDir -Force
-
-          # Download and extract bison
-          Invoke-WebRequest -Uri $bisonUrl -OutFile $bisonTar -UseBasicParsing
-          tar -xvf $bisonTar -C $bisonDir
-          $env:PATH += ";$bisonExtractDir/bin"
-          [System.Environment]::SetEnvironmentVariable("PATH", $env:PATH, [System.EnvironmentVariableTarget]::Process)
-        } else {
-          Write-Host "bison found at $bisonPath"
         }
 
     - name: Build and Install Qt from Source (Windows)
