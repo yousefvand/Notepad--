@@ -49,6 +49,7 @@ jobs:
         choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+      shell: pwsh
 
     # Configure CMake
     - name: Configure CMake (Ubuntu and macOS)
@@ -63,9 +64,11 @@ jobs:
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
+        $env:CMAKE_PREFIX_PATH = "C:\Qt\6.5.3\msvc2019_64\lib\cmake"
         cmake -B "${{ github.workspace }}\build" `
           -DCMAKE_BUILD_TYPE=Release `
           -G "Ninja" `
+          -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
           -S "${{ github.workspace }}"
       shell: pwsh
 
