@@ -94,8 +94,13 @@ jobs:
       run: |
         $vcvarsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
         if (!(Test-Path $vcvarsPath)) {
-            Write-Output "Visual Studio Build Tools not found at $vcvarsPath. Attempting installation again."
-            exit 1
+            Write-Output "Visual Studio Build Tools not found at $vcvarsPath. Reinstalling..."
+            choco install visualstudio2022buildtools -y --install-arguments \
+              '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
+            if (!(Test-Path $vcvarsPath)) {
+                Write-Output "Failed to install Visual Studio Build Tools."
+                exit 1
+            }
         } else {
             Write-Output "Found Visual Studio Build Tools at $vcvarsPath"
         }
