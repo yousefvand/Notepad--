@@ -29,32 +29,27 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Ubuntu Setup
-    - name: Set up dependencies (Ubuntu)
+    # Install dependencies based on OS
+    - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
             qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
-        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
 
-    # macOS Setup
-    - name: Set up dependencies (macOS)
+    - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
-        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
 
-    # Windows Setup
-    - name: Set up dependencies (Windows)
+    - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
         choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        echo "CMAKE_PREFIX_PATH=C:\Qt\6.5.3\msvc2019_64\lib\cmake" >> $env:GITHUB_ENV
 
     # Configure CMake
     - name: Configure CMake
@@ -63,19 +58,23 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -G "Ninja" \
           -S "${{ github.workspace }}"
+      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
     # Build Application
     - name: Build application
       run: cmake --build "${{ github.workspace }}/build" --config Release
+      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
     # Package Application
-    - name: Package application (Linux)
+    - name: Package application (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        rsync -a "${{ github.workspace }}/build/" "/tmp/build_copy/"
-        cd /tmp/build_copy
-        tar --exclude='./.*' -czvf application.tar.gz .
-      shell: bash
+        BUILD_DIR="/home/runner/work/Notepad--/Notepad--/build"
+        TEMP_DIR="/tmp/build_copy"
+        rm -rf $TEMP_DIR
+        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
+        cd $TEMP_DIR
+        tar -czvf application.tar.gz ./*
 
     - name: Package application (macOS)
       if: matrix.os == 'macos-latest'
@@ -83,13 +82,13 @@ jobs:
         cd "${{ github.workspace }}/build"
         hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
         zip application.zip application.dmg
-      shell: bash
 
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         cd "${{ github.workspace }}/build"
         Compress-Archive -Path . -DestinationPath application.zip
+      shell: pwsh
 
     # Upload Artifacts
     - name: Upload artifact
@@ -98,29 +97,4 @@ jobs:
         name: application-${{ matrix.os }}
         path: |
           ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
-          /tmp/build_copy/application.tar.gz # For Ubuntu temporary path
-
-  create-release:
-    needs: build-and-release
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    steps:
-    - name: Create a Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Assets
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: |
-          ${{ github.workspace }}/build/application-${{ matrix.os }}.${{ matrix.artifact_extension }}
-        asset_name: application-${{ matrix.os }}.${{ matrix.artifact_extension }}
-        asset_content_type: application/octet-stream
+          /tmp/build_copy/application.tar.gz
