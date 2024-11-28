@@ -20,19 +20,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies (Ubuntu)
-        if: ${{ runner.os == 'Linux' }}
+      - name: Install dependencies on Ubuntu
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev ninja-build cmake
 
-      - name: Install dependencies (macOS)
-        if: ${{ runner.os == 'macOS' }}
+      - name: Install dependencies on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
         run: |
           brew install qt ninja cmake
 
-      - name: Install dependencies (Windows)
-        if: ${{ runner.os == 'Windows' }}
+      - name: Install dependencies on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
           choco install qt --version=6.5.3 -y
           choco install ninja -y
@@ -46,30 +46,37 @@ jobs:
           $env:CMAKE_PREFIX_PATH = "$QtPath\lib\cmake"
         shell: pwsh
 
-      - name: Configure CMake
+      - name: Configure CMake on Ubuntu/macOS
+        if: ${{ matrix.os != 'windows-latest' }}
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+
+      - name: Configure CMake on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" -S .
+        shell: pwsh
 
       - name: Build application
         run: cmake --build build --parallel
-        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
-      - name: Package application
-        run: |
-          if [[ $RUNNER_OS == "Linux" ]]; then
-            tar -czf Notepad--_linux.tar.gz -C build .
-          elif [[ $RUNNER_OS == "macOS" ]]; then
-            hdiutil create -volname Notepad-- -srcfolder build -ov -format UDZO Notepad--_macos.dmg
-          elif [[ $RUNNER_OS == "Windows" ]]; then
-            Compress-Archive -Path build\* -DestinationPath Notepad--_windows.zip
-          fi
-        shell: bash
+      - name: Package application on Ubuntu
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: tar -czf Notepad--_linux.tar.gz -C build .
+
+      - name: Package application on macOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: hdiutil create -volname Notepad-- -srcfolder build -ov -format UDZO Notepad--_macos.dmg
+
+      - name: Package application on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: Compress-Archive -Path build\* -DestinationPath Notepad--_windows.zip
+        shell: pwsh
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ runner.os }}-artifact
+          name: ${{ matrix.os }}-artifact
           path: |
             Notepad--_linux.tar.gz
             Notepad--_macos.dmg
@@ -96,6 +103,7 @@ jobs:
           prerelease: false
 
       - name: Upload Linux release asset
+        if: ${{ steps.download_artifacts.outputs.name == 'Notepad--_linux.tar.gz' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -106,6 +114,7 @@ jobs:
           content_type: application/gzip
 
       - name: Upload macOS release asset
+        if: ${{ steps.download_artifacts.outputs.name == 'Notepad--_macos.dmg' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -116,6 +125,7 @@ jobs:
           content_type: application/octet-stream
 
       - name: Upload Windows release asset
+        if: ${{ steps.download_artifacts.outputs.name == 'Notepad--_windows.zip' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
