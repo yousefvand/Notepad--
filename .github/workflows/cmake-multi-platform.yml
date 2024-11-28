@@ -24,7 +24,11 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y qt6-base-dev ninja-build cmake
+          sudo apt-get install -y \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
+            qt6-wayland qt6-declarative qt6-websockets \
+            libgl-dev libglu1-mesa-dev libx11-dev libxi-dev libxrandr-dev \
+            libxext-dev libxfixes-dev libxcb-glx0-dev ninja-build cmake
 
       - name: Install dependencies on macOS
         if: ${{ matrix.os == 'macos-latest' }}
@@ -103,7 +107,6 @@ jobs:
           prerelease: false
 
       - name: Upload Linux release asset
-        if: ${{ steps.download_artifacts.outputs.name == 'Notepad--_linux.tar.gz' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -114,7 +117,6 @@ jobs:
           content_type: application/gzip
 
       - name: Upload macOS release asset
-        if: ${{ steps.download_artifacts.outputs.name == 'Notepad--_macos.dmg' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,7 +127,6 @@ jobs:
           content_type: application/octet-stream
 
       - name: Upload Windows release asset
-        if: ${{ steps.download_artifacts.outputs.name == 'Notepad--_windows.zip' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
