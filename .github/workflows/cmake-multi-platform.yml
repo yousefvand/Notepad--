@@ -17,78 +17,78 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up dependencies on Ubuntu
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y software-properties-common
-        sudo add-apt-repository ppa:qt/qt6 -y
-        sudo apt-get update
-        sudo apt-get install -y \
-          qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
-          qt6-declarative-dev qt6-websockets-dev \
-          libgl-dev libglu1-mesa-dev libx11-dev libxi-dev libxrandr-dev \
-          libxext-dev libxfixes-dev libxcb-glx0-dev ninja-build cmake
+      - name: Set up dependencies on Ubuntu
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository ppa:qt/qt6 -y
+          sudo apt-get update
+          sudo apt-get install -y \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
+            qt6-declarative-dev qt6-websockets-dev \
+            libgl-dev libglu1-mesa-dev libx11-dev libxi-dev libxrandr-dev \
+            libxext-dev libxfixes-dev libxcb-glx0-dev ninja-build cmake
 
-    - name: Set up dependencies on macOS
-      if: ${{ matrix.os == 'macos-latest' }}
-      run: |
-        brew update
-        brew install qt cmake ninja
+      - name: Set up dependencies on macOS
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          brew update
+          brew install qt cmake ninja
 
-    - name: Set up dependencies on Windows
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: |
-        choco install cmake ninja qt --no-progress -y
-        echo "::add-path::C:\\Qt\\6.5.3\\msvc2019_64\\bin"
+      - name: Set up dependencies on Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          choco install cmake ninja qt --no-progress -y
+          echo "::add-path::C:\\Qt\\6.5.3\\msvc2019_64\\bin"
 
-    - name: Configure CMake
-      run: |
-        cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
-      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+      - name: Configure CMake
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
+        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
-    - name: Build with Ninja
-      run: cmake --build build
-      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+      - name: Build with Ninja
+        run: cmake --build build
+        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
-    - name: Package application
-      run: |
-        mkdir release
-        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-          tar -czvf release/application.tar.gz -C build .
-        elif [ "${{ matrix.os }}" == "macos-latest" ]; then
-          hdiutil create release/application.dmg -srcfolder build
-        elif [ "${{ matrix.os }}" == "windows-latest" ]; then
-          7z a release/application.zip build\*
-        fi
-      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+      - name: Package application
+        run: |
+          mkdir release
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            tar -czvf release/application.tar.gz -C build .
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            hdiutil create release/application.dmg -srcfolder build
+          elif [ "${{ runner.os }}" == "Windows" ]; then
+            7z a release/application.zip build\*
+          fi
+        shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: application-${{ matrix.os }}
-        path: release/
-  
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: application-${{ runner.os }}
+          path: release/
+
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: application-ubuntu-latest
-        path: artifacts/
-    - name: Create GitHub release
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: |
-          artifacts/application-ubuntu-latest.tar.gz
-          artifacts/application-macos-latest.dmg
-          artifacts/application-windows-latest.zip
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.run_id }}
-        release_name: Release ${{ github.run_id }}
-        draft: false
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: application-${{ runner.os }}
+          path: artifacts/
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: |
+            artifacts/application-Linux.tar.gz
+            artifacts/application-macOS.dmg
+            artifacts/application-Windows.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.run_id }}
+          release_name: Release ${{ github.run_id }}
+          draft: false
