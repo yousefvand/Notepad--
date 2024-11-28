@@ -1,4 +1,4 @@
-name: Build and Release Notepad--
+name: Build and Release
 
 on:
   push:
@@ -11,127 +11,84 @@ on:
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install dependencies on Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
-            qt6-wayland qt6-declarative qt6-websockets \
-            libgl-dev libglu1-mesa-dev libx11-dev libxi-dev libxrandr-dev \
-            libxext-dev libxfixes-dev libxcb-glx0-dev ninja-build cmake
+    - name: Set up dependencies on Ubuntu
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y software-properties-common
+        sudo add-apt-repository ppa:qt/qt6 -y
+        sudo apt-get update
+        sudo apt-get install -y \
+          qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
+          qt6-declarative-dev qt6-websockets-dev \
+          libgl-dev libglu1-mesa-dev libx11-dev libxi-dev libxrandr-dev \
+          libxext-dev libxfixes-dev libxcb-glx0-dev ninja-build cmake
 
-      - name: Install dependencies on macOS
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: |
-          brew install qt ninja cmake
+    - name: Set up dependencies on macOS
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: |
+        brew update
+        brew install qt cmake ninja
 
-      - name: Install dependencies on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          choco install qt --version=6.5.3 -y
-          choco install ninja -y
-          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-          $QtPath = (Get-ChildItem -Directory 'C:\Qt\6.5.3' | Where-Object { $_.Name -match 'mingw.*' }).FullName
-          if (-not $QtPath) {
-            Write-Error "Could not find a valid Qt installation for MinGW."
-            exit 1
-          }
-          Write-Host "Using Qt path: $QtPath"
-          $env:CMAKE_PREFIX_PATH = "$QtPath\lib\cmake"
-        shell: pwsh
+    - name: Set up dependencies on Windows
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        choco install cmake ninja qt --no-progress -y
+        echo "::add-path::C:\\Qt\\6.5.3\\msvc2019_64\\bin"
 
-      - name: Configure CMake on Ubuntu/macOS
-        if: ${{ matrix.os != 'windows-latest' }}
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
+    - name: Configure CMake
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
+      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-      - name: Configure CMake on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" -S .
-        shell: pwsh
+    - name: Build with Ninja
+      run: cmake --build build
+      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-      - name: Build application
-        run: cmake --build build --parallel
+    - name: Package application
+      run: |
+        mkdir release
+        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          tar -czvf release/application.tar.gz -C build .
+        elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+          hdiutil create release/application.dmg -srcfolder build
+        elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+          7z a release/application.zip build\*
+        fi
+      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
-      - name: Package application on Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: tar -czf Notepad--_linux.tar.gz -C build .
-
-      - name: Package application on macOS
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: hdiutil create -volname Notepad-- -srcfolder build -ov -format UDZO Notepad--_macos.dmg
-
-      - name: Package application on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: Compress-Archive -Path build\* -DestinationPath Notepad--_windows.zip
-        shell: pwsh
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.os }}-artifact
-          path: |
-            Notepad--_linux.tar.gz
-            Notepad--_macos.dmg
-            Notepad--_windows.zip
-
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: application-${{ matrix.os }}
+        path: release/
+  
   release:
     needs: build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: ./artifacts
-
-      - name: Create release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.run_id }}
-          release_name: Release ${{ github.run_id }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Linux release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/Notepad--_linux.tar.gz
-          asset_name: Notepad--_linux.tar.gz
-          content_type: application/gzip
-
-      - name: Upload macOS release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/Notepad--_macos.dmg
-          asset_name: Notepad--_macos.dmg
-          content_type: application/octet-stream
-
-      - name: Upload Windows release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/Notepad--_windows.zip
-          asset_name: Notepad--_windows.zip
-          content_type: application/zip
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: application-ubuntu-latest
+        path: artifacts/
+    - name: Create GitHub release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: |
+          artifacts/application-ubuntu-latest.tar.gz
+          artifacts/application-macos-latest.dmg
+          artifacts/application-windows-latest.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.run_id }}
+        release_name: Release ${{ github.run_id }}
+        draft: false
