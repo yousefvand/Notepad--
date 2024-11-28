@@ -2,7 +2,8 @@
 #include <QPainter>
 #include <QTextBlock>
 #include <QScrollBar>
-#include "helpers.h"
+#include <QTabWidget>
+#include "settings.h"
 
 CodeEditor::CodeEditor(QWidget *parent)
     : QPlainTextEdit(parent), lineNumberArea(new LineNumberArea(this)) {
@@ -26,6 +27,9 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+
+    m_useTabs = Settings::instance()->loadSetting("Indentation", "Option", "Tabs") == "Tabs";
+    m_indentationWidth = Settings::instance()->loadSetting("Indentation", "Size", "1").toInt();
 }
 
 int CodeEditor::lineNumberAreaWidth() {
@@ -154,8 +158,11 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
 }
 
 void CodeEditor::applyIndentation(bool useTabs, int indentationWidth) {
+    m_useTabs = useTabs;
+    m_indentationWidth = indentationWidth;
     QTextCursor cursor = textCursor();
-    QString indentation = useTabs ? "\t" : QString(indentationWidth, ' ');
+    QString indentation = useTabs ? QString(indentationWidth, '\t')
+                                  : QString(indentationWidth, ' ');
     cursor.insertText(indentation);
 }
 
@@ -211,5 +218,39 @@ void CodeEditor::gotoLineInEditor(int lineNumber) {
     } else {
         qWarning() << "Invalid Line Number: " << lineNumber << " .The specified line is out of range.";
     }
+}
+
+void CodeEditor::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Tab) {
+        // User pressed Tab
+        QTextCursor cursor = textCursor();
+
+        // Determine the indentation string (tabs or spaces)
+        QString indentation = m_useTabs ? QString(m_indentationWidth, '\t')
+                                        : QString(m_indentationWidth, ' ');
+
+        // Insert the indentation
+        cursor.insertText(indentation);
+
+        // Prevent further handling of the Tab key
+        return;
+    } else if (event->key() == Qt::Key_Backtab) {
+        // User pressed Shift+Tab (outdent logic)
+        QTextCursor cursor = textCursor();
+        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
+
+        QString blockText = cursor.selectedText();
+        if (m_useTabs && blockText.startsWith(QString(m_indentationWidth, '\t'))) {
+            cursor.removeSelectedText();
+        } else if (!m_useTabs && blockText.startsWith(QString(m_indentationWidth, ' '))) {
+            cursor.removeSelectedText();
+        }
+
+        // Prevent further handling of Shift+Tab
+        return;
+    }
+
+    // Pass other keys to the default handler
+    QPlainTextEdit::keyPressEvent(event);
 }
 

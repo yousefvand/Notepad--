@@ -27,6 +27,7 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    virtual void keyPressEvent(QKeyEvent *event) override;
 
 signals:
     void textChanged(); // FIXME: Remove this line.
@@ -38,6 +39,8 @@ private slots:
 private:
     QWidget *lineNumberArea;
     QTabWidget* m_documentsTab;
+    bool m_useTabs;
+    int m_indentationWidth;
 };
 
 class LineNumberArea : public QWidget {

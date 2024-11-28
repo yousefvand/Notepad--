@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.57
+
+- Indentation Implemented
+
 ## 0.0.56
 
 - Search & Replace Menu -> Fixed double click on results

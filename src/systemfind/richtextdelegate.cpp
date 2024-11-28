@@ -53,6 +53,7 @@ void RichTextDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 }
 
 QSize RichTextDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
+    Q_UNUSED(option);
     QTextDocument doc;
     QString text = index.data().toString();
 
