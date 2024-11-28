@@ -29,41 +29,38 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Install dependencies
+    # Install dependencies based on OS
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
+            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync cmake
 
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        brew update
-        brew install ninja qt
+        brew install ninja qt cmake
 
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install visualstudio2022buildtools -y --install-arguments \
-          '--add Microsoft.VisualStudio.Workload.VCTools --quiet --norestart'
         choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install visualstudio2022buildtools -y --install-arguments \
+          '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
 
-    # Debug and verify Visual Studio paths
+    # Debug Visual Studio paths on Windows
     - name: Debug Visual Studio paths
       if: matrix.os == 'windows-latest'
       run: |
-        echo "Checking Visual Studio paths..."
-        if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
-          echo "Found vcvars64.bat"
-        ) else (
-          echo "vcvars64.bat not found"
-          exit 1
-        )
+        echo "Checking for Visual Studio Build Tools installation..."
+        dir "C:\Program Files (x86)\Microsoft Visual Studio" /b
+        dir "C:\Program Files\Microsoft Visual Studio" /b
+        dir "C:\Program Files (x86)\Microsoft Visual Studio\*\*\BuildTools\VC\Auxiliary\Build\vcvars64.bat" /b
+        dir "C:\Program Files\Microsoft Visual Studio\*\*\BuildTools\VC\Auxiliary\Build\vcvars64.bat" /b
       shell: cmd
 
     # Configure CMake
@@ -95,7 +92,7 @@ jobs:
 
     - name: Build application (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake --build "D:\a\Notepad--\Notepad--\build" --config Release
+      run: cmake --build D:\a\Notepad--\Notepad--\build --config Release
       shell: cmd
 
     # Package Application
@@ -108,21 +105,18 @@ jobs:
         rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
         cd $TEMP_DIR
         tar -czvf application.tar.gz ./*
-        mv application.tar.gz $BUILD_DIR/
-
     - name: Package application (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         cd "${{ github.workspace }}/build"
         hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
         zip application.zip application.dmg
-
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cd "D:\a\Notepad--\Notepad--\build"
+        cd D:\a\Notepad--\Notepad--\build
         Compress-Archive -Path . -DestinationPath application.zip
-      shell: pwsh
+      shell: cmd
 
     # Upload Artifacts
     - name: Upload artifact
@@ -131,3 +125,4 @@ jobs:
         name: application-${{ matrix.os }}
         path: |
           ${{ github.workspace }}/build/application.${{ matrix.artifact_extension }}
+          /tmp/build_copy/application.tar.gz
