@@ -82,8 +82,7 @@ jobs:
       run: |
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install visualstudio2022buildtools -y --install-arguments \
-          '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
+        choco install visualstudio2022buildtools -y --install-arguments="'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'"
       shell: cmd
 
     - name: Install Qt (Windows)
@@ -115,11 +114,41 @@ jobs:
         cd "${{ github.workspace }}\\build"
         Compress-Archive -Path . -DestinationPath Notepad--.zip
 
-    # Upload Artifacts
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
+    # Create GitHub Release
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: Notepad---${{ matrix.os }}
-        path: |
-          ${{ github.workspace }}/build/Notepad--.${{ matrix.artifact_extension }}
-          /tmp/build_copy/Notepad--.tar.gz
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+
+    # Upload Release Assets
+    - name: Upload Ubuntu Artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_path: /tmp/build_copy/Notepad--.tar.gz
+        asset_name: Notepad--_ubuntu.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload macOS Artifact
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_path: "${{ github.workspace }}/build/Notepad--.zip"
+        asset_name: Notepad--_macos.zip
+        asset_content_type: application/zip
+
+    - name: Upload Windows Artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_path: "${{ github.workspace }}\\build\\Notepad--.zip"
+        asset_name: Notepad--_windows.zip
+        asset_content_type: application/zip
