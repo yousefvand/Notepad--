@@ -2,12 +2,9 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-and-release:
@@ -56,7 +53,7 @@ jobs:
         rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
         cd $TEMP_DIR
         tar -czvf application.tar.gz ./*
-
+    
     # macOS Section
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
@@ -78,29 +75,24 @@ jobs:
         cd "${{ github.workspace }}/build"
         hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
         zip application.zip application.dmg
-
+    
     # Windows Section
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install visualstudio2022buildtools -y --install-arguments \
-          '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
         choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install visualstudio2022buildtools --force -y --install-arguments \
+          '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
       shell: cmd
     - name: Verify Visual Studio Installation
       if: matrix.os == 'windows-latest'
       run: |
         $vcvarsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
         if (!(Test-Path $vcvarsPath)) {
-            Write-Output "Visual Studio Build Tools not found at $vcvarsPath. Reinstalling..."
-            choco install visualstudio2022buildtools -y --install-arguments \
-              '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
-            if (!(Test-Path $vcvarsPath)) {
-                Write-Output "Failed to install Visual Studio Build Tools."
-                exit 1
-            }
+            Write-Output "Visual Studio Build Tools not found at $vcvarsPath. Installation failed."
+            exit 1
         } else {
             Write-Output "Found Visual Studio Build Tools at $vcvarsPath"
         }
