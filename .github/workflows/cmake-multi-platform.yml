@@ -83,8 +83,7 @@ jobs:
         choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install visualstudio2022buildtools --force -y --install-arguments \
-          '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
+        choco install visualstudio2022buildtools -y --params="'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'"
       shell: cmd
     - name: Verify Visual Studio Installation
       if: matrix.os == 'windows-latest'
