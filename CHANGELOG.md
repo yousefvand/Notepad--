@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.58
+
+- View -> Show Symbol -> Show Tabs
+
 ## 0.0.57
 
 - Indentation Implemented

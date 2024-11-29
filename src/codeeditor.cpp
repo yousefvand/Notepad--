@@ -30,6 +30,8 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     m_useTabs = Settings::instance()->loadSetting("Indentation", "Option", "Tabs") == "Tabs";
     m_indentationWidth = Settings::instance()->loadSetting("Indentation", "Size", "1").toInt();
+    m_showTabs = Settings::instance()->loadSetting("View", "ShowTabs", "false") == "true";
+    m_tabWidth = Settings::instance()->loadSetting("View", "TabWidth", "4").toInt();
 }
 
 int CodeEditor::lineNumberAreaWidth() {
@@ -254,3 +256,55 @@ void CodeEditor::keyPressEvent(QKeyEvent *event) {
     QPlainTextEdit::keyPressEvent(event);
 }
 
+void CodeEditor::setShowTabs(bool enabled) {
+    if (m_showTabs != enabled) {
+        m_showTabs = enabled;
+        viewport()->update(); // Redraw the editor to show or hide tab symbols
+    }
+}
+
+bool CodeEditor::showTabs() const {
+    return m_showTabs;
+}
+
+void CodeEditor::setTabWidth(int width = 4) {
+    m_tabWidth = width;
+    viewport()->update(); // Trigger a repaint to apply the new width
+}
+
+void CodeEditor::paintEvent(QPaintEvent *event) {
+    QPlainTextEdit::paintEvent(event);
+
+    if (!m_showTabs) return;
+
+    QPainter painter(viewport());
+    painter.setPen(Qt::gray);
+
+    QTextBlock block = document()->firstBlock();
+    QFontMetrics metrics(font());
+
+    while (block.isValid()) {
+        QString text = block.text();
+        int blockStart = block.position();
+        QTextCursor blockCursor(block);
+
+        // Iterate over characters in the block
+        for (int i = 0; i < text.length(); ++i) {
+            if (text[i] == '\t') {
+                // Move the cursor to the tab character
+                blockCursor.setPosition(blockStart + i);
+
+                // Get the rectangle of the cursor position
+                QRect rect = cursorRect(blockCursor);
+
+                // Adjust the position for the tab symbol
+                //QPoint position(rect.left(), rect.top() + metrics.ascent());
+                QPoint position(rect.left() + metrics.ascent(), rect.top() + metrics.ascent());
+
+                // Draw the tab symbol
+                painter.drawText(position, "→");
+            }
+        }
+        block = block.next();
+    }
+}

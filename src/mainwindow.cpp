@@ -492,13 +492,22 @@ void MainWindow::on_action_Find_triggered() {
     }
 }
 
-
-
-
-
-
-
 /* View Menu */
+
+void MainWindow::on_action_Show_Tabs_triggered(bool checked)
+{
+    qDebug() << "Show Tabs is: " << checked;
+    Settings::instance()->saveSetting("View", "ShowTabs", checked ? "true" : "false");
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowTabs(checked);
+        }
+    }
+}
+
+
 
 
 
@@ -511,9 +520,6 @@ void MainWindow::on_action_Find_triggered() {
 
 
 /* Helper Functions */
-
-
-
 
 
 // FIXME: Wrong line selected
@@ -642,9 +648,6 @@ void MainWindow::setActiveDocumentEditorInReplaceDialog() {
         qWarning() << "Warning: No active document found.";
     }
 }
-
-
-
 
 
 

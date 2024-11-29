@@ -145,6 +145,8 @@ private slots:
 
     void on_actionGo_to_Line_in_Editor_triggered();
 
+    void on_action_Show_Tabs_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
