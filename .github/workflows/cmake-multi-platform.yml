@@ -83,12 +83,22 @@ jobs:
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
+    - name: Download and Extract Qt Prebuilt Binaries (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        $qtDownloadUrl = "https://download.qt.io/official_releases/qt/6.5/6.5.3/qt-opensource-windows-x86-6.5.3.exe"
+        $qtInstaller = "C:\\QtInstaller.exe"
+        Invoke-WebRequest -Uri $qtDownloadUrl -OutFile $qtInstaller
+        Start-Process -FilePath $qtInstaller -ArgumentList "--silent", "--platform", "msvc2019_64" -Wait
+        Remove-Item -Path $qtInstaller
+      shell: pwsh
+
     - name: Verify Qt Installation (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         $qtPath = "C:\\Qt\\6.5.3\\msvc2019_64\\lib\\cmake"
         if (!(Test-Path $qtPath)) {
-          Write-Error "Qt prebuilt binaries not found at $qtPath. Please ensure they are pre-installed."
+          Write-Error "Qt prebuilt binaries not found at $qtPath. Installation failed."
           exit 1
         } else {
           Write-Output "Qt installation found at $qtPath"
