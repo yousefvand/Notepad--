@@ -79,6 +79,15 @@ jobs:
     # Windows Section
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
+      run: |
+        choco install ninja -y
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install visualstudio2022buildtools -y --install-arguments \
+          '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
+      shell: cmd
+
+    - name: Install Qt (Windows)
+      if: matrix.os == 'windows-latest'
       uses: jurplel/install-qt-action@v4
       with:
         version: '6.5.3'
