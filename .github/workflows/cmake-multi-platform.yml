@@ -48,8 +48,6 @@ jobs:
         run: |
           cd "${{ github.workspace }}/build"
           tar -czvf Notepad--.tar.gz ./
-        with:
-          path: "${{ github.workspace }}/build/Notepad--.tar.gz"
 
       # macOS Section
       - name: Install dependencies (macOS)
@@ -70,8 +68,6 @@ jobs:
         run: |
           cd "${{ github.workspace }}/build"
           hdiutil create -volname "Notepad--" -srcfolder . -ov -format UDZO Notepad--.dmg
-        with:
-          path: "${{ github.workspace }}/build/Notepad--.dmg"
 
       # Windows Section
       - name: Install Qt (Windows)
