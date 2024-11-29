@@ -2,12 +2,9 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-and-release:
@@ -56,7 +53,7 @@ jobs:
         rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
         cd $TEMP_DIR
         tar -czvf application.tar.gz ./*
-
+    
     # macOS Section
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
@@ -78,48 +75,48 @@ jobs:
         cd "${{ github.workspace }}/build"
         hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
         zip application.zip application.dmg
-
+    
     # Windows Section
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install visualstudio2022buildtools -y --install-arguments \
-          '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
-        choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-      shell: cmd
-    - name: Check Visual Studio Build Tools Path
+
+    - name: Verify Qt Installation (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        $vcvarsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-        if (!(Test-Path $vcvarsPath)) {
-            Write-Host "Visual Studio Build Tools not found at $vcvarsPath"
-            exit 1
+        $qtPath = "C:\\Qt\\6.5.3\\msvc2019_64\\lib\\cmake"
+        if (!(Test-Path $qtPath)) {
+          Write-Error "Qt prebuilt binaries not found at $qtPath. Please ensure they are pre-installed."
+          exit 1
         } else {
-            Write-Host "Found Visual Studio Build Tools at $vcvarsPath"
+          Write-Output "Qt installation found at $qtPath"
         }
       shell: pwsh
+
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
-        cmake -B D:\a\Notepad--\Notepad--\build ^
+        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat" && ^
+        cmake -B D:\\a\\Notepad--\\Notepad--\\build ^
           -DCMAKE_BUILD_TYPE=Release ^
-          -DCMAKE_PREFIX_PATH="C:\Qt\6.5.3\msvc2019_64\lib\cmake" ^
+          -DCMAKE_PREFIX_PATH="C:\\Qt\\6.5.3\\msvc2019_64\\lib\\cmake" ^
           -G Ninja ^
-          -S D:\a\Notepad--\Notepad--
+          -S D:\\a\\Notepad--\\Notepad--
       shell: cmd
+
     - name: Build application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
-        cmake --build D:\a\Notepad--\Notepad--\build --config Release
+        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat" && ^
+        cmake --build D:\\a\\Notepad--\\Notepad--\\build --config Release
       shell: cmd
+
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cd D:\a\Notepad--\Notepad--\build
+        cd D:\\a\\Notepad--\\Notepad--\\build
         Compress-Archive -Path . -DestinationPath application.zip
       shell: cmd
 
