@@ -18,129 +18,131 @@ jobs:
           - os: ubuntu-latest
             artifact_extension: tar.gz
           - os: macos-latest
-            artifact_extension: dmg
+            artifact_extension: zip
           - os: windows-latest
             artifact_extension: zip
 
     steps:
-      # Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # Ubuntu Section
-      - name: Install dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build \
-              qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-              qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
-      - name: Configure CMake (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          cmake -B "${{ github.workspace }}/build" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -G Ninja \
-            -S "${{ github.workspace }}"
-      - name: Build Notepad-- (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: cmake --build "${{ github.workspace }}/build" --config Release
-      - name: Package Notepad-- (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          BUILD_DIR="${{ github.workspace }}/build"
-          TEMP_DIR="/tmp/build_copy"
-          rm -rf $TEMP_DIR
-          rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
-          cd $TEMP_DIR
-          tar -czvf Notepad--.tar.gz ./*
+    # Ubuntu Section
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
+    - name: Configure CMake (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+    - name: Build application (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: cmake --build "${{ github.workspace }}/build" --config Release
+    - name: Package application (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        BUILD_DIR="${{ github.workspace }}/build"
+        TEMP_DIR="/tmp/build_copy"
+        rm -rf $TEMP_DIR
+        rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
+        cd $TEMP_DIR
+        tar -czvf Notepad--.tar.gz ./*
+    - name: Upload artifact (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad---${{ matrix.os }}
+        path: /tmp/build_copy/Notepad--.tar.gz
 
-      # macOS Section
-      - name: Install dependencies (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install ninja qt
-      - name: Configure CMake (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          cmake -B "${{ github.workspace }}/build" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -G Ninja \
-            -S "${{ github.workspace }}"
-      - name: Build Notepad-- (macOS)
-        if: matrix.os == 'macos-latest'
-        run: cmake --build "${{ github.workspace }}/build" --config Release
-      - name: Package Notepad-- (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          cd "${{ github.workspace }}/build"
-          hdiutil create -volname "Notepad--" -srcfolder . -ov -format UDZO Notepad--.dmg
+    # macOS Section
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install ninja qt
+    - name: Configure CMake (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+    - name: Build application (macOS)
+      if: matrix.os == 'macos-latest'
+      run: cmake --build "${{ github.workspace }}/build" --config Release
+    - name: Package application (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd "${{ github.workspace }}/build"
+        hdiutil create -volname Notepad-- -srcfolder . -ov -format UDZO Notepad--.dmg
+        zip Notepad--.zip Notepad--.dmg
+    - name: Upload artifact (macOS)
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad---${{ matrix.os }}
+        path: "${{ github.workspace }}/build/Notepad--.zip"
 
-      # Windows Section
-      - name: Install Qt (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.5.3'
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_msvc2019_64'
-      - name: Install dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install ninja -y
-          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-          choco install visualstudio2022buildtools -y --install-arguments \
-            '--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'
-      - name: Configure CMake (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          set "QT_DIR=%QT_INSTALL_DIR%"
-          cmake -B "%CD%\build" ^
-            -DCMAKE_BUILD_TYPE=Release ^
-            -DCMAKE_PREFIX_PATH="%QT_DIR%\lib\cmake" ^
-            -G Ninja ^
-            -S "%CD%"
-        shell: cmd
-      - name: Build Notepad-- (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          ninja -C "%CD%\build"
-        shell: cmd
-      - name: Package Notepad-- (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd "%CD%\build"
-          Compress-Archive -Path . -DestinationPath Notepad--.zip
-        shell: cmd
+    # Windows Section
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install ninja -y
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+    - name: Install Qt using jurplel/install-qt-action (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '6.5.3'
+        host: 'windows'
+        target: 'msvc2019_64'
+        dir: ${{ runner.workspace }}/Qt
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        call "${{ runner.workspace }}\Qt\6.5.3\msvc2019_64\bin\qt-cmake.bat" ^
+          -B "${{ github.workspace }}\build" ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -G Ninja ^
+          -S "${{ github.workspace }}"
+      shell: cmd
+    - name: Build application (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake --build "${{ github.workspace }}\build" --config Release
+      shell: cmd
+    - name: Package application (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd "${{ github.workspace }}\build"
+        Compress-Archive -Path . -DestinationPath Notepad--.zip
+      shell: cmd
+    - name: Upload artifact (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad---${{ matrix.os }}
+        path: "${{ github.workspace }}\build\Notepad--.zip"
 
-      # Upload Artifacts
-      - name: Upload Notepad-- Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Notepad---${{ matrix.os }}
-          path: |
-            ${{ github.workspace }}/build/Notepad--.${{ matrix.artifact_extension }}
-            /tmp/build_copy/Notepad--.tar.gz
-
-      # Create Release
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: "Release ${{ github.ref_name }}"
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Upload Release Assets
-      - name: Upload Release Assets
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: |
-            ${{ github.workspace }}/build/Notepad--.${{ matrix.artifact_extension }}
-            /tmp/build_copy/Notepad--.tar.gz
-          asset_name: Notepad---${{ matrix.os }}.${{ matrix.artifact_extension }}
-          asset_content_type: application/octet-stream
+    # Create Release and Attach Artifacts
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ matrix.os == 'ubuntu-latest' && '/tmp/build_copy/Notepad--.tar.gz' || matrix.os == 'macos-latest' && '${{ github.workspace }}/build/Notepad--.zip' || '${{ github.workspace }}\\build\\Notepad--.zip' }}
+        asset_name: Notepad---${{ matrix.os }}.${{ matrix.artifact_extension }}
+        asset_content_type: application/octet-stream
