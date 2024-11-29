@@ -26,7 +26,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Ubuntu Section
+    # Ubuntu Section - Keep unchanged
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -54,7 +54,7 @@ jobs:
         cd $TEMP_DIR
         tar -czvf Notepad--.tar.gz ./*
 
-    # macOS Section
+    # macOS Section - Keep unchanged
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
@@ -76,7 +76,7 @@ jobs:
         hdiutil create -volname Notepad-- -srcfolder . -ov -format UDZO Notepad--.dmg
         zip Notepad--.zip Notepad--.dmg
 
-    # Windows Section
+    # Windows Section - Fix linker errors
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
@@ -100,6 +100,7 @@ jobs:
         call "${{ env.QT_ROOT_DIR }}\\bin\\qt-cmake.bat" ^
           -B "${{ github.workspace }}\\build" ^
           -DCMAKE_BUILD_TYPE=Release ^
+          -DCMAKE_PREFIX_PATH="${{ env.QT_ROOT_DIR }}\\lib\\cmake" ^
           -G Ninja ^
           -S "${{ github.workspace }}"
       shell: cmd
@@ -119,8 +120,8 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref_name }}-release-$(date +%s)
-        name: Notepad-- Release for ${{ github.ref_name }}
+        tag_name: ${{ github.run_number }}-release
+        name: Notepad-- Release Build #${{ github.run_number }}
         draft: false
         prerelease: false
       env:
