@@ -82,11 +82,7 @@ jobs:
       run: |
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install perl -y
-        choco install python -y
-        choco install git -y
-
-    - name: Install Qt (Windows)
+    - name: Install Qt using Install Qt Action
       if: matrix.os == 'windows-latest'
       uses: jurplel/install-qt-action@v4
       with:
@@ -98,7 +94,8 @@ jobs:
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        call "${{ env.QT_ROOT_DIR }}\\bin\\qt-cmake.bat" -B "${{ github.workspace }}\\build" ^
+        call "${{ env.QT_ROOT_DIR }}\\bin\\qt-cmake.bat" ^
+          -B "${{ github.workspace }}\\build" ^
           -DCMAKE_BUILD_TYPE=Release ^
           -G Ninja ^
           -S "${{ github.workspace }}"
