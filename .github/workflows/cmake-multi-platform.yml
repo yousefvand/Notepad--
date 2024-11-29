@@ -40,7 +40,7 @@ jobs:
         run: |
           cmake -B "${{ github.workspace }}/build" \
             -DCMAKE_BUILD_TYPE=Release \
-            -G "Ninja" \
+            -G Ninja \
             -S "${{ github.workspace }}"
       - name: Build Notepad-- (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -65,7 +65,7 @@ jobs:
         run: |
           cmake -B "${{ github.workspace }}/build" \
             -DCMAKE_BUILD_TYPE=Release \
-            -G "Ninja" \
+            -G Ninja \
             -S "${{ github.workspace }}"
       - name: Build Notepad-- (macOS)
         if: matrix.os == 'macos-latest'
@@ -95,21 +95,22 @@ jobs:
       - name: Configure CMake (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          call "${{ env.QT_ROOT_DIR }}\\bin\\qt-cmake.bat" ^
-            -B "${{ github.workspace }}\\build" ^
+          set "QT_DIR=%QT_INSTALL_DIR%"
+          cmake -B "%CD%\build" ^
             -DCMAKE_BUILD_TYPE=Release ^
+            -DCMAKE_PREFIX_PATH="%QT_DIR%\lib\cmake" ^
             -G Ninja ^
-            -S "${{ github.workspace }}"
+            -S "%CD%"
         shell: cmd
       - name: Build Notepad-- (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          ninja -C "${{ github.workspace }}\\build"
+          ninja -C "%CD%\build"
         shell: cmd
       - name: Package Notepad-- (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          cd "${{ github.workspace }}\\build"
+          cd "%CD%\build"
           Compress-Archive -Path . -DestinationPath Notepad--.zip
         shell: cmd
 
