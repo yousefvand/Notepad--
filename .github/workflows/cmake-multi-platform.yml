@@ -83,20 +83,25 @@ jobs:
         choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install visualstudio2022buildtools -y --params="'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'"
       shell: cmd
 
     - name: Verify Qt Installation
       if: matrix.os == 'windows-latest'
       run: |
-        $qtPath = "C:\Qt\6.5.3\msvc2019_64\lib\cmake"
-        if (!(Test-Path $qtPath)) {
-          Write-Output "Qt not found at $qtPath"
+        echo "Checking for Qt installation..."
+        dir "C:\Qt" /b
+        if not exist "C:\Qt\6.5.3\msvc2019_64\lib\cmake" (
+          echo "Qt installation is missing. Reinstalling..."
+          choco uninstall qt -y
+          choco install qt --version=6.5.3 -y
+        )
+        if not exist "C:\Qt\6.5.3\msvc2019_64\lib\cmake" (
+          echo "Qt installation failed."
           exit 1
-        } else {
-          Write-Output "Qt found at $qtPath"
-        }
-      shell: pwsh
+        ) else (
+          echo "Qt installation found."
+        )
+      shell: cmd
 
     - name: Verify Visual Studio Installation
       if: matrix.os == 'windows-latest'
