@@ -85,17 +85,31 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
         choco install visualstudio2022buildtools -y --params="'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'"
       shell: cmd
+
+    - name: Verify Qt Installation
+      if: matrix.os == 'windows-latest'
+      run: |
+        $qtPath = "C:\Qt\6.5.3\msvc2019_64\lib\cmake"
+        if (!(Test-Path $qtPath)) {
+          Write-Output "Qt not found at $qtPath"
+          exit 1
+        } else {
+          Write-Output "Qt found at $qtPath"
+        }
+      shell: pwsh
+
     - name: Verify Visual Studio Installation
       if: matrix.os == 'windows-latest'
       run: |
         $vcvarsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
         if (!(Test-Path $vcvarsPath)) {
-            Write-Output "Visual Studio Build Tools not found at $vcvarsPath. Installation failed."
+            Write-Output "Visual Studio Build Tools not found at $vcvarsPath."
             exit 1
         } else {
             Write-Output "Found Visual Studio Build Tools at $vcvarsPath"
         }
       shell: pwsh
+
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
@@ -106,12 +120,14 @@ jobs:
           -G Ninja ^
           -S D:\a\Notepad--\Notepad--
       shell: cmd
+
     - name: Build application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && ^
         cmake --build D:\a\Notepad--\Notepad--\build --config Release
       shell: cmd
+
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
