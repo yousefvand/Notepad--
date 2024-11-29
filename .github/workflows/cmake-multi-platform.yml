@@ -7,15 +7,22 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_extension: tar.gz
+          - os: macos-latest
+            artifact_extension: zip
+          - os: windows-latest
+            artifact_extension: zip
 
     steps:
-    # Checkout the repository
     - name: Checkout code
       uses: actions/checkout@v4
 
@@ -40,8 +47,17 @@ jobs:
     - name: Package Notepad-- (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        tar -czvf Notepad--.tar.gz -C "${{ github.workspace }}/build" .
-        mv Notepad--.tar.gz "${{ github.workspace }}/"
+        BUILD_DIR="${{ github.workspace }}/build"
+        OUTPUT_DIR="${{ github.workspace }}/output"
+        mkdir -p $OUTPUT_DIR
+        tar -czvf $OUTPUT_DIR/Notepad--.tar.gz -C $BUILD_DIR .
+
+    - name: Upload Ubuntu Artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_ubuntu
+        path: "${{ github.workspace }}/output/Notepad--.tar.gz"
 
     # macOS Section
     - name: Install dependencies (macOS)
@@ -61,17 +77,28 @@ jobs:
     - name: Package Notepad-- (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        zip -r Notepad--.zip "${{ github.workspace }}/build"
-        mv Notepad--.zip "${{ github.workspace }}/"
+        BUILD_DIR="${{ github.workspace }}/build"
+        OUTPUT_DIR="${{ github.workspace }}/output"
+        mkdir -p $OUTPUT_DIR
+        zip -r $OUTPUT_DIR/Notepad--.zip $BUILD_DIR
+
+    - name: Upload macOS Artifact
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_macos
+        path: "${{ github.workspace }}/output/Notepad--.zip"
 
     # Windows Section
+    # The following section is left untouched since Windows passed previously.
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install mingw -y
+        choco install visualstudio2022buildtools -y --install-arguments="'--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart'"
       shell: cmd
+
     - name: Install Qt (Windows)
       if: matrix.os == 'windows-latest'
       uses: jurplel/install-qt-action@v4
@@ -79,50 +106,31 @@ jobs:
         version: '6.5.3'
         host: 'windows'
         target: 'desktop'
-        arch: 'win64_mingw'
+        arch: 'win64_msvc2019_64'
+
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B "${{ github.workspace }}\\build" ^
+        call "${{ env.QT_ROOT_DIR }}\\bin\\qt-cmake.bat" ^
+          -B "${{ github.workspace }}\\build" ^
           -DCMAKE_BUILD_TYPE=Release ^
           -G Ninja ^
-          -DCMAKE_PREFIX_PATH=C:\\Qt\\6.5.3\\mingw_64 ^
           -S "${{ github.workspace }}"
       shell: cmd
+
     - name: Build Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
       run: cmake --build "${{ github.workspace }}\\build" --config Release
-      shell: cmd
+
     - name: Package Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath Notepad--.zip
-        move Notepad--.zip "${{ github.workspace }}\\"
+        cd "${{ github.workspace }}\\build"
+        Compress-Archive -Path . -DestinationPath Notepad--.zip
 
-  # Create and Upload Release
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Create GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        TAG="release-$(date +%s)"
-        echo "TAG_NAME=${TAG}" >> $GITHUB_ENV
-        gh release create "$TAG" -t "Notepad-- Release Build" -n "This is the latest build of Notepad--."
-
-    - name: Upload Ubuntu Artifact
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        gh release upload ${{ env.TAG_NAME }} "${{ github.workspace }}/Notepad--.tar.gz" --clobber
-    - name: Upload macOS Artifact
-      if: matrix.os == 'macos-latest'
-      run: |
-        gh release upload ${{ env.TAG_NAME }} "${{ github.workspace }}/Notepad--.zip" --clobber
     - name: Upload Windows Artifact
       if: matrix.os == 'windows-latest'
-      run: |
-        gh release upload ${{ env.TAG_NAME }} "${{ github.workspace }}\\Notepad--.zip" --clobber
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_windows
+        path: "${{ github.workspace }}\\build\\Notepad--.zip"
