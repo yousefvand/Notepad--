@@ -53,7 +53,7 @@ jobs:
         rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
         cd $TEMP_DIR
         tar -czvf application.tar.gz ./*
-    
+
     # macOS Section
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
@@ -75,7 +75,7 @@ jobs:
         cd "${{ github.workspace }}/build"
         hdiutil create -volname Application -srcfolder . -ov -format UDZO application.dmg
         zip application.zip application.dmg
-    
+
     # Windows Section
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -86,57 +86,33 @@ jobs:
         choco install python -y
         choco install git -y
 
-    - name: Download and Build Qt (Windows)
+    - name: Install Qt (Windows)
       if: matrix.os == 'windows-latest'
-      run: |
-        $qtSourceUrl = "https://download.qt.io/official_releases/qt/6.8/6.8.0/single/qt-everywhere-src-6.8.0.zip"
-        $qtSourceZip = "C:\\qt-src.zip"
-        $qtSourceDir = "C:\\qt-src"
-        Invoke-WebRequest -Uri $qtSourceUrl -OutFile $qtSourceZip
-        Expand-Archive -Path $qtSourceZip -DestinationPath $qtSourceDir
-        cd $qtSourceDir
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX="C:\\Qt\\6.8.0\\msvc2019_64" -G "Ninja"
-        cmake --build . --config Release --target install
-      shell: pwsh
-
-    - name: Verify Qt Installation (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        $qtPath = "C:\\Qt\\6.8.0\\msvc2019_64\\lib\\cmake"
-        if (!(Test-Path $qtPath)) {
-          Write-Error "Qt build failed. $qtPath not found."
-          exit 1
-        } else {
-          Write-Output "Qt successfully built and installed at $qtPath"
-        }
-      shell: pwsh
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.5.3'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
 
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat" && ^
-        cmake -B D:\\a\\Notepad--\\Notepad--\\build ^
+        call "${{ env.QT_ROOT_DIR }}\\bin\\qt-cmake.bat" -B "${{ github.workspace }}\\build" ^
           -DCMAKE_BUILD_TYPE=Release ^
-          -DCMAKE_PREFIX_PATH="C:\\Qt\\6.8.0\\msvc2019_64\\lib\\cmake" ^
           -G Ninja ^
-          -S D:\\a\\Notepad--\\Notepad--
+          -S "${{ github.workspace }}"
       shell: cmd
 
     - name: Build application (Windows)
       if: matrix.os == 'windows-latest'
-      run: |
-        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat" && ^
-        cmake --build D:\\a\\Notepad--\\Notepad--\\build --config Release
-      shell: cmd
+      run: cmake --build "${{ github.workspace }}\\build" --config Release
 
     - name: Package application (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cd D:\\a\\Notepad--\\Notepad--\\build
+        cd "${{ github.workspace }}\\build"
         Compress-Archive -Path . -DestinationPath application.zip
-      shell: cmd
 
     # Upload Artifacts
     - name: Upload artifact
