@@ -80,38 +80,20 @@ jobs:
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install qt --version=6.5.3 -y
         choco install ninja -y
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-      shell: cmd
-
-    - name: Verify Qt Installation
-      if: matrix.os == 'windows-latest'
-      run: |
         echo "Checking for Qt installation..."
-        dir "C:\Qt" /b
-        if not exist "C:\Qt\6.5.3\msvc2019_64\lib\cmake" (
-          echo "Qt installation is missing. Reinstalling..."
-          choco uninstall qt -y
-          choco install qt --version=6.5.3 -y
-        )
-        if not exist "C:\Qt\6.5.3\msvc2019_64\lib\cmake" (
-          echo "Qt installation failed."
-          exit 1
-        ) else (
-          echo "Qt installation found."
-        )
-      shell: cmd
-
-    - name: Verify Visual Studio Installation
-      if: matrix.os == 'windows-latest'
-      run: |
-        $vcvarsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-        if (!(Test-Path $vcvarsPath)) {
-            Write-Output "Visual Studio Build Tools not found at $vcvarsPath."
+        $qtPath = "C:\Qt\6.5.3\msvc2019_64\lib\cmake"
+        if (!(Test-Path $qtPath)) {
+            Write-Output "Qt not found. Downloading Qt installer..."
+            Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" -OutFile "qt-installer.exe"
+            Start-Process -FilePath "qt-installer.exe" -ArgumentList "--silent", "--platform", "win", "--prefix", "C:\Qt", "--modules", "qt.qt6.653.win64_msvc2019_64" -Wait
+        }
+        if (!(Test-Path $qtPath)) {
+            Write-Output "Qt installation failed."
             exit 1
         } else {
-            Write-Output "Found Visual Studio Build Tools at $vcvarsPath"
+            Write-Output "Qt installed successfully at $qtPath"
         }
       shell: pwsh
 
