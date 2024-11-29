@@ -32,7 +32,9 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
+          sudo apt-get install -y ninja-build \
+              qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+              qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
       - name: Configure CMake (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -42,17 +44,22 @@ jobs:
             -S "${{ github.workspace }}"
       - name: Build Notepad-- (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        run: ninja -C "${{ github.workspace }}/build"
+        run: cmake --build "${{ github.workspace }}/build" --config Release
       - name: Package Notepad-- (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          cd "${{ github.workspace }}/build"
-          tar -czvf Notepad--.tar.gz ./
+          BUILD_DIR="${{ github.workspace }}/build"
+          TEMP_DIR="/tmp/build_copy"
+          rm -rf $TEMP_DIR
+          rsync -a "$BUILD_DIR/" "$TEMP_DIR/"
+          cd $TEMP_DIR
+          tar -czvf Notepad--.tar.gz ./*
 
       # macOS Section
       - name: Install dependencies (macOS)
         if: matrix.os == 'macos-latest'
-        run: brew install ninja qt
+        run: |
+          brew install ninja qt
       - name: Configure CMake (macOS)
         if: matrix.os == 'macos-latest'
         run: |
@@ -62,7 +69,7 @@ jobs:
             -S "${{ github.workspace }}"
       - name: Build Notepad-- (macOS)
         if: matrix.os == 'macos-latest'
-        run: ninja -C "${{ github.workspace }}/build"
+        run: cmake --build "${{ github.workspace }}/build" --config Release
       - name: Package Notepad-- (macOS)
         if: matrix.os == 'macos-latest'
         run: |
@@ -113,3 +120,4 @@ jobs:
           name: Notepad---${{ matrix.os }}
           path: |
             ${{ github.workspace }}/build/Notepad--.${{ matrix.artifact_extension }}
+            /tmp/build_copy/Notepad--.tar.gz
