@@ -54,6 +54,12 @@ jobs:
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
         echo "Packaging completed. Listing artifacts directory:"
         ls -al $OUTPUT_DIR
+    - name: Upload Ubuntu Artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_ubuntu
+        path: "${{ github.workspace }}/artifacts/Notepad--_ubuntu.tar.gz"
 
     # macOS build
     - name: Install dependencies (macOS)
@@ -79,6 +85,12 @@ jobs:
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
         echo "Packaging completed. Listing artifacts directory:"
         ls -al $OUTPUT_DIR
+    - name: Upload macOS Artifact
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_macos
+        path: "${{ github.workspace }}/artifacts/Notepad--_macos.zip"
 
     # Windows build
     - name: Install dependencies (Windows)
@@ -119,15 +131,13 @@ jobs:
         echo "Packaging completed. Listing artifacts directory:"
         Get-ChildItem -Path $OUTPUT_DIR
       shell: pwsh
-
-    # Step 4: Upload artifacts to GitHub Actions for review
-    - name: Upload artifacts
+    - name: Upload Windows Artifact
+      if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v3
       with:
-        name: Notepad--_artifacts_${{ matrix.os }}
-        path: "${{ github.workspace }}/artifacts/"
+        name: Notepad--_windows
+        path: "${{ github.workspace }}\\artifacts\\Notepad--_windows.zip"
 
-  # Release job
   release:
     runs-on: ubuntu-latest
     needs: build-and-release
@@ -135,7 +145,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Generate tag name dynamically
     - name: Generate Tag Name
       id: tag_name
       run: |
@@ -143,7 +152,6 @@ jobs:
         echo "RELEASE_TAG=release-$TIMESTAMP" >> $GITHUB_ENV
         echo "::set-output name=tag_name::release-$TIMESTAMP"
 
-    # Create GitHub Release
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -155,7 +163,6 @@ jobs:
         draft: false
         prerelease: false
 
-    # Attach Ubuntu artifact
     - name: Upload Ubuntu Artifact
       uses: actions/upload-release-asset@v1
       with:
@@ -164,7 +171,6 @@ jobs:
         asset_name: Notepad--_ubuntu.tar.gz
         asset_content_type: application/gzip
 
-    # Attach macOS artifact
     - name: Upload macOS Artifact
       uses: actions/upload-release-asset@v1
       with:
@@ -173,7 +179,6 @@ jobs:
         asset_name: Notepad--_macos.zip
         asset_content_type: application/zip
 
-    # Attach Windows artifact
     - name: Upload Windows Artifact
       uses: actions/upload-release-asset@v1
       with:
