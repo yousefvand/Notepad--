@@ -50,13 +50,13 @@ jobs:
         BUILD_DIR="${{ github.workspace }}/build"
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
-        tar -czvf $OUTPUT_DIR/Notepad--.tar.gz -C $BUILD_DIR .
+        tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
     - name: Upload Ubuntu Artifact
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v3
       with:
         name: Notepad--_ubuntu
-        path: "${{ github.workspace }}/output/Notepad--.tar.gz"
+        path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
 
     # macOS Section
     - name: Install dependencies (macOS)
@@ -79,13 +79,48 @@ jobs:
         BUILD_DIR="${{ github.workspace }}/build"
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
-        zip -r $OUTPUT_DIR/Notepad--.zip $BUILD_DIR
+        zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
     - name: Upload macOS Artifact
       if: matrix.os == 'macos-latest'
       uses: actions/upload-artifact@v3
       with:
         name: Notepad--_macos
-        path: "${{ github.workspace }}/output/Notepad--.zip"
+        path: "${{ github.workspace }}/output/Notepad--_macos.zip"
+
+    # Windows Section (Unchanged)
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install ninja -y
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install mingw -y
+      shell: cmd
+    - name: Install Qt (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.5.3'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_mingw'
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake -B "${{ github.workspace }}\\build" ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -G Ninja ^
+          -DCMAKE_PREFIX_PATH=C:\\Qt\\6.5.3\\mingw_64 ^
+          -S "${{ github.workspace }}"
+      shell: cmd
+    - name: Build Notepad-- (Windows)
+      if: matrix.os == 'windows-latest'
+      run: cmake --build "${{ github.workspace }}\\build" --config Release
+      shell: cmd
+    - name: Package Notepad-- (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath Notepad--_windows.zip
+        move Notepad--_windows.zip "${{ github.workspace }}\\output\\"
 
   release:
     runs-on: ubuntu-latest
@@ -113,27 +148,24 @@ jobs:
 
     - name: Upload Ubuntu Artifact to Release
       uses: actions/upload-release-asset@v1
-      if: ${{ matrix.os == 'ubuntu-latest' }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}/output/Notepad--.tar.gz"
+        asset_path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
         asset_name: Notepad--_ubuntu.tar.gz
         asset_content_type: application/gzip
 
     - name: Upload macOS Artifact to Release
       uses: actions/upload-release-asset@v1
-      if: ${{ matrix.os == 'macos-latest' }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}/output/Notepad--.zip"
+        asset_path: "${{ github.workspace }}/output/Notepad--_macos.zip"
         asset_name: Notepad--_macos.zip
         asset_content_type: application/zip
 
     - name: Upload Windows Artifact to Release
       uses: actions/upload-release-asset@v1
-      if: ${{ matrix.os == 'windows-latest' }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}/Notepad--.zip"
+        asset_path: "${{ github.workspace }}/output/Notepad--_windows.zip"
         asset_name: Notepad--_windows.zip
         asset_content_type: application/zip
