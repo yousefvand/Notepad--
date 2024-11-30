@@ -51,6 +51,7 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
+        ls -l $OUTPUT_DIR
     - name: Upload Ubuntu Artifact
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v3
@@ -80,6 +81,7 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
+        ls -l $OUTPUT_DIR
     - name: Upload macOS Artifact
       if: matrix.os == 'macos-latest'
       uses: actions/upload-artifact@v3
@@ -106,30 +108,31 @@ jobs:
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B "%GITHUB_WORKSPACE%\\build" ^
+        cmake -B "${{ github.workspace }}\\build" ^
           -DCMAKE_BUILD_TYPE=Release ^
           -G Ninja ^
-          -DCMAKE_PREFIX_PATH=C:\\Qt\\6.5.3\\mingw_64 ^
-          -S "%GITHUB_WORKSPACE%"
+          -DCMAKE_PREFIX_PATH=D:\\a\\Notepad--\\Qt\\6.5.3\\mingw_64 ^
+          -S "${{ github.workspace }}"
       shell: cmd
     - name: Build Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake --build "%GITHUB_WORKSPACE%\\build" --config Release
+      run: cmake --build "${{ github.workspace }}\\build" --config Release
       shell: cmd
     - name: Package Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        set BUILD_DIR=%GITHUB_WORKSPACE%\\build
-        set OUTPUT_DIR=%GITHUB_WORKSPACE%\\output
-        mkdir %OUTPUT_DIR%
-        powershell Compress-Archive -Path "%BUILD_DIR%\\*" -DestinationPath "%OUTPUT_DIR%\\Notepad--_windows.zip"
-      shell: cmd
+        $BUILD_DIR="${{ github.workspace }}\\build"
+        $OUTPUT_DIR="${{ github.workspace }}\\output"
+        mkdir $OUTPUT_DIR
+        Compress-Archive -Path "$BUILD_DIR\\*" -DestinationPath "$OUTPUT_DIR\\Notepad--_windows.zip"
+        Get-ChildItem -Path $OUTPUT_DIR
+      shell: pwsh
     - name: Upload Windows Artifact
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v3
       with:
         name: Notepad--_windows
-        path: "%GITHUB_WORKSPACE%\\output\\Notepad--_windows.zip"
+        path: "${{ github.workspace }}\\output\\Notepad--_windows.zip"
 
   release:
     runs-on: ubuntu-latest
@@ -143,6 +146,7 @@ jobs:
       run: |
         TIMESTAMP=$(date +%Y%m%d%H%M%S)
         echo "RELEASE_TAG=release-$TIMESTAMP" >> $GITHUB_ENV
+        echo "::set-output name=tag_name::release-$TIMESTAMP"
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -150,7 +154,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ env.RELEASE_TAG }}
-        release_name: "Notepad-- Release"
+        release_name: Notepad-- Release
         draft: false
         prerelease: false
 
@@ -174,6 +178,6 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "%GITHUB_WORKSPACE%\\output\\Notepad--_windows.zip"
+        asset_path: "${{ github.workspace }}\\output\\Notepad--_windows.zip"
         asset_name: Notepad--_windows.zip
         asset_content_type: application/zip
