@@ -54,7 +54,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
-        name: ubuntu-artifact
+        name: Notepad--_ubuntu
         path: "${{ github.workspace }}/artifacts/Notepad--_ubuntu.tar.gz"
 
     # macOS Section
@@ -83,7 +83,7 @@ jobs:
       if: matrix.os == 'macos-latest'
       uses: actions/upload-artifact@v4
       with:
-        name: macos-artifact
+        name: Notepad--_macos
         path: "${{ github.workspace }}/artifacts/Notepad--_macos.zip"
 
     # Windows Section
@@ -127,7 +127,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
-        name: windows-artifact
+        name: Notepad--_windows
         path: "${{ github.workspace }}\\artifacts\\Notepad--_windows.zip"
 
   release:
@@ -160,6 +160,8 @@ jobs:
 
     - name: Upload Artifacts to Release
       run: |
-        gh release upload ${{ env.RELEASE_TAG }} artifacts/*
+        for file in artifacts/*; do
+          gh release upload ${{ env.RELEASE_TAG }} "$file"
+        done
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
