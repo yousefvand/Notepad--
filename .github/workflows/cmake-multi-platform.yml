@@ -27,7 +27,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Step 2: Build and Package by OS
     # Ubuntu
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
@@ -39,20 +38,17 @@ jobs:
     - name: Configure CMake (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
     - name: Build Notepad-- (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      run: cmake --build "${{ github.workspace }}/build" --config Release
+      run: cmake --build build --config Release
     - name: Package Notepad-- (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p artifacts
-        tar -czvf artifacts/Notepad--_ubuntu.tar.gz -C "${{ github.workspace }}/build" .
-        echo "Artifact packaged:"
-        ls -al artifacts/
+        tar -czvf artifacts/Notepad--_ubuntu.tar.gz -C build .
+        echo "Packaging completed. Listing artifacts:"
+        ls -al artifacts
 
     # macOS
     - name: Install dependencies (macOS)
@@ -62,20 +58,17 @@ jobs:
     - name: Configure CMake (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -G "Ninja" \
-          -S "${{ github.workspace }}"
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -G "Ninja" -S .
     - name: Build Notepad-- (macOS)
       if: matrix.os == 'macos-latest'
-      run: cmake --build "${{ github.workspace }}/build" --config Release
+      run: cmake --build build --config Release
     - name: Package Notepad-- (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         mkdir -p artifacts
-        zip -r artifacts/Notepad--_macos.zip "${{ github.workspace }}/build"
-        echo "Artifact packaged:"
-        ls -al artifacts/
+        zip -r artifacts/Notepad--_macos.zip build
+        echo "Packaging completed. Listing artifacts:"
+        ls -al artifacts
 
     # Windows
     - name: Install dependencies (Windows)
@@ -96,22 +89,22 @@ jobs:
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B "${{ github.workspace }}\\build" ^
+        cmake -B build ^
           -DCMAKE_BUILD_TYPE=Release ^
           -G Ninja ^
           -DCMAKE_PREFIX_PATH=D:\\a\\Notepad--\\Qt\\6.5.3\\mingw_64 ^
-          -S "${{ github.workspace }}"
+          -S .
       shell: cmd
     - name: Build Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake --build "${{ github.workspace }}\\build" --config Release
+      run: cmake --build build --config Release
       shell: cmd
     - name: Package Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         mkdir artifacts
-        Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath artifacts\\Notepad--_windows.zip
-        echo "Artifact packaged:"
+        Compress-Archive -Path build\\* -DestinationPath artifacts\\Notepad--_windows.zip
+        echo "Packaging completed. Listing artifacts:"
         Get-ChildItem artifacts
       shell: pwsh
 
@@ -147,7 +140,7 @@ jobs:
         draft: false
         prerelease: false
 
-    # Upload artifacts to release
+    # Attach artifacts to release
     - name: Upload Ubuntu Artifact
       uses: actions/upload-release-asset@v1
       with:
