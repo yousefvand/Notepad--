@@ -101,34 +101,35 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
     - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      id: create_release
-      run: |
-        TAG_NAME="release-$(date +%s)"
-        gh release create $TAG_NAME \
-          -t "Notepad-- Release" \
-          -n "This release contains the latest build artifacts for Notepad--."
-        echo "RELEASE_TAG=${TAG_NAME}" >> $GITHUB_ENV
+      with:
+        tag_name: release-$(date +%s)
+        release_name: Notepad-- Release
+        draft: false
+        prerelease: false
+
     - name: Upload Ubuntu Artifact to Release
-      if: always()
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: "${{ github.workspace }}/output/Notepad--.tar.gz"
         asset_name: Notepad--_ubuntu.tar.gz
         asset_content_type: application/gzip
+
     - name: Upload macOS Artifact to Release
-      if: always()
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: "${{ github.workspace }}/output/Notepad--.zip"
         asset_name: Notepad--_macos.zip
         asset_content_type: application/zip
+
     - name: Upload Windows Artifact to Release
-      if: always()
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
