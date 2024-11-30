@@ -47,10 +47,9 @@ jobs:
     - name: Package Notepad-- (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        BUILD_DIR="${{ github.workspace }}/build"
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
-        tar -czvf $OUTPUT_DIR/Notepad--.tar.gz -C $BUILD_DIR .
+        tar -czvf $OUTPUT_DIR/Notepad--.tar.gz -C "${{ github.workspace }}/build" .
     - name: Upload Ubuntu Artifact
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v3
@@ -76,10 +75,9 @@ jobs:
     - name: Package Notepad-- (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        BUILD_DIR="${{ github.workspace }}/build"
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
-        zip -r $OUTPUT_DIR/Notepad--.zip $BUILD_DIR
+        zip -r $OUTPUT_DIR/Notepad--.zip "${{ github.workspace }}/build"
     - name: Upload macOS Artifact
       if: matrix.os == 'macos-latest'
       uses: actions/upload-artifact@v3
