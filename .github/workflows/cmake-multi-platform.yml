@@ -51,7 +51,8 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
-        ls -l $OUTPUT_DIR
+        echo "Packaging completed. Listing output directory:"
+        ls -al $OUTPUT_DIR
     - name: Upload Ubuntu Artifact
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v3
@@ -81,7 +82,8 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
-        ls -l $OUTPUT_DIR
+        echo "Packaging completed. Listing output directory:"
+        ls -al $OUTPUT_DIR
     - name: Upload macOS Artifact
       if: matrix.os == 'macos-latest'
       uses: actions/upload-artifact@v3
@@ -125,6 +127,7 @@ jobs:
         $OUTPUT_DIR="${{ github.workspace }}\\output"
         mkdir $OUTPUT_DIR
         Compress-Archive -Path "$BUILD_DIR\\*" -DestinationPath "$OUTPUT_DIR\\Notepad--_windows.zip"
+        echo "Packaging completed. Listing output directory:"
         Get-ChildItem -Path $OUTPUT_DIR
       shell: pwsh
     - name: Upload Windows Artifact
