@@ -7,19 +7,27 @@ on:
     branches: [main]
 
 jobs:
-  build-and-package:
+  build-and-release:
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_extension: tar.gz
+          - os: macos-latest
+            artifact_extension: zip
+          - os: windows-latest
+            artifact_extension: zip
 
     steps:
+    # Step 1: Checkout the code
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Ubuntu Section
+    # Ubuntu build
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -41,13 +49,13 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         BUILD_DIR="${{ github.workspace }}/build"
-        OUTPUT_DIR="${{ github.workspace }}/output"
+        OUTPUT_DIR="${{ github.workspace }}/artifacts"
         mkdir -p $OUTPUT_DIR
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
-        echo "Packaging completed. Listing output directory:"
+        echo "Packaging completed. Listing artifacts directory:"
         ls -al $OUTPUT_DIR
 
-    # macOS Section
+    # macOS build
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
@@ -66,13 +74,13 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         BUILD_DIR="${{ github.workspace }}/build"
-        OUTPUT_DIR="${{ github.workspace }}/output"
+        OUTPUT_DIR="${{ github.workspace }}/artifacts"
         mkdir -p $OUTPUT_DIR
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
-        echo "Packaging completed. Listing output directory:"
+        echo "Packaging completed. Listing artifacts directory:"
         ls -al $OUTPUT_DIR
 
-    # Windows Section
+    # Windows build
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
@@ -105,26 +113,37 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         $BUILD_DIR="${{ github.workspace }}\\build"
-        $OUTPUT_DIR="${{ github.workspace }}\\output"
+        $OUTPUT_DIR="${{ github.workspace }}\\artifacts"
         mkdir $OUTPUT_DIR
         Compress-Archive -Path "$BUILD_DIR\\*" -DestinationPath "$OUTPUT_DIR\\Notepad--_windows.zip"
-        echo "Packaging completed. Listing output directory:"
+        echo "Packaging completed. Listing artifacts directory:"
         Get-ChildItem -Path $OUTPUT_DIR
       shell: pwsh
 
+    # Step 4: Upload artifacts to GitHub Actions for review
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_artifacts_${{ matrix.os }}
+        path: "${{ github.workspace }}/artifacts/"
+
+  # Release job
   release:
     runs-on: ubuntu-latest
-    needs: build-and-package
+    needs: build-and-release
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # Generate tag name dynamically
     - name: Generate Tag Name
       id: tag_name
       run: |
         TIMESTAMP=$(date +%Y%m%d%H%M%S)
         echo "RELEASE_TAG=release-$TIMESTAMP" >> $GITHUB_ENV
         echo "::set-output name=tag_name::release-$TIMESTAMP"
+
+    # Create GitHub Release
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -136,32 +155,29 @@ jobs:
         draft: false
         prerelease: false
 
-    # Ubuntu Release
-    - name: Upload Ubuntu Artifact to Release
-      if: ${{ always() && matrix.os == 'ubuntu-latest' }}
+    # Attach Ubuntu artifact
+    - name: Upload Ubuntu Artifact
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
+        asset_path: "${{ github.workspace }}/artifacts/Notepad--_ubuntu.tar.gz"
         asset_name: Notepad--_ubuntu.tar.gz
         asset_content_type: application/gzip
 
-    # macOS Release
-    - name: Upload macOS Artifact to Release
-      if: ${{ always() && matrix.os == 'macos-latest' }}
+    # Attach macOS artifact
+    - name: Upload macOS Artifact
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}/output/Notepad--_macos.zip"
+        asset_path: "${{ github.workspace }}/artifacts/Notepad--_macos.zip"
         asset_name: Notepad--_macos.zip
         asset_content_type: application/zip
 
-    # Windows Release
-    - name: Upload Windows Artifact to Release
-      if: ${{ always() && matrix.os == 'windows-latest' }}
+    # Attach Windows artifact
+    - name: Upload Windows Artifact
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}\\output\\Notepad--_windows.zip"
+        asset_path: "${{ github.workspace }}\\artifacts\\Notepad--_windows.zip"
         asset_name: Notepad--_windows.zip
         asset_content_type: application/zip
