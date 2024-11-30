@@ -121,30 +121,14 @@ jobs:
       run: |
         Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath Notepad--.zip
         move Notepad--.zip "${{ github.workspace }}\\"
-        
-  # Create and Upload Release
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Create GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        TAG="release-$(date +%s)"
-        echo "TAG_NAME=${TAG}" >> $GITHUB_ENV
-        gh release create "$TAG" -t "Notepad-- Release Build" -n "This is the latest build of Notepad--."
-    - name: Upload Ubuntu Artifact
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        gh release upload ${{ env.TAG_NAME }} "${{ github.workspace }}/Notepad--.tar.gz" --clobber
-    - name: Upload macOS Artifact
-      if: matrix.os == 'macos-latest'
-      run: |
-        gh release upload ${{ env.TAG_NAME }} "${{ github.workspace }}/Notepad--.zip" --clobber
-    - name: Upload Windows Artifact
-      if: matrix.os == 'windows-latest'
-      run: |
-        gh release upload ${{ env.TAG_NAME }} "${{ github.workspace }}\\Notepad--.zip" --clobber
+
+    # Upload artifacts
+    - name: Upload Release Artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: AllArtifacts
+        path: |
+          ${{ github.workspace }}/output/
+          ${{ github.workspace }}/*.zip
+          ${{ github.workspace }}/*.tar.gz
