@@ -7,20 +7,13 @@ on:
     branches: [main]
 
 jobs:
-  build-and-release:
+  build-and-package:
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            artifact_extension: tar.gz
-          - os: macos-latest
-            artifact_extension: zip
-          - os: windows-latest
-            artifact_extension: zip
 
     steps:
     - name: Checkout code
@@ -53,12 +46,6 @@ jobs:
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
         echo "Packaging completed. Listing output directory:"
         ls -al $OUTPUT_DIR
-    - name: Upload Ubuntu Artifact
-      if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_ubuntu
-        path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
 
     # macOS Section
     - name: Install dependencies (macOS)
@@ -84,12 +71,6 @@ jobs:
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
         echo "Packaging completed. Listing output directory:"
         ls -al $OUTPUT_DIR
-    - name: Upload macOS Artifact
-      if: matrix.os == 'macos-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_macos
-        path: "${{ github.workspace }}/output/Notepad--_macos.zip"
 
     # Windows Section
     - name: Install dependencies (Windows)
@@ -130,16 +111,10 @@ jobs:
         echo "Packaging completed. Listing output directory:"
         Get-ChildItem -Path $OUTPUT_DIR
       shell: pwsh
-    - name: Upload Windows Artifact
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_windows
-        path: "${{ github.workspace }}\\output\\Notepad--_windows.zip"
 
   release:
     runs-on: ubuntu-latest
-    needs: build-and-release
+    needs: build-and-package
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -161,7 +136,9 @@ jobs:
         draft: false
         prerelease: false
 
+    # Ubuntu Release
     - name: Upload Ubuntu Artifact to Release
+      if: ${{ always() && matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -169,7 +146,9 @@ jobs:
         asset_name: Notepad--_ubuntu.tar.gz
         asset_content_type: application/gzip
 
+    # macOS Release
     - name: Upload macOS Artifact to Release
+      if: ${{ always() && matrix.os == 'macos-latest' }}
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -177,7 +156,9 @@ jobs:
         asset_name: Notepad--_macos.zip
         asset_content_type: application/zip
 
+    # Windows Release
     - name: Upload Windows Artifact to Release
+      if: ${{ always() && matrix.os == 'windows-latest' }}
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
