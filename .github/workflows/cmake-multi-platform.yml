@@ -51,12 +51,9 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
-    - name: Upload Ubuntu Artifact
+    - name: Debug: List Ubuntu Output Directory
       if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_ubuntu
-        path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
+      run: ls -al "${{ github.workspace }}/output"
 
     # macOS Section
     - name: Install dependencies (macOS)
@@ -80,14 +77,11 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
-    - name: Upload macOS Artifact
+    - name: Debug: List macOS Output Directory
       if: matrix.os == 'macos-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_macos
-        path: "${{ github.workspace }}/output/Notepad--_macos.zip"
+      run: ls -al "${{ github.workspace }}/output"
 
-    # Windows Section (Unchanged)
+    # Windows Section
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
       run: |
@@ -119,8 +113,13 @@ jobs:
     - name: Package Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath Notepad--_windows.zip
-        move Notepad--_windows.zip "${{ github.workspace }}\\output\\"
+        OUTPUT_DIR="${{ github.workspace }}\\output"
+        mkdir -p $OUTPUT_DIR
+        Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath $OUTPUT_DIR\\Notepad--_windows.zip
+    - name: Debug: List Windows Output Directory
+      if: matrix.os == 'windows-latest'
+      run: dir "${{ github.workspace }}\\output"
+      shell: cmd
 
   release:
     runs-on: ubuntu-latest
