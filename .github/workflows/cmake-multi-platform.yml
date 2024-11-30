@@ -9,6 +9,7 @@ on:
 jobs:
   build-and-release:
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -46,8 +47,10 @@ jobs:
     - name: Package Notepad-- (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        mkdir -p ${{ github.workspace }}/output
-        tar -czvf ${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz -C "${{ github.workspace }}/build" .
+        BUILD_DIR="${{ github.workspace }}/build"
+        OUTPUT_DIR="${{ github.workspace }}/output"
+        mkdir -p $OUTPUT_DIR
+        tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
 
     # macOS Section
     - name: Install dependencies (macOS)
@@ -67,8 +70,10 @@ jobs:
     - name: Package Notepad-- (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        mkdir -p ${{ github.workspace }}/output
-        zip -r ${{ github.workspace }}/output/Notepad--_macos.zip "${{ github.workspace }}/build"
+        BUILD_DIR="${{ github.workspace }}/build"
+        OUTPUT_DIR="${{ github.workspace }}/output"
+        mkdir -p $OUTPUT_DIR
+        zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
 
     # Windows Section
     - name: Install dependencies (Windows)
@@ -129,19 +134,26 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Artifacts to Release
+    - name: Upload Ubuntu Artifact to Release
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: |
-          ${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz
-          ${{ github.workspace }}/output/Notepad--_macos.zip
-          ${{ github.workspace }}/output/Notepad--_windows.zip
-        asset_name: |
-          Notepad--_ubuntu.tar.gz
-          Notepad--_macos.zip
-          Notepad--_windows.zip
-        asset_content_type: |
-          application/gzip
-          application/zip
-          application/zip
+        asset_path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
+        asset_name: Notepad--_ubuntu.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload macOS Artifact to Release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: "${{ github.workspace }}/output/Notepad--_macos.zip"
+        asset_name: Notepad--_macos.zip
+        asset_content_type: application/zip
+
+    - name: Upload Windows Artifact to Release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: "${{ github.workspace }}/output/Notepad--_windows.zip"
+        asset_name: Notepad--_windows.zip
+        asset_content_type: application/zip
