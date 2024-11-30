@@ -112,7 +112,7 @@ jobs:
         prerelease: false
 
     - name: Upload Ubuntu Artifact to Release
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+      if: always() && steps.create_release.outputs.upload_url && matrix.os == 'ubuntu-latest'
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -121,7 +121,7 @@ jobs:
         asset_content_type: application/gzip
 
     - name: Upload macOS Artifact to Release
-      if: ${{ matrix.os == 'macos-latest' }}
+      if: always() && steps.create_release.outputs.upload_url && matrix.os == 'macos-latest'
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -130,7 +130,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload Windows Artifact to Release
-      if: ${{ matrix.os == 'windows-latest' }}
+      if: always() && steps.create_release.outputs.upload_url && matrix.os == 'windows-latest'
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
