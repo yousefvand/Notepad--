@@ -51,14 +51,15 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
-        echo "Packaging completed. Listing output directory:"
+        echo "Artifact packaged. Listing contents of $OUTPUT_DIR:"
         ls -al $OUTPUT_DIR
-    - name: Upload Ubuntu Artifact
+    - name: Verify Artifact (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_ubuntu
-        path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
+      run: |
+        if [ ! -f "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz" ]; then
+          echo "Error: Artifact Notepad--_ubuntu.tar.gz not found!"
+          exit 1
+        fi
 
     # macOS Section
     - name: Install dependencies (macOS)
@@ -82,14 +83,15 @@ jobs:
         OUTPUT_DIR="${{ github.workspace }}/output"
         mkdir -p $OUTPUT_DIR
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
-        echo "Packaging completed. Listing output directory:"
+        echo "Artifact packaged. Listing contents of $OUTPUT_DIR:"
         ls -al $OUTPUT_DIR
-    - name: Upload macOS Artifact
+    - name: Verify Artifact (macOS)
       if: matrix.os == 'macos-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_macos
-        path: "${{ github.workspace }}/output/Notepad--_macos.zip"
+      run: |
+        if [ ! -f "${{ github.workspace }}/output/Notepad--_macos.zip" ]; then
+          echo "Error: Artifact Notepad--_macos.zip not found!"
+          exit 1
+        fi
 
     # Windows Section
     - name: Install dependencies (Windows)
@@ -127,15 +129,17 @@ jobs:
         $OUTPUT_DIR="${{ github.workspace }}\\output"
         mkdir $OUTPUT_DIR
         Compress-Archive -Path "$BUILD_DIR\\*" -DestinationPath "$OUTPUT_DIR\\Notepad--_windows.zip"
-        echo "Packaging completed. Listing output directory:"
-        Get-ChildItem -Path $OUTPUT_DIR
+        echo "Artifact packaged. Listing contents of $OUTPUT_DIR:"
+        dir $OUTPUT_DIR
       shell: pwsh
-    - name: Upload Windows Artifact
+    - name: Verify Artifact (Windows)
       if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Notepad--_windows
-        path: "${{ github.workspace }}\\output\\Notepad--_windows.zip"
+      run: |
+        if (!(Test-Path -Path "${{ github.workspace }}\\output\\Notepad--_windows.zip")) {
+          Write-Error "Error: Artifact Notepad--_windows.zip not found!"
+          exit 1
+        }
+      shell: pwsh
 
   release:
     runs-on: ubuntu-latest
