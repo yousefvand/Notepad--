@@ -53,13 +53,12 @@ jobs:
         tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
         echo "Artifact packaged. Listing contents of $OUTPUT_DIR:"
         ls -al $OUTPUT_DIR
-    - name: Verify Artifact (Ubuntu)
+    - name: Upload Ubuntu Artifact
       if: matrix.os == 'ubuntu-latest'
-      run: |
-        if [ ! -f "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz" ]; then
-          echo "Error: Artifact Notepad--_ubuntu.tar.gz not found!"
-          exit 1
-        fi
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_ubuntu
+        path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
 
     # macOS Section
     - name: Install dependencies (macOS)
@@ -85,13 +84,12 @@ jobs:
         zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
         echo "Artifact packaged. Listing contents of $OUTPUT_DIR:"
         ls -al $OUTPUT_DIR
-    - name: Verify Artifact (macOS)
+    - name: Upload macOS Artifact
       if: matrix.os == 'macos-latest'
-      run: |
-        if [ ! -f "${{ github.workspace }}/output/Notepad--_macos.zip" ]; then
-          echo "Error: Artifact Notepad--_macos.zip not found!"
-          exit 1
-        fi
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_macos
+        path: "${{ github.workspace }}/output/Notepad--_macos.zip"
 
     # Windows Section
     - name: Install dependencies (Windows)
@@ -125,21 +123,19 @@ jobs:
     - name: Package Notepad-- (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        $BUILD_DIR="${{ github.workspace }}\\build"
-        $OUTPUT_DIR="${{ github.workspace }}\\output"
+        $BUILD_DIR="${{ github.workspace }}\build"
+        $OUTPUT_DIR="${{ github.workspace }}\output"
         mkdir $OUTPUT_DIR
-        Compress-Archive -Path "$BUILD_DIR\\*" -DestinationPath "$OUTPUT_DIR\\Notepad--_windows.zip"
-        echo "Artifact packaged. Listing contents of $OUTPUT_DIR:"
+        Compress-Archive -Path "$BUILD_DIR\*" -DestinationPath "$OUTPUT_DIR\Notepad--_windows.zip"
+        Write-Host "Artifact packaged. Listing contents of $OUTPUT_DIR:"
         dir $OUTPUT_DIR
       shell: pwsh
-    - name: Verify Artifact (Windows)
+    - name: Upload Windows Artifact
       if: matrix.os == 'windows-latest'
-      run: |
-        if (!(Test-Path -Path "${{ github.workspace }}\\output\\Notepad--_windows.zip")) {
-          Write-Error "Error: Artifact Notepad--_windows.zip not found!"
-          exit 1
-        }
-      shell: pwsh
+      uses: actions/upload-artifact@v3
+      with:
+        name: Notepad--_windows
+        path: "${{ github.workspace }}\output\Notepad--_windows.zip"
 
   release:
     runs-on: ubuntu-latest
@@ -153,7 +149,6 @@ jobs:
       run: |
         TIMESTAMP=$(date +%Y%m%d%H%M%S)
         echo "RELEASE_TAG=release-$TIMESTAMP" >> $GITHUB_ENV
-        echo "::set-output name=tag_name::release-$TIMESTAMP"
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -165,26 +160,11 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Ubuntu Artifact to Release
+    - name: Upload Artifacts to Release
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz"
-        asset_name: Notepad--_ubuntu.tar.gz
-        asset_content_type: application/gzip
-
-    - name: Upload macOS Artifact to Release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}/output/Notepad--_macos.zip"
-        asset_name: Notepad--_macos.zip
-        asset_content_type: application/zip
-
-    - name: Upload Windows Artifact to Release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{ github.workspace }}\\output\\Notepad--_windows.zip"
-        asset_name: Notepad--_windows.zip
-        asset_content_type: application/zip
+        asset_path: |
+          ${{ github.workspace }}/output/Notepad--_ubuntu.tar.gz
+          ${{ github.workspace }}/output/Notepad--_macos.zip
+          ${{ github.workspace }}/output/Notepad--_windows.zip
