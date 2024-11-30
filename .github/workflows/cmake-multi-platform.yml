@@ -88,47 +88,50 @@ jobs:
         path: "${{ github.workspace }}/output/Notepad--.zip"
 
     # Windows Section
-    - name: Install dependencies (Windows)
+    - name: Upload Windows Artifact
       if: matrix.os == 'windows-latest'
-      run: |
-        choco install ninja -y
-        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install mingw -y
-      shell: cmd
-    - name: Install Qt (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: '6.5.3'
-        host: 'windows'
-        target: 'desktop'
-        arch: 'win64_mingw'
-    - name: Configure CMake (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        cmake -B "${{ github.workspace }}\\build" ^
-          -DCMAKE_BUILD_TYPE=Release ^
-          -G Ninja ^
-          -DCMAKE_PREFIX_PATH=C:\\Qt\\6.5.3\\mingw_64 ^
-          -S "${{ github.workspace }}"
-      shell: cmd
-    - name: Build Notepad-- (Windows)
-      if: matrix.os == 'windows-latest'
-      run: cmake --build "${{ github.workspace }}\\build" --config Release
-      shell: cmd
-    - name: Package Notepad-- (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath Notepad--.zip
-        move Notepad--.zip "${{ github.workspace }}\\"
-
-    # Upload artifacts
-    - name: Upload Release Artifacts
-      if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: AllArtifacts
-        path: |
-          ${{ github.workspace }}/output/
-          ${{ github.workspace }}/*.zip
-          ${{ github.workspace }}/*.tar.gz
+        name: Notepad--_windows
+        path: "${{ github.workspace }}\\Notepad--.zip"
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build-and-release
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Create GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      id: create_release
+      run: |
+        TAG_NAME="release-$(date +%s)"
+        gh release create $TAG_NAME \
+          -t "Notepad-- Release" \
+          -n "This release contains the latest build artifacts for Notepad--."
+        echo "RELEASE_TAG=${TAG_NAME}" >> $GITHUB_ENV
+    - name: Upload Ubuntu Artifact to Release
+      if: always()
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: "${{ github.workspace }}/output/Notepad--.tar.gz"
+        asset_name: Notepad--_ubuntu.tar.gz
+        asset_content_type: application/gzip
+    - name: Upload macOS Artifact to Release
+      if: always()
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: "${{ github.workspace }}/output/Notepad--.zip"
+        asset_name: Notepad--_macos.zip
+        asset_content_type: application/zip
+    - name: Upload Windows Artifact to Release
+      if: always()
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: "${{ github.workspace }}/Notepad--.zip"
+        asset_name: Notepad--_windows.zip
+        asset_content_type: application/zip
