@@ -144,8 +144,7 @@ jobs:
 
     - name: Generate Tag Name
       id: tag_name
-      run: |
-        echo "RELEASE_TAG=release-$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+      run: echo "RELEASE_TAG=release-$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
     - name: Create GitHub Release
       id: create_release
@@ -160,7 +159,7 @@ jobs:
 
     - name: Upload Artifacts to Release
       run: |
-        for file in artifacts/*; do
+        for file in $(find artifacts -type f); do
           gh release upload ${{ env.RELEASE_TAG }} "$file"
         done
       env:
