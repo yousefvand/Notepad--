@@ -120,7 +120,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         OUTPUT_DIR="${{ github.workspace }}\\output"
-        mkdir -p $OUTPUT_DIR
+        mkdir $OUTPUT_DIR
         Compress-Archive -Path "${{ github.workspace }}\\build\\*" -DestinationPath $OUTPUT_DIR\\Notepad--_windows.zip
     - name: Upload Windows Artifact
       if: matrix.os == 'windows-latest'
@@ -141,7 +141,7 @@ jobs:
       run: |
         TIMESTAMP=$(date +%Y%m%d%H%M%S)
         echo "RELEASE_TAG=release-$TIMESTAMP" >> $GITHUB_ENV
-        echo "::set-output name=tag_name::release-$TIMESTAMP"
+
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
