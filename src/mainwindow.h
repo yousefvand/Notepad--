@@ -13,6 +13,7 @@
 #include "mainwindow/textoperations.h"
 #include "indentation/indentationmanager.h"
 #include "systemfind/systemfinddialog.h"
+#include "systemreplace/systemreplacedialog.h"
 #include "systemsearchresultdialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -144,6 +145,8 @@ private slots:
 
     void on_actionGo_to_Line_in_Editor_triggered();
 
+    void on_action_Show_Tabs_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -156,7 +159,8 @@ private:
     void applyColorCoding(Document* doc, bool isModified);
     void setActiveDocumentEditorInFindDialog();
     void setActiveDocumentEditorInReplaceDialog();
-    void setupSearchResultDialogConnections();
+    void setupSearchResultDialogConnectionsForFind();
+    void setupSearchResultDialogConnectionsForReplace();
 
     void setupIndentationMenu();
     QAction* action_Custom;
@@ -166,6 +170,7 @@ private:
     void loadIndentationSetting();  // Load and apply the saved setting
     IndentationManager* indentationManager;
     SystemFindDialog* m_systemFindDialog = nullptr;
+    SystemReplaceDialog* m_systemReplaceDialog = nullptr;
     SystemSearchResultDialog* m_systemSearchResultDialog;
     FindDialog* findDialog;
     ReplaceDialog* replaceDialog;

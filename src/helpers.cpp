@@ -1,5 +1,6 @@
 #include <QObject>
 #include <QAction>
+#include <QFileInfo>
 #include <QTabWidget>
 #include <QInputDialog>
 #include <QPlainTextEdit>
@@ -27,12 +28,6 @@ void Helpers::RemoveMe(QTabWidget* documentsTab) {
         documentsTab->removeTab(0);
         firstTab->deleteLater();  // Safe deletion
     }
-}
-
-void Helpers::AddDefaultTab(QTabWidget* documentsTab) {
-    Document* defaultDoc = new Document("Untitled Document", documentsTab);
-    documentsTab->addTab(defaultDoc, "Untitled Document");
-    documentsTab->setCurrentWidget(defaultDoc);
 }
 
 void Helpers::CloseTab(QTabWidget* documentsTab, int index) {
@@ -125,6 +120,11 @@ void Helpers::notImplemented(QWidget* parent) {
 bool Helpers::isValidRegularExpression(const QString& pattern) {
     QRegularExpression regex(pattern);
     return regex.isValid();
+}
+
+bool Helpers::isValidFilePath(const QString& filePath) {
+    QFileInfo fileInfo(filePath);
+    return fileInfo.exists() && fileInfo.isFile();
 }
 
 int Helpers::countKeywordsInLine(const QString& line, const SearchOptions& options) {

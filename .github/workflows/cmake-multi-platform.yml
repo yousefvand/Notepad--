@@ -1,4 +1,4 @@
-name: CI Build
+name: Build and Release
 
 on:
   push:
@@ -9,134 +9,158 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
           - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
+            artifact_extension: tar.gz
           - os: macos-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+            artifact_extension: zip
+          - os: windows-latest
+            artifact_extension: zip
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    ### Ubuntu Dependencies
+    # Ubuntu Section
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build \
             qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
-            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev
-        echo "CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt6" >> $GITHUB_ENV
+            qt6-l10n-tools libgl1-mesa-dev libglu1-mesa-dev rsync
+    - name: Configure CMake (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cmake -B "${{ github.workspace }}/build" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -G "Ninja" \
+          -S "${{ github.workspace }}"
+    - name: Build Notepad-- (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: cmake --build "${{ github.workspace }}/build" --config Release
+    - name: Package Notepad-- (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        BUILD_DIR="${{ github.workspace }}/build"
+        OUTPUT_DIR="${{ github.workspace }}/artifacts"
+        mkdir -p $OUTPUT_DIR
+        tar -czvf $OUTPUT_DIR/Notepad--_ubuntu.tar.gz -C $BUILD_DIR .
+    - name: Upload Ubuntu Artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Notepad--_ubuntu
+        path: "${{ github.workspace }}/artifacts/Notepad--_ubuntu.tar.gz"
 
-    ### macOS Dependencies
+    # macOS Section
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
       run: |
         brew install ninja qt
-        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt)" >> $GITHUB_ENV
-
-    ### Windows Setup
-    - name: Install dependencies (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        choco install visualstudio2022buildtools -y
-        choco install ninja -y
-        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-        choco install python3 -y
-        choco install llvm -y
-        choco install gperf -y
-        pip install html5lib
-
-    - name: Cache Qt Source (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: actions/cache@v3
-      with:
-        path: D:\qt-source
-        key: qt-source-6.5.3
-        restore-keys: qt-source-
-
-    - name: Download Qt Source if Missing (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        $qtSourceDir = "D:\qt-source"
-        $qtZip = "$qtSourceDir\qt-everywhere-src-6.5.3.zip"
-
-        if (-Not (Test-Path "$qtSourceDir\qt-everywhere-src-6.5.3\qtbase\configure.bat")) {
-          Write-Host "Qt source not found in cache. Downloading..."
-          New-Item -ItemType Directory -Path $qtSourceDir -Force
-          Invoke-WebRequest -Uri "https://download.qt.io/official_releases/qt/6.5/6.5.3/single/qt-everywhere-src-6.5.3.zip" -OutFile $qtZip
-          Expand-Archive -Path $qtZip -DestinationPath $qtSourceDir
-        } else {
-          Write-Host "Qt source found in cache."
-        }
-
-    - name: Build and Install Qt from Source (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      run: |
-        REM Locate Visual Studio Build Tools
-        FOR /F "tokens=*" %%i IN ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" ^
-          -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') DO SET VS_PATH=%%i
-        IF NOT DEFINED VS_PATH (
-          echo Visual Studio Build Tools not found! && exit /b 1
-        )
-        SET "VS_VARS_CMD=%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
-        CALL "%VS_VARS_CMD%" || exit /b 1
-
-        REM Build Qt from source
-        SET QT_SOURCE=D:\qt-source\qt-everywhere-src-6.5.3
-        IF NOT EXIST "%QT_SOURCE%\qtbase\configure.bat" (
-          echo "configure.bat not found in %QT_SOURCE%\qtbase" && exit /b 1
-        )
-        cd "%QT_SOURCE%\qtbase"
-        call configure.bat -top-level -prefix C:\Qt -release -opensource -confirm-license -nomake examples -nomake tests -platform win32-msvc -cmake-generator Ninja ^
-          -DFEATURE_clang=ON ^
-          -DFEATURE_clangcpp=ON ^
-          -DLLVM_INSTALL_DIR="C:/Program Files/LLVM" ^
-          -Wno-dev || exit /b 1
-
-        REM Verify if build.ninja exists
-        IF NOT EXIST build.ninja (
-          echo "Error: build.ninja not generated. Check configuration step for issues." && exit /b 1
-        )
-
-        REM Proceed with the build and install steps
-        ninja || exit /b 1
-        ninja install || exit /b 1
-
-    - name: Set Qt Environment Variables (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        echo "Qt6_DIR=C:\Qt\lib\cmake\Qt6" >> $env:GITHUB_ENV
-        echo "QT_PLUGIN_PATH=C:\Qt\plugins" >> $env:GITHUB_ENV
-        echo "QML2_IMPORT_PATH=C:\Qt\qml" >> $env:GITHUB_ENV
-
-    - name: Configure CMake
+    - name: Configure CMake (macOS)
+      if: matrix.os == 'macos-latest'
       run: |
         cmake -B "${{ github.workspace }}/build" \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
           -DCMAKE_BUILD_TYPE=Release \
           -G "Ninja" \
           -S "${{ github.workspace }}"
-
-    - name: Build
+    - name: Build Notepad-- (macOS)
+      if: matrix.os == 'macos-latest'
       run: cmake --build "${{ github.workspace }}/build" --config Release
+    - name: Package Notepad-- (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        BUILD_DIR="${{ github.workspace }}/build"
+        OUTPUT_DIR="${{ github.workspace }}/artifacts"
+        mkdir -p $OUTPUT_DIR
+        zip -r $OUTPUT_DIR/Notepad--_macos.zip $BUILD_DIR
+    - name: Upload macOS Artifact
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Notepad--_macos
+        path: "${{ github.workspace }}/artifacts/Notepad--_macos.zip"
 
-    - name: Test
-      working-directory: "${{ github.workspace }}/build"
-      run: ctest --output-on-failure --build-config Release
+    # Windows Section
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install ninja -y
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        choco install mingw -y
+      shell: cmd
+    - name: Install Qt (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.5.3'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_mingw'
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake -B "${{ github.workspace }}\\build" ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -G Ninja ^
+          -DCMAKE_PREFIX_PATH=D:\\a\\Notepad--\\Qt\\6.5.3\\mingw_64 ^
+          -S "${{ github.workspace }}"
+      shell: cmd
+    - name: Build Notepad-- (Windows)
+      if: matrix.os == 'windows-latest'
+      run: cmake --build "${{ github.workspace }}\\build" --config Release
+      shell: cmd
+    - name: Package Notepad-- (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        $BUILD_DIR="${{ github.workspace }}\\build"
+        $OUTPUT_DIR="${{ github.workspace }}\\artifacts"
+        mkdir $OUTPUT_DIR
+        Compress-Archive -Path "$BUILD_DIR\\*" -DestinationPath "$OUTPUT_DIR\\Notepad--_windows.zip"
+      shell: pwsh
+    - name: Upload Windows Artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Notepad--_windows
+        path: "${{ github.workspace }}\\artifacts\\Notepad--_windows.zip"
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Generate Tag Name
+      id: tag_name
+      run: echo "RELEASE_TAG=release-$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.RELEASE_TAG }}
+        release_name: Notepad-- Release
+        draft: false
+        prerelease: false
+
+    - name: Upload Artifacts to Release
+      run: |
+        for file in $(find artifacts -type f); do
+          gh release upload ${{ env.RELEASE_TAG }} "$file"
+        done
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

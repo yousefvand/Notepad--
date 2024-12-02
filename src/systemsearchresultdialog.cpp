@@ -138,20 +138,33 @@ void SystemSearchResultDialog::addSearchResult(const FileSearchResults &result) 
 
     // Iterate through the matches to populate the result model
     for (const auto &[lineNumber, lineContent] : result.matches) {
-        // Highlight keywords with cyan
+        qInfo() << "addSearchResult lineContent input: " << lineContent;
+
         QString highlightedLine = lineContent;
-        QString pattern = QStringLiteral("<span style='background-color: yellow;'>%1</span>");
-        highlightedLine.replace(
-            QRegularExpression(QString("\\b%1\\b").arg(QRegularExpression::escape(m_searchOptions.keyword)),
-                               m_searchOptions.matchCase
-                                   ? QRegularExpression::NoPatternOption
-                                   : QRegularExpression::CaseInsensitiveOption),
-            pattern.arg(m_searchOptions.keyword));
+        QRegularExpression pattern(
+            QString("\\b%1\\b").arg(QRegularExpression::escape(m_searchOptions.keyword)),
+            m_searchOptions.matchCase
+                ? QRegularExpression::NoPatternOption
+                : QRegularExpression::CaseInsensitiveOption);
+
+        QString processedLine;
+        int lastPos = 0;
+
+        // Highlight the matches manually
+        QRegularExpressionMatchIterator it = pattern.globalMatch(highlightedLine);
+        while (it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            processedLine += highlightedLine.mid(lastPos, match.capturedStart() - lastPos);
+            processedLine += QStringLiteral("<span style='background-color: yellow;'>%1</span>")
+                                 .arg(match.captured(0));
+            lastPos = match.capturedEnd();
+        }
+        processedLine += highlightedLine.mid(lastPos); // Append the remaining part
 
         QStandardItem *lineItem = new QStandardItem();
         lineItem->setFlags(lineItem->flags() | Qt::ItemIsSelectable);
-        lineItem->setData(highlightedLine, Qt::DisplayRole); // Highlighted line content
-        lineItem->setData(lineNumber + 1, Qt::UserRole); // Line number (1-based)
+        lineItem->setData(processedLine, Qt::DisplayRole); // Highlighted line content
+        lineItem->setData(lineNumber + 1, Qt::UserRole);   // Line number (1-based)
 
         QStandardItem *matchesItem = new QStandardItem(QString::number(1));
         matchesItem->setFlags(matchesItem->flags() | Qt::ItemIsSelectable);
@@ -171,11 +184,9 @@ void SystemSearchResultDialog::addSearchResult(const FileSearchResults &result) 
              << "Reported matches:" << result.matchCount
              << "First keyword line number:" << firstKeywordLineNumber;
 
-    // If needed, handle the first keyword line highlighting
+    // Highlight the first match in the editor
     if (firstKeywordLineNumber > 0) {
         qDebug() << "First keyword found at line:" << firstKeywordLineNumber << "in file:" << result.filePath;
-        // Call the highlighting function here, if necessary
-        // Example: highlightLineInView(result.filePath, firstKeywordLineNumber);
     }
 }
 

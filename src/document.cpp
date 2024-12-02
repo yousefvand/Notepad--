@@ -14,6 +14,7 @@
 #include <QtConcurrent>
 #include <QtConcurrent/QtConcurrent>
 #include <QFileInfo>
+#include "helpers.h"
 #include "document.h"
 #include "fileloaderworker.h"
 #include "codeeditor.h"
@@ -320,6 +321,7 @@ void Document::saveAcopyAs() {
 bool Document::closeDocument() {
     qDebug() << "Checking document close: isLoading=" << m_isLoading << ", isSaving=" << m_isSaving;
 
+    // FIXME: m_isLoading sometimes is true wrongly
     if (m_isLoading || m_isSaving) {
         qDebug() << "Document still loading or saving, cannot close.";
         return false;
@@ -335,7 +337,28 @@ bool Document::closeDocument() {
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
         if (reply == QMessageBox::Save) {
-            saveFile();  // Save the document
+            if (Helpers::isValidFilePath(m_filePath)) {
+                saveFile();  // Save the document
+            } else {
+                if (m_editor->document()) {
+                    // Show the "Save As" dialog
+                    QString filePath = QFileDialog::getSaveFileName(
+                        this, QObject::tr("Save File As"), "",
+                        QObject::tr("Text Files (*.txt);;All Files (*)"));
+
+                    if (!filePath.isEmpty()) {
+                        // Save the file and update the tab name
+                        saveFileAs(filePath);
+                        QFileInfo fileInfo(filePath);
+                        QString title = fileInfo.completeBaseName();
+                        setTitle(title);
+                    }
+                } else {
+                    // Show a warning if no document is available
+                    QMessageBox::warning(this, QObject::tr("Error"), QObject::tr("No document to save."));
+                }
+            }
+
             return true;  // After saving, allow closing the tab
         } else if (reply == QMessageBox::Discard) {
             return true;  // Discard changes and close the document
@@ -346,6 +369,20 @@ bool Document::closeDocument() {
 
     // Proceed with closing the document since no unsaved changes
     return true;
+}
+
+void Document::setTitle(const QString &title) {
+    if (!title.isEmpty()) {
+        if (auto tabWidget = qobject_cast<QTabWidget *>(parentWidget())) {
+            int tabIndex = tabWidget->indexOf(this);
+            if (tabIndex != -1) {
+                tabWidget->setTabText(tabIndex, title);
+                qDebug() << "Tab title updated to:" << title;
+            }
+        }
+    } else {
+        qDebug() << "Empty title provided. No changes made.";
+    }
 }
 
 void Document::goToLineNumberInEditor() {

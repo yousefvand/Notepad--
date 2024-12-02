@@ -24,6 +24,7 @@ public:
     static void showInformationMessage(const QString& message);
     static void notImplemented(QWidget* parent = nullptr);
     static bool isValidRegularExpression(const QString& pattern);
+    static bool isValidFilePath(const QString& filePath);
     static int  countKeywordsInLine(const QString &line, const SearchOptions &searchOptions);
     static QString highlightKeywords(const QString& line, const SearchOptions& options);
 

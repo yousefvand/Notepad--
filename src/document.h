@@ -50,6 +50,7 @@ public:
     int savedCursorPosition() const;
     void setSavedCursorPosition(int position);
     QThread* workerThread() const;
+    void setTitle(const QString &title);
 
 signals:
     void uiReady();

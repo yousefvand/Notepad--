@@ -24,9 +24,14 @@ public:
     void highlightAllOccurrences(const QString& keyword);
     void goToLineInText(int lineNumber);
     void gotoLineInEditor(int lineNumber);
+    void setShowTabs(bool enabled);
+    bool showTabs() const;
+    void setTabWidth(int width);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    virtual void keyPressEvent(QKeyEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 signals:
     void textChanged(); // FIXME: Remove this line.
@@ -38,6 +43,10 @@ private slots:
 private:
     QWidget *lineNumberArea;
     QTabWidget* m_documentsTab;
+    bool m_useTabs;
+    int m_indentationWidth;
+    bool m_showTabs = false;
+    int m_tabWidth;
 };
 
 class LineNumberArea : public QWidget {

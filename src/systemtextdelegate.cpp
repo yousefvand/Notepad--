@@ -1,7 +1,11 @@
-#include "systemtextdelegate.h"
 #include <QPainter>
 #include <QFontMetrics>
 #include <QTextDocument>
+#include <QStyledItemDelegate>
+#include <QStyleOptionViewItem>
+#include <QModelIndex>
+#include <QStyleOptionViewItem>
+#include "systemtextdelegate.h"
 
 SystemTextDelegate::SystemTextDelegate(QObject *parent)
     : QStyledItemDelegate(parent) {}

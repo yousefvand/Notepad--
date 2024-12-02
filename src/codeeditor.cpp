@@ -2,7 +2,8 @@
 #include <QPainter>
 #include <QTextBlock>
 #include <QScrollBar>
-#include "helpers.h"
+#include <QTabWidget>
+#include "settings.h"
 
 CodeEditor::CodeEditor(QWidget *parent)
     : QPlainTextEdit(parent), lineNumberArea(new LineNumberArea(this)) {
@@ -26,6 +27,11 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+
+    m_useTabs = Settings::instance()->loadSetting("Indentation", "Option", "Tabs") == "Tabs";
+    m_indentationWidth = Settings::instance()->loadSetting("Indentation", "Size", "1").toInt();
+    m_showTabs = Settings::instance()->loadSetting("View", "ShowTabs", "false") == "true";
+    m_tabWidth = Settings::instance()->loadSetting("View", "TabWidth", "4").toInt();
 }
 
 int CodeEditor::lineNumberAreaWidth() {
@@ -154,8 +160,11 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
 }
 
 void CodeEditor::applyIndentation(bool useTabs, int indentationWidth) {
+    m_useTabs = useTabs;
+    m_indentationWidth = indentationWidth;
     QTextCursor cursor = textCursor();
-    QString indentation = useTabs ? "\t" : QString(indentationWidth, ' ');
+    QString indentation = useTabs ? QString(indentationWidth, '\t')
+                                  : QString(indentationWidth, ' ');
     cursor.insertText(indentation);
 }
 
@@ -213,3 +222,89 @@ void CodeEditor::gotoLineInEditor(int lineNumber) {
     }
 }
 
+void CodeEditor::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Tab) {
+        // User pressed Tab
+        QTextCursor cursor = textCursor();
+
+        // Determine the indentation string (tabs or spaces)
+        QString indentation = m_useTabs ? QString(m_indentationWidth, '\t')
+                                        : QString(m_indentationWidth, ' ');
+
+        // Insert the indentation
+        cursor.insertText(indentation);
+
+        // Prevent further handling of the Tab key
+        return;
+    } else if (event->key() == Qt::Key_Backtab) {
+        // User pressed Shift+Tab (outdent logic)
+        QTextCursor cursor = textCursor();
+        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
+
+        QString blockText = cursor.selectedText();
+        if (m_useTabs && blockText.startsWith(QString(m_indentationWidth, '\t'))) {
+            cursor.removeSelectedText();
+        } else if (!m_useTabs && blockText.startsWith(QString(m_indentationWidth, ' '))) {
+            cursor.removeSelectedText();
+        }
+
+        // Prevent further handling of Shift+Tab
+        return;
+    }
+
+    // Pass other keys to the default handler
+    QPlainTextEdit::keyPressEvent(event);
+}
+
+void CodeEditor::setShowTabs(bool enabled) {
+    if (m_showTabs != enabled) {
+        m_showTabs = enabled;
+        viewport()->update(); // Redraw the editor to show or hide tab symbols
+    }
+}
+
+bool CodeEditor::showTabs() const {
+    return m_showTabs;
+}
+
+void CodeEditor::setTabWidth(int width = 4) {
+    m_tabWidth = width;
+    viewport()->update(); // Trigger a repaint to apply the new width
+}
+
+void CodeEditor::paintEvent(QPaintEvent *event) {
+    QPlainTextEdit::paintEvent(event);
+
+    if (!m_showTabs) return;
+
+    QPainter painter(viewport());
+    painter.setPen(Qt::gray);
+
+    QTextBlock block = document()->firstBlock();
+    QFontMetrics metrics(font());
+
+    while (block.isValid()) {
+        QString text = block.text();
+        int blockStart = block.position();
+        QTextCursor blockCursor(block);
+
+        // Iterate over characters in the block
+        for (int i = 0; i < text.length(); ++i) {
+            if (text[i] == '\t') {
+                // Move the cursor to the tab character
+                blockCursor.setPosition(blockStart + i);
+
+                // Get the rectangle of the cursor position
+                QRect rect = cursorRect(blockCursor);
+
+                // Adjust the position for the tab symbol
+                //QPoint position(rect.left(), rect.top() + metrics.ascent());
+                QPoint position(rect.left() + metrics.ascent(), rect.top() + metrics.ascent());
+
+                // Draw the tab symbol
+                painter.drawText(position, "→");
+            }
+        }
+        block = block.next();
+    }
+}

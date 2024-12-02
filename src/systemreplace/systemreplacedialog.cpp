@@ -46,8 +46,6 @@ SystemReplaceDialog::SystemReplaceDialog(QWidget *parent)
 SystemReplaceDialog::~SystemReplaceDialog()
 {
     delete ui;
-    delete m_replace;
-    delete m_searchOptions;
     delete m_systemSearchResultDialog;
 }
 

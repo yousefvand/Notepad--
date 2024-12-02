@@ -71,15 +71,14 @@ void IndentationDialog::on_buttonBox_accepted()
     bool useTabs = ui->tabs->isChecked();
     int indentationWidth = ui->number->value();
 
-    auto* settings = Settings::instance();
-    settings->saveSetting("Indentation", "Option", useTabs ? "Tabs" : "Spaces");
-    settings->saveSetting("Indentation", "Size", indentationWidth);
+    Settings::instance()->saveSetting("Indentation", "Option", useTabs ? "Tabs" : "Spaces");
+    Settings::instance()->saveSetting("Indentation", "Size", indentationWidth);
 
     Document* doc = qobject_cast<Document*>(parent());
     if (doc && doc->editor()) {
         doc->editor()->applyIndentation(useTabs, indentationWidth);
     }
-    Helpers::notImplemented(this);
+    QMessageBox::information(this, "Information", "Restart needed.", QMessageBox::Ok);
 }
 
 
