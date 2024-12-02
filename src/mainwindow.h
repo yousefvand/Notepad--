@@ -24,6 +24,7 @@ class Session;
 class Settings;
 class RecentFiles;
 class FileOperations;
+class MainWindowConfigLoader;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -147,6 +148,8 @@ private slots:
 
     void on_action_Show_Tabs_triggered(bool checked);
 
+    void on_actionShow_Spaces_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -176,4 +179,5 @@ private:
     ReplaceDialog* replaceDialog;
     SearchOptions* m_searchOptions;
     Find* m_find = nullptr;
+    MainWindowConfigLoader* m_mainWindowConfigLoader;
 };

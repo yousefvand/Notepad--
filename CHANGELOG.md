@@ -1,6 +1,12 @@
 # Change Log
 
-=======
+============
+
+## 0.0.60
+
+- Implemented:
+- View Menu -> Show Space
+
 ## 0.0.59
 
 - Default Tab Fixed
