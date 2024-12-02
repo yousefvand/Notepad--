@@ -1,5 +1,10 @@
 # Change Log
 
+=======
+## 0.0.59
+
+- Default Tab Fixed
+
 ## 0.0.58
 
 - View -> Show Symbol -> Show Tabs

@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget* parent)
     formatting->setupActions(ui->actionWindows_Format, ui->action_Unix_OS_X_Format, ui->action_Old_Mac_Format);
 
     Helpers::RemoveMe(ui->documentsTab);
-    Helpers::AddDefaultTab(ui->documentsTab);
+    fileOperations->newDocument();
     Helpers::zMenu(ui->menu_Language, this);
 
     qDebug() << "MainWindow initialized...";
