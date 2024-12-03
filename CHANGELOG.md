@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.63
+
+- Implemented:
+- View Menu -> Show Indent Guide
+
 ## 0.0.62
 
 - Implemented:

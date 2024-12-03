@@ -28,6 +28,7 @@ public:
     void setShowSpaces(bool enabled);
     void setShowEOL(bool enabled);
     void setShowAllCharacters(bool enabled);
+    void setShowIndentGuide(bool enabled);
     void setTabWidth(int width);
 
 protected:
@@ -51,6 +52,7 @@ private:
     bool m_showSpaces = false;
     bool m_showEOL = false;
     bool m_showAllCharacters = false;
+    bool m_showIndentGuide = false;
     int m_tabWidth;
 };
 

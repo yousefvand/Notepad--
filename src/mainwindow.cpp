@@ -548,6 +548,20 @@ void MainWindow::on_actionShow_All_Characters_triggered(bool checked)
     }
 }
 
+void MainWindow::on_actionShow_Indent_Guide_triggered(bool checked)
+{
+    Settings::instance()->saveSetting("View", "ShowIndentGuide", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowIndentGuide(checked);
+        }
+    }
+}
+
+
+
 
 
 

@@ -34,6 +34,7 @@ CodeEditor::CodeEditor(QWidget *parent)
     m_showSpaces = Settings::instance()->loadSetting("View", "ShowSpaces", "false") == "true";
     m_showEOL = Settings::instance()->loadSetting("View", "ShowEOL", "false") == "true";
     m_showAllCharacters = Settings::instance()->loadSetting("View", "ShowAllCharacters", "false") == "true";
+    m_showIndentGuide = Settings::instance()->loadSetting("View", "ShowIndentGuide", "false") == "true";
     m_tabWidth = Settings::instance()->loadSetting("View", "TabWidth", "4").toInt();
 
     if (m_showAllCharacters) {
@@ -296,6 +297,13 @@ void CodeEditor::setShowAllCharacters(bool enabled) {
     }
 }
 
+void CodeEditor::setShowIndentGuide(bool enabled) {
+    if (m_showIndentGuide != enabled) {
+        m_showIndentGuide = enabled;
+        viewport()->update();
+    }
+}
+
 // TODO: Implement in UI
 void CodeEditor::setTabWidth(int width = 4) {
     m_tabWidth = width;
@@ -311,6 +319,40 @@ void CodeEditor::paintEvent(QPaintEvent *event) {
     QTextBlock block = document()->firstBlock();
     QFontMetrics metrics(font());
 
+    // Draw indent guides if enabled
+    if (m_showIndentGuide) {
+        QTextBlock blockForIndent = document()->firstBlock();
+
+        while (blockForIndent.isValid()) {
+            if (blockForIndent.isVisible()) {
+                QRect blockRect = blockBoundingGeometry(blockForIndent).translated(contentOffset()).toRect();
+
+                QString blockText = blockForIndent.text();
+                int indentWidth = metrics.horizontalAdvance(' ') * 4; // Assuming 4 spaces per indent level
+
+                // Calculate the horizontal offset for the line
+                int horizontalOffset = 0;
+                for (const QChar &ch : blockText) {
+                    if (ch == '\t') {
+                        horizontalOffset += indentWidth; // Increment by a full tab width
+                    } else if (ch == ' ') {
+                        horizontalOffset += metrics.horizontalAdvance(' '); // Increment by a space width
+                    } else {
+                        break; // Stop counting after the first non-whitespace character
+                    }
+                }
+
+                if (horizontalOffset > 0) {
+                    int x = horizontalOffset + contentOffset().x(); // X position for the guide
+                    painter.drawLine(QPoint(x, blockRect.top()), QPoint(x, blockRect.bottom()));
+                }
+            }
+
+            blockForIndent = blockForIndent.next();
+        }
+    }
+
+    // Handle Tabs, Spaces, and EOL
     while (block.isValid()) {
         QString text = block.text();
         int blockStart = block.position();

@@ -158,6 +158,8 @@ private slots:
 
     void on_actionShow_All_Characters_triggered(bool checked);
 
+    void on_actionShow_Indent_Guide_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;

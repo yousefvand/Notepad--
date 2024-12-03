@@ -11,6 +11,7 @@ void MainWindowConfigLoader::loadMainWindowConfig() {
         m_mainWindow->getUi()->actionShow_Spaces->setChecked(showSpaces());
         m_mainWindow->getUi()->actionShow_End_of_Lines->setChecked(showEOL());
         m_mainWindow->getUi()->actionShow_All_Characters->setChecked(showAllCharacters());
+        m_mainWindow->getUi()->actionShow_Indent_Guide->setChecked(showIndentGuide());
     }
 }
 
@@ -28,6 +29,10 @@ bool MainWindowConfigLoader::showEOL() const {
 
 bool MainWindowConfigLoader::showAllCharacters() const {
     return Settings::instance()->loadSetting("View", "ShowAllCharacters", "false") == true;
+}
+
+bool MainWindowConfigLoader::showIndentGuide() const {
+    return Settings::instance()->loadSetting("View", "ShowIndentGuide", "false") == true;
 }
 
 
