@@ -189,7 +189,7 @@
      </property>
      <addaction name="action_Show_Tabs"/>
      <addaction name="actionShow_Spaces"/>
-     <addaction name="actionShoe_End_of_Lines"/>
+     <addaction name="actionShow_End_of_Lines"/>
      <addaction name="actionShow_All_Characters"/>
      <addaction name="separator"/>
      <addaction name="actionShow_Indent_Guide"/>
@@ -1913,7 +1913,7 @@
     <string>S&amp;how Spaces</string>
    </property>
   </action>
-  <action name="actionShoe_End_of_Lines">
+  <action name="actionShow_End_of_Lines">
    <property name="checkable">
     <bool>true</bool>
    </property>

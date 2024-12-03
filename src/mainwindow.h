@@ -24,6 +24,7 @@ class Session;
 class Settings;
 class RecentFiles;
 class FileOperations;
+class MainWindowConfigLoader;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -147,6 +148,14 @@ private slots:
 
     void on_action_Show_Tabs_triggered(bool checked);
 
+    void on_actionShow_Spaces_triggered(bool checked);
+
+    void on_action_About_Notepad_triggered();
+
+    void on_actionAbout_Qt_triggered();
+
+    void on_actionShow_End_of_Lines_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -176,4 +185,5 @@ private:
     ReplaceDialog* replaceDialog;
     SearchOptions* m_searchOptions;
     Find* m_find = nullptr;
+    MainWindowConfigLoader* m_mainWindowConfigLoader;
 };

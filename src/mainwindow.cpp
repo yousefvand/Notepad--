@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "codeeditor.h"
 #include "settings.h"
+#include "mainwindow/mainwindowconfigloader.h"
 #include "mainwindow/textoperations.h"
 #include "mainwindow/recentfiles.h"
 #include "mainwindow/session.h"
@@ -19,6 +20,7 @@
 #include "replace/replacedialog.h"
 #include "systemfind/systemfinddialog.h"
 #include "systemreplace/systemreplacedialog.h"
+#include "aboutdialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -56,6 +58,9 @@ MainWindow::MainWindow(QWidget* parent)
     fileOperations->newDocument();
     Helpers::zMenu(ui->menu_Language, this);
 
+    m_mainWindowConfigLoader = new MainWindowConfigLoader(this);
+    m_mainWindowConfigLoader->loadMainWindowConfig();
+
     qDebug() << "MainWindow initialized...";
 }
 
@@ -69,6 +74,7 @@ MainWindow::~MainWindow() {
     delete textOperations;
     delete m_systemFindDialog;
     delete m_systemReplaceDialog;
+    delete m_mainWindowConfigLoader;
 }
 
 Ui::MainWindow* MainWindow::getUi() const {
@@ -496,8 +502,7 @@ void MainWindow::on_action_Find_triggered() {
 
 void MainWindow::on_action_Show_Tabs_triggered(bool checked)
 {
-    qDebug() << "Show Tabs is: " << checked;
-    Settings::instance()->saveSetting("View", "ShowTabs", checked ? "true" : "false");
+    Settings::instance()->saveSetting("View", "ShowTabs", checked);
 
     for (int i = 0; i < ui->documentsTab->count(); ++i) {
         Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
@@ -506,6 +511,44 @@ void MainWindow::on_action_Show_Tabs_triggered(bool checked)
         }
     }
 }
+
+void MainWindow::on_actionShow_Spaces_triggered(bool checked)
+{
+    Settings::instance()->saveSetting("View", "ShowSpaces", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowSpaces(checked);
+        }
+    }
+}
+
+void MainWindow::on_actionShow_End_of_Lines_triggered(bool checked)
+{
+    Settings::instance()->saveSetting("View", "ShowEOL", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowEOL(checked);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -648,6 +691,21 @@ void MainWindow::setActiveDocumentEditorInReplaceDialog() {
         qWarning() << "Warning: No active document found.";
     }
 }
+
+
+
+void MainWindow::on_action_About_Notepad_triggered()
+{
+    AboutDialog dialog(this);
+    dialog.exec();
+}
+
+
+void MainWindow::on_actionAbout_Qt_triggered()
+{
+    QMessageBox::aboutQt(this, tr("About Qt"));
+}
+
 
 
 

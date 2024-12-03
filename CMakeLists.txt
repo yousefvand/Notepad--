@@ -37,7 +37,10 @@ set(PROJECT_UI
     src/systemfind/systemfinddialog.ui
     src/systemreplace/systemreplacedialog.ui
     src/systemsearchresultdialog.ui
+    src/aboutdialog.ui
 )
+
+set(CMAKE_AUTOUIC_SEARCH_PATHS src)
 
 set(PROJECT_SOURCES
     src/main.cpp
@@ -100,6 +103,10 @@ set(PROJECT_SOURCES
     src/systemsearchresultdialog.h
     src/systemtextdelegate.cpp
     src/systemtextdelegate.h
+    src/mainwindow/mainwindowconfigloader.cpp
+    src/mainwindow/mainwindowconfigloader.h
+    src/aboutdialog.cpp
+    src/aboutdialog.h
     ${PROJECT_UI}
 )
 
