@@ -536,7 +536,17 @@ void MainWindow::on_actionShow_End_of_Lines_triggered(bool checked)
     }
 }
 
+void MainWindow::on_actionShow_All_Characters_triggered(bool checked)
+{
+    Settings::instance()->saveSetting("View", "ShowAllCharacters", checked);
 
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowAllCharacters(checked);
+        }
+    }
+}
 
 
 
@@ -705,7 +715,5 @@ void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, tr("About Qt"));
 }
-
-
 
 

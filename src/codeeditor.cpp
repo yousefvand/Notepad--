@@ -33,7 +33,14 @@ CodeEditor::CodeEditor(QWidget *parent)
     m_showTabs = Settings::instance()->loadSetting("View", "ShowTabs", "false") == "true";
     m_showSpaces = Settings::instance()->loadSetting("View", "ShowSpaces", "false") == "true";
     m_showEOL = Settings::instance()->loadSetting("View", "ShowEOL", "false") == "true";
+    m_showAllCharacters = Settings::instance()->loadSetting("View", "ShowAllCharacters", "false") == "true";
     m_tabWidth = Settings::instance()->loadSetting("View", "TabWidth", "4").toInt();
+
+    if (m_showAllCharacters) {
+        m_showTabs = true;
+        m_showSpaces = true;
+        m_showEOL = true;
+    }
 }
 
 int CodeEditor::lineNumberAreaWidth() {
@@ -279,12 +286,14 @@ void CodeEditor::setShowEOL(bool enabled) {
     }
 }
 
-bool CodeEditor::showTabs() const {
-    return m_showTabs;
-}
-
-bool CodeEditor::showSpaces() const {
-    return m_showSpaces;
+void CodeEditor::setShowAllCharacters(bool enabled) {
+    if (m_showAllCharacters != enabled) {
+        m_showAllCharacters = enabled;
+        m_showTabs = enabled;
+        m_showSpaces = enabled;
+        m_showEOL = enabled;
+        viewport()->update();
+    }
 }
 
 // TODO: Implement in UI

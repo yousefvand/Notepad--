@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.62
+
+- Implemented:
+- View Menu -> Show All Characters
+
 ## 0.0.61
 
 - Implemented:

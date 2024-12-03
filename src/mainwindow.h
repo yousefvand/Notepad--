@@ -156,6 +156,8 @@ private slots:
 
     void on_actionShow_End_of_Lines_triggered(bool checked);
 
+    void on_actionShow_All_Characters_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;

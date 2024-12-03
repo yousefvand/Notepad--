@@ -27,8 +27,7 @@ public:
     void setShowTabs(bool enabled);
     void setShowSpaces(bool enabled);
     void setShowEOL(bool enabled);
-    bool showTabs() const;
-    bool showSpaces() const;
+    void setShowAllCharacters(bool enabled);
     void setTabWidth(int width);
 
 protected:
@@ -51,6 +50,7 @@ private:
     bool m_showTabs = false;
     bool m_showSpaces = false;
     bool m_showEOL = false;
+    bool m_showAllCharacters = false;
     int m_tabWidth;
 };
 

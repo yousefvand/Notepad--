@@ -1,7 +1,6 @@
 #include "../settings.h"
 #include "../mainwindow.h"
 #include "../ui_mainwindow.h"
-#include "src/ui_mainwindow.h"
 #include "mainwindowconfigloader.h"
 
 MainWindowConfigLoader::MainWindowConfigLoader(MainWindow *mainWindow) : m_mainWindow(mainWindow) {}
@@ -11,6 +10,7 @@ void MainWindowConfigLoader::loadMainWindowConfig() {
         m_mainWindow->getUi()->action_Show_Tabs->setChecked(showTabs());
         m_mainWindow->getUi()->actionShow_Spaces->setChecked(showSpaces());
         m_mainWindow->getUi()->actionShow_End_of_Lines->setChecked(showEOL());
+        m_mainWindow->getUi()->actionShow_All_Characters->setChecked(showAllCharacters());
     }
 }
 
@@ -24,6 +24,10 @@ bool MainWindowConfigLoader::showSpaces() const {
 
 bool MainWindowConfigLoader::showEOL() const {
     return Settings::instance()->loadSetting("View", "ShowEOL", "false") == true;
+}
+
+bool MainWindowConfigLoader::showAllCharacters() const {
+    return Settings::instance()->loadSetting("View", "ShowAllCharacters", "false") == true;
 }
 
 
