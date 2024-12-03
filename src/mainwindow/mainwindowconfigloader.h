@@ -13,5 +13,6 @@ private:
 
     bool showTabs() const;
     bool showSpaces() const;
+    bool showEOL() const;
 };
 

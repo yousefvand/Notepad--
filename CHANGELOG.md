@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.61
+
+- Implemented:
+- View Menu -> Show End of Line
+
 ## 0.0.60
 
 - Implemented:

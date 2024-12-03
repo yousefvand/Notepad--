@@ -26,6 +26,7 @@ public:
     void gotoLineInEditor(int lineNumber);
     void setShowTabs(bool enabled);
     void setShowSpaces(bool enabled);
+    void setShowEOL(bool enabled);
     bool showTabs() const;
     bool showSpaces() const;
     void setTabWidth(int width);
@@ -49,6 +50,7 @@ private:
     int m_indentationWidth;
     bool m_showTabs = false;
     bool m_showSpaces = false;
+    bool m_showEOL = false;
     int m_tabWidth;
 };
 

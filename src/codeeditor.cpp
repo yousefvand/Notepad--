@@ -32,6 +32,7 @@ CodeEditor::CodeEditor(QWidget *parent)
     m_indentationWidth = Settings::instance()->loadSetting("Indentation", "Size", "1").toInt();
     m_showTabs = Settings::instance()->loadSetting("View", "ShowTabs", "false") == "true";
     m_showSpaces = Settings::instance()->loadSetting("View", "ShowSpaces", "false") == "true";
+    m_showEOL = Settings::instance()->loadSetting("View", "ShowEOL", "false") == "true";
     m_tabWidth = Settings::instance()->loadSetting("View", "TabWidth", "4").toInt();
 }
 
@@ -267,7 +268,14 @@ void CodeEditor::setShowTabs(bool enabled) {
 void CodeEditor::setShowSpaces(bool enabled) {
     if (m_showSpaces != enabled) {
         m_showSpaces = enabled;
-        viewport()->update(); // Redraw the editor to show or hide tab symbols
+        viewport()->update();
+    }
+}
+
+void CodeEditor::setShowEOL(bool enabled) {
+    if (m_showEOL != enabled) {
+        m_showEOL = enabled;
+        viewport()->update();
     }
 }
 
@@ -288,8 +296,6 @@ void CodeEditor::setTabWidth(int width = 4) {
 void CodeEditor::paintEvent(QPaintEvent *event) {
     QPlainTextEdit::paintEvent(event);
 
-    if (!m_showTabs && !m_showSpaces) return;
-
     QPainter painter(viewport());
     painter.setPen(Qt::gray);
 
@@ -301,7 +307,7 @@ void CodeEditor::paintEvent(QPaintEvent *event) {
         int blockStart = block.position();
         QTextCursor blockCursor(block);
 
-        // Iterate over characters in the block
+        // Handle Tabs and Spaces in the line
         for (int i = 0; i < text.length(); ++i) {
             if (text[i] == '\t' && m_showTabs) {
                 // Move the cursor to the tab character
@@ -332,6 +338,19 @@ void CodeEditor::paintEvent(QPaintEvent *event) {
                 painter.drawText(position, ".");
             }
         }
+
+        // Add the EOL character if enabled
+        if (m_showEOL) {
+            blockCursor.setPosition(blockStart + text.length());  // Move to the end of the line
+            QRect rect = cursorRect(blockCursor);
+
+            // Position for the EOL character
+            QPoint position(rect.left() + metrics.horizontalAdvance(' '), rect.top() + metrics.ascent());
+
+            // Draw the EOL character (e.g., "↵")
+            painter.drawText(position, "↵");
+        }
+
         block = block.next();
     }
 }

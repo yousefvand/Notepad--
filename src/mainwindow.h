@@ -150,6 +150,12 @@ private slots:
 
     void on_actionShow_Spaces_triggered(bool checked);
 
+    void on_action_About_Notepad_triggered();
+
+    void on_actionAbout_Qt_triggered();
+
+    void on_actionShow_End_of_Lines_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
