@@ -15,6 +15,7 @@
 #include "systemfind/systemfinddialog.h"
 #include "systemreplace/systemreplacedialog.h"
 #include "systemsearchresultdialog.h"
+#include "view/movetootherview.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -168,6 +169,8 @@ private slots:
 
     void on_action_Restore_Default_Zoom_triggered();
 
+    void on_action_Move_to_Other_View_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -198,4 +201,5 @@ private:
     SearchOptions* m_searchOptions;
     Find* m_find = nullptr;
     MainWindowConfigLoader* m_mainWindowConfigLoader;
+    MoveToOtherView* m_moveToOtherView = nullptr;
 };

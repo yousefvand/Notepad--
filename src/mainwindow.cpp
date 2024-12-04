@@ -20,6 +20,7 @@
 #include "replace/replacedialog.h"
 #include "systemfind/systemfinddialog.h"
 #include "systemreplace/systemreplacedialog.h"
+#include "view/movetootherview.h"
 #include "aboutdialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -75,6 +76,7 @@ MainWindow::~MainWindow() {
     delete m_systemFindDialog;
     delete m_systemReplaceDialog;
     delete m_mainWindowConfigLoader;
+    delete m_moveToOtherView;
 }
 
 Ui::MainWindow* MainWindow::getUi() const {
@@ -601,6 +603,26 @@ void MainWindow::on_action_Restore_Default_Zoom_triggered()
         }
     }
 }
+
+void MainWindow::on_action_Move_to_Other_View_triggered()
+{
+    if (!ui->documentsTab) {
+        qDebug() << "documentsTab is null!";
+        return;
+    }
+
+    if (m_moveToOtherView) {
+        m_moveToOtherView->execute();
+    } else {
+        MoveToOtherView* m_moveToOtherView = new MoveToOtherView(ui->documentsTab, this);
+        m_moveToOtherView->execute();
+    }
+}
+
+
+
+
+
 
 
 

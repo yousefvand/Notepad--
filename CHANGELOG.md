@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.66
+
+- Implemented:
+- View Menu -> Move to Other View
+
 ## 0.0.65
 
 - Implemented:

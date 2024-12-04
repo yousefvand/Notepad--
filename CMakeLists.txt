@@ -107,6 +107,8 @@ set(PROJECT_SOURCES
     src/mainwindow/mainwindowconfigloader.h
     src/aboutdialog.cpp
     src/aboutdialog.h
+    src/view/movetootherview.cpp
+    src/view/movetootherview.h
     ${PROJECT_UI}
 )
 
