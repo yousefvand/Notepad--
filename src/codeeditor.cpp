@@ -360,6 +360,7 @@ void CodeEditor::paintSpaces(QPainter& painter, const QTextBlock& block, int top
 }
 
 void CodeEditor::paintEOL(QPainter& painter, const QTextBlock& block, int top, int bottom) {
+    Q_UNUSED(bottom);
     QFontMetrics metrics(font());
     QString text = block.text();
     QTextCursor blockCursor(block);
@@ -460,3 +461,29 @@ void CodeEditor::paintEvent(QPaintEvent* event) {
         block = block.next();
     }
 }
+
+void CodeEditor::zoomIn() {
+    QFont currentFont = this->font();
+    int currentSize = currentFont.pointSize();
+    if (currentSize < 72) {
+        currentFont.setPointSize(currentSize + 1);
+        this->setFont(currentFont);
+    }
+}
+
+void CodeEditor::zoomOut() {
+    QFont currentFont = this->font();
+    int currentSize = currentFont.pointSize();
+    if (currentSize > 8) {
+        currentFont.setPointSize(currentSize - 1);
+        this->setFont(currentFont);
+    }
+}
+
+void CodeEditor::defaultZoom() {
+    QFont currentFont = this->font();
+    currentFont.setPointSize(12);
+    this->setFont(currentFont);
+}
+
+

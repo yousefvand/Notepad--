@@ -162,6 +162,12 @@ private slots:
 
     void on_actionShow_Wrap_Symbol_triggered(bool checked);
 
+    void on_actionZoom_In_triggered();
+
+    void on_actionoom_Out_triggered();
+
+    void on_action_Restore_Default_Zoom_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;

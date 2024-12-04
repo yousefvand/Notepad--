@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.65
+
+- Implemented:
+- View Menu -> Zoom
+
 ## 0.0.64
 
 - Implemented:

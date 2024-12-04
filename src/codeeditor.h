@@ -31,6 +31,9 @@ public:
     void setShowIndentGuide(bool enabled);
     void setShowWrapSymbol(bool enabled);
     void setTabWidth(int width);
+    void zoomIn();
+    void zoomOut();
+    void defaultZoom();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
