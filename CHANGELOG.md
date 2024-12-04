@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.64
+
+- Implemented:
+- View Menu -> Show Wrap Symbol
+
 ## 0.0.63
 
 - Implemented:

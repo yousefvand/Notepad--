@@ -29,6 +29,7 @@ public:
     void setShowEOL(bool enabled);
     void setShowAllCharacters(bool enabled);
     void setShowIndentGuide(bool enabled);
+    void setShowWrapSymbol(bool enabled);
     void setTabWidth(int width);
 
 protected:
@@ -53,7 +54,14 @@ private:
     bool m_showEOL = false;
     bool m_showAllCharacters = false;
     bool m_showIndentGuide = false;
+    bool m_showWrapSymbol = false;
     int m_tabWidth;
+
+    void paintTabs(QPainter& painter, const QTextBlock& block, int top);
+    void paintSpaces(QPainter& painter, const QTextBlock& block, int top);
+    void paintEOL(QPainter& painter, const QTextBlock& block, int top, int bottom);
+    void paintIndentGuides(QPainter& painter, const QTextBlock& block, int top, int bottom);
+    void paintWrapSymbols(QPainter& painter, const QTextBlock& block, int top, int bottom);
 };
 
 class LineNumberArea : public QWidget {
