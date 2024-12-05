@@ -1944,6 +1944,9 @@
    </property>
   </action>
   <action name="action_Move_to_Other_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Move to Other View</string>
    </property>

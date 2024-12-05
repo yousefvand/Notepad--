@@ -4,6 +4,7 @@
 #include "../codeeditor.h"
 #include "movetonewview.h"
 #include "../document.h"
+#include "../mainwindow.h"
 
 MoveToNewView::MoveToNewView(QTabWidget *tabWidget, QWidget *parent)
     : QWidget(parent), m_tabWidget(tabWidget) {}
@@ -65,6 +66,9 @@ void MoveToNewView::execute() {
     } else {
         qDebug() << "No content to set for the new tab.";
     }
+
+    MainWindow* mainWindow = qobject_cast<MainWindow*>(parent());
+    mainWindow->connectSignals(newDocument);
 
     // Insert the new tab
     m_tabWidget->insertTab(currentIndex + 1, newDocument, QIcon(), "New View");

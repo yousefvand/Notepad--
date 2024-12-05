@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.68
+
+- Implemented:
+- View Menu -> Open in a New Window
+
 ## 0.0.67
 
 - Implemented:

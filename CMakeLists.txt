@@ -111,6 +111,8 @@ set(PROJECT_SOURCES
     src/view/movetootherview.h
     src/view/movetonewview.cpp
     src/view/movetonewview.h
+    src/view/openinnewwindow.cpp
+    src/view/openinnewwindow.h
     ${PROJECT_UI}
 )
 
