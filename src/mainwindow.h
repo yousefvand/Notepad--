@@ -16,6 +16,7 @@
 #include "systemreplace/systemreplacedialog.h"
 #include "systemsearchresultdialog.h"
 #include "view/movetootherview.h"
+#include "view/movetonewview.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -171,6 +172,8 @@ private slots:
 
     void on_action_Move_to_Other_View_triggered();
 
+    void on_actionMove_to_a_New_View_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -202,4 +205,5 @@ private:
     Find* m_find = nullptr;
     MainWindowConfigLoader* m_mainWindowConfigLoader;
     MoveToOtherView* m_moveToOtherView = nullptr;
+    MoveToNewView* m_moveToNewView = nullptr;
 };

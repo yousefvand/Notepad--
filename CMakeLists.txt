@@ -109,6 +109,8 @@ set(PROJECT_SOURCES
     src/aboutdialog.h
     src/view/movetootherview.cpp
     src/view/movetootherview.h
+    src/view/movetonewview.cpp
+    src/view/movetonewview.h
     ${PROJECT_UI}
 )
 

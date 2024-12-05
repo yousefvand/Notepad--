@@ -21,6 +21,7 @@
 #include "systemfind/systemfinddialog.h"
 #include "systemreplace/systemreplacedialog.h"
 #include "view/movetootherview.h"
+#include "view/movetonewview.h"
 #include "aboutdialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -77,6 +78,7 @@ MainWindow::~MainWindow() {
     delete m_systemReplaceDialog;
     delete m_mainWindowConfigLoader;
     delete m_moveToOtherView;
+    delete m_moveToNewView;
 }
 
 Ui::MainWindow* MainWindow::getUi() const {
@@ -618,6 +620,34 @@ void MainWindow::on_action_Move_to_Other_View_triggered()
         m_moveToOtherView->execute();
     }
 }
+
+void MainWindow::on_actionMove_to_a_New_View_triggered()
+{
+    if (!ui->documentsTab) {
+        qDebug() << "documentsTab is null!";
+        return;
+    }
+
+    if (m_moveToNewView) {
+        m_moveToNewView->execute();
+    } else {
+        MoveToNewView* m_moveToNewView = new MoveToNewView(ui->documentsTab, this);
+        m_moveToNewView->execute();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
