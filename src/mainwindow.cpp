@@ -23,6 +23,7 @@
 #include "view/movetootherview.h"
 #include "view/movetonewview.h"
 #include "view/openinnewwindow.h"
+#include "view/wordwrap.h"
 #include "aboutdialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -60,6 +61,7 @@ MainWindow::MainWindow(QWidget* parent)
     Helpers::RemoveMe(ui->documentsTab);
     fileOperations->newDocument();
     Helpers::zMenu(ui->menu_Language, this);
+    m_wordWrap = new WordWrap(this);
 
     m_mainWindowConfigLoader = new MainWindowConfigLoader(this);
     m_mainWindowConfigLoader->loadMainWindowConfig();
@@ -652,6 +654,36 @@ void MainWindow::on_action_Open_in_a_New_Window_triggered()
     }
     delete m_openInNewWindow;
 }
+
+void MainWindow::on_action_Word_wrap_triggered()
+{
+    if (QPlainTextEdit* currentEditor = qobject_cast<QPlainTextEdit*>(ui->documentsTab->currentWidget())) {
+        m_wordWrap->toggle(currentEditor);
+        bool checked = m_wordWrap->isWordWrapEnabled(currentEditor);
+        ui->action_Word_wrap->setChecked(checked);
+        Settings::instance()->saveSetting("View", "WordWrap", checked);
+    } else {
+        qDebug() << "No active text editor found to toggle word wrap.";
+    }
+}
+// FIXME: Setting doesn't save
+void MainWindow::toggleWordWrap() {
+    // Get the current text editor
+    if (QPlainTextEdit* currentEditor = qobject_cast<QPlainTextEdit*>(ui->documentsTab->currentWidget())) {
+        // Use the WordWrap instance to toggle word wrap
+        m_wordWrap->toggle(currentEditor);
+
+        // Optionally update the UI action's checked state
+        bool checked = m_wordWrap->isWordWrapEnabled(currentEditor);
+        ui->action_Word_wrap->setChecked(checked);
+        Settings::instance()->saveSetting("View", "WordWrap", checked);
+    } else {
+        qDebug() << "No active text editor found to toggle word wrap.";
+    }
+}
+
+
+
 
 
 

@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.69
+
+- Implemented:
+- View Menu -> Word Wrap
+
 ## 0.0.68
 
 - Implemented:

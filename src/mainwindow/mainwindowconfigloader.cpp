@@ -13,6 +13,7 @@ void MainWindowConfigLoader::loadMainWindowConfig() {
         m_mainWindow->getUi()->actionShow_All_Characters->setChecked(showAllCharacters());
         m_mainWindow->getUi()->actionShow_Indent_Guide->setChecked(showIndentGuide());
         m_mainWindow->getUi()->actionShow_Wrap_Symbol->setChecked(showWrapSymbol());
+        m_mainWindow->getUi()->action_Word_wrap->setChecked(wordWrap());
     }
 }
 
@@ -38,6 +39,10 @@ bool MainWindowConfigLoader::showIndentGuide() const {
 
 bool MainWindowConfigLoader::showWrapSymbol() const {
     return Settings::instance()->loadSetting("View", "ShowWrapSymbol", "false") == true;
+}
+
+bool MainWindowConfigLoader::wordWrap() const {
+    return Settings::instance()->loadSetting("View", "WordWrap", "false") == true;
 }
 
 

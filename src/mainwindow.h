@@ -18,6 +18,7 @@
 #include "view/movetootherview.h"
 #include "view/movetonewview.h"
 #include "view/openinnewwindow.h"
+#include "view/wordwrap.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -54,6 +55,7 @@ private slots:
     void on_action_Open_triggered();
     void on_action_Save_triggered();
     void onActionZ80Triggered();
+    void toggleWordWrap();
 
     void on_actionOpen_Folder_triggered();
 
@@ -177,6 +179,8 @@ private slots:
 
     void on_action_Open_in_a_New_Window_triggered();
 
+    void on_action_Word_wrap_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -210,4 +214,5 @@ private:
     MoveToOtherView* m_moveToOtherView = nullptr;
     MoveToNewView* m_moveToNewView = nullptr;
     OpenInNewWindow* m_openInNewWindow = nullptr;
+    WordWrap* m_wordWrap = nullptr;
 };

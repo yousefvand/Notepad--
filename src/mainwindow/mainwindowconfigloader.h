@@ -17,5 +17,6 @@ private:
     bool showAllCharacters() const;
     bool showIndentGuide() const;
     bool showWrapSymbol() const;
+    bool wordWrap() const;
 };
 

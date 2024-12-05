@@ -113,6 +113,8 @@ set(PROJECT_SOURCES
     src/view/movetonewview.h
     src/view/openinnewwindow.cpp
     src/view/openinnewwindow.h
+    src/view/wordwrap.cpp
+    src/view/wordwrap.h
     ${PROJECT_UI}
 )
 
