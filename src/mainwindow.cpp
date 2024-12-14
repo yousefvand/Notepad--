@@ -25,13 +25,16 @@
 #include "view/openinnewwindow.h"
 #include "view/wordwrap.h"
 #include "aboutdialog.h"
+#include "view/toggletoformertab.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
     indentationManager(new IndentationManager(this)),
     findDialog(new FindDialog(this)),
-    replaceDialog(new ReplaceDialog(this))
+    replaceDialog(new ReplaceDialog(this)),
+    m_currentTabIndex(-1),
+    m_formerTabIndex(-1)
 {
 
     ui->setupUi(this);  // Ensure the UI is set up before using it
@@ -65,6 +68,11 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_mainWindowConfigLoader = new MainWindowConfigLoader(this);
     m_mainWindowConfigLoader->loadMainWindowConfig();
+
+    connect(ui->documentsTab, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+    if (ui->documentsTab->count() > 0) {
+        m_currentTabIndex = ui->documentsTab->currentIndex();
+    }
 
     qDebug() << "MainWindow initialized...";
 }
@@ -681,6 +689,51 @@ void MainWindow::toggleWordWrap() {
         qDebug() << "No active text editor found to toggle word wrap.";
     }
 }
+
+void MainWindow::onTabChanged(int currentIndex)
+{
+    // Skip updates if the change was triggered by toggling
+    if (currentIndex == m_formerTabIndex) {
+        return; // Do nothing; indices are already updated in the toggle logic
+    }
+
+    // Update former and current tab indices
+    m_formerTabIndex = m_currentTabIndex;
+    m_currentTabIndex = currentIndex;
+}
+
+void MainWindow::on_actionMath_Rendering_triggered(bool checked)
+{
+    Helpers::notImplemented(this);
+    Settings::instance()->saveSetting("View", "MathRendering", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowMathRendering(checked);
+        }
+    }
+}
+
+void MainWindow::on_actionToggle_to_Former_Tab_triggered()
+{
+    // Ensure a valid former tab exists
+    if (m_formerTabIndex != -1) {
+        // Temporarily disconnect the currentChanged signal to avoid overwriting indices
+        disconnect(ui->documentsTab, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+
+        // Swap the tabs
+        ui->documentsTab->setCurrentIndex(m_formerTabIndex);
+
+        // Update indices after the toggle
+        std::swap(m_currentTabIndex, m_formerTabIndex);
+
+        // Reconnect the currentChanged signal
+        connect(ui->documentsTab, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+    }
+}
+
+
 
 
 

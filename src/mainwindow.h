@@ -56,6 +56,7 @@ private slots:
     void on_action_Save_triggered();
     void onActionZ80Triggered();
     void toggleWordWrap();
+    void onTabChanged(int currentIndex);
 
     void on_actionOpen_Folder_triggered();
 
@@ -181,6 +182,10 @@ private slots:
 
     void on_action_Word_wrap_triggered();
 
+    void on_actionToggle_to_Former_Tab_triggered();
+
+    void on_actionMath_Rendering_triggered(bool checked);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -215,4 +220,6 @@ private:
     MoveToNewView* m_moveToNewView = nullptr;
     OpenInNewWindow* m_openInNewWindow = nullptr;
     WordWrap* m_wordWrap = nullptr;
+    int m_currentTabIndex;
+    int m_formerTabIndex;
 };

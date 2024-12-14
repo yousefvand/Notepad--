@@ -37,6 +37,7 @@ CodeEditor::CodeEditor(QWidget *parent)
     m_showIndentGuide = Settings::instance()->loadSetting("View", "ShowIndentGuide", "false") == "true";
     m_showWrapSymbol = Settings::instance()->loadSetting("View", "ShowWrapSymbol", "false") == "true";
     m_tabWidth = Settings::instance()->loadSetting("View", "TabWidth", "4").toInt();
+    m_showMathRendering = Settings::instance()->loadSetting("View", "MathRendering", "false") == "true";
 
     if (m_showAllCharacters) {
         m_showTabs = true;
@@ -316,6 +317,11 @@ void CodeEditor::setShowWrapSymbol(bool enabled) {
 void CodeEditor::setTabWidth(int width = 4) {
     m_tabWidth = width;
     viewport()->update(); // Trigger a repaint to apply the new width
+}
+
+void CodeEditor::setShowMathRendering(bool enabled) {
+    Q_UNUSED(enabled);
+    // TODO: Implement
 }
 
 void CodeEditor::paintTabs(QPainter& painter, const QTextBlock& block, int top) {

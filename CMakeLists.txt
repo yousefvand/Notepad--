@@ -115,6 +115,8 @@ set(PROJECT_SOURCES
     src/view/openinnewwindow.h
     src/view/wordwrap.cpp
     src/view/wordwrap.h
+    src/view/toggletoformertab.cpp
+    src/view/toggletoformertab.h
     ${PROJECT_UI}
 )
 

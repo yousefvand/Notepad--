@@ -18,5 +18,6 @@ private:
     bool showIndentGuide() const;
     bool showWrapSymbol() const;
     bool wordWrap() const;
+    bool mathRendering() const;
 };
 

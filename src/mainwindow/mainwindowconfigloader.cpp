@@ -14,6 +14,7 @@ void MainWindowConfigLoader::loadMainWindowConfig() {
         m_mainWindow->getUi()->actionShow_Indent_Guide->setChecked(showIndentGuide());
         m_mainWindow->getUi()->actionShow_Wrap_Symbol->setChecked(showWrapSymbol());
         m_mainWindow->getUi()->action_Word_wrap->setChecked(wordWrap());
+        m_mainWindow->getUi()->actionMath_Rendering->setChecked(mathRendering());
     }
 }
 
@@ -43,6 +44,10 @@ bool MainWindowConfigLoader::showWrapSymbol() const {
 
 bool MainWindowConfigLoader::wordWrap() const {
     return Settings::instance()->loadSetting("View", "WordWrap", "false") == true;
+}
+
+bool MainWindowConfigLoader::mathRendering() const {
+    return Settings::instance()->loadSetting("View", "MathRendering", "false") == true;
 }
 
 

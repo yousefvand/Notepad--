@@ -34,6 +34,7 @@ public:
     void zoomIn();
     void zoomOut();
     void defaultZoom();
+    void setShowMathRendering(bool enabled);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -59,6 +60,7 @@ private:
     bool m_showIndentGuide = false;
     bool m_showWrapSymbol = false;
     int m_tabWidth;
+    bool m_showMathRendering = false;
 
     void paintTabs(QPainter& painter, const QTextBlock& block, int top);
     void paintSpaces(QPainter& painter, const QTextBlock& block, int top);

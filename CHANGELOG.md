@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.70
+
+- Implemented:
+- View Menu -> Toggle to Former Tab
+
 ## 0.0.69
 
 - Implemented:
