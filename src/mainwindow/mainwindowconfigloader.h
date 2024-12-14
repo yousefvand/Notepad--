@@ -19,5 +19,6 @@ private:
     bool showWrapSymbol() const;
     bool wordWrap() const;
     bool mathRendering() const;
+    bool fullScreen() const;
 };
 

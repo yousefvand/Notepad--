@@ -15,6 +15,7 @@ void MainWindowConfigLoader::loadMainWindowConfig() {
         m_mainWindow->getUi()->actionShow_Wrap_Symbol->setChecked(showWrapSymbol());
         m_mainWindow->getUi()->action_Word_wrap->setChecked(wordWrap());
         m_mainWindow->getUi()->actionMath_Rendering->setChecked(mathRendering());
+        m_mainWindow->getUi()->action_Full_Screen->setChecked(fullScreen());
     }
 }
 
@@ -50,6 +51,8 @@ bool MainWindowConfigLoader::mathRendering() const {
     return Settings::instance()->loadSetting("View", "MathRendering", "false") == true;
 }
 
-
+bool MainWindowConfigLoader::fullScreen() const {
+    return Settings::instance()->loadSetting("View", "FullScreen", "false") == true;
+}
 
 

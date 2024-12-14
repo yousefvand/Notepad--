@@ -186,6 +186,8 @@ private slots:
 
     void on_actionMath_Rendering_triggered(bool checked);
 
+    void on_action_Full_Screen_toggled(bool enabled);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;

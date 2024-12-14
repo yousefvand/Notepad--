@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.71
+
+- Implemented:
+- View Menu -> Full Screen
+
 ## 0.0.70
 
 - Implemented:

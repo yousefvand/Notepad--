@@ -74,6 +74,8 @@ MainWindow::MainWindow(QWidget* parent)
         m_currentTabIndex = ui->documentsTab->currentIndex();
     }
 
+    connect(ui->action_Full_Screen, &QAction::toggled, this, &MainWindow::on_action_Full_Screen_toggled);
+
     qDebug() << "MainWindow initialized...";
 }
 
@@ -733,7 +735,21 @@ void MainWindow::on_actionToggle_to_Former_Tab_triggered()
     }
 }
 
+void MainWindow::on_action_Full_Screen_toggled(bool enabled)
+{
+    if (enabled) {
+        // Enter full screen mode
+        showFullScreen();
+        Settings::instance()->saveSetting("View", "FullScreen", "true");
+    } else {
+        // Exit full screen mode
+        showNormal();
+        Settings::instance()->saveSetting("View", "FullScreen", "false");
+    }
 
+    // Update the action's checked state based on window state
+    ui->action_Full_Screen->setChecked(isFullScreen());
+}
 
 
 
