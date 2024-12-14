@@ -33,7 +33,17 @@ CodeEditor::CodeEditor(QWidget *parent)
     m_showTabs = Settings::instance()->loadSetting("View", "ShowTabs", "false") == "true";
     m_showSpaces = Settings::instance()->loadSetting("View", "ShowSpaces", "false") == "true";
     m_showEOL = Settings::instance()->loadSetting("View", "ShowEOL", "false") == "true";
+    m_showAllCharacters = Settings::instance()->loadSetting("View", "ShowAllCharacters", "false") == "true";
+    m_showIndentGuide = Settings::instance()->loadSetting("View", "ShowIndentGuide", "false") == "true";
+    m_showWrapSymbol = Settings::instance()->loadSetting("View", "ShowWrapSymbol", "false") == "true";
     m_tabWidth = Settings::instance()->loadSetting("View", "TabWidth", "4").toInt();
+    m_showMathRendering = Settings::instance()->loadSetting("View", "MathRendering", "false") == "true";
+
+    if (m_showAllCharacters) {
+        m_showTabs = true;
+        m_showSpaces = true;
+        m_showEOL = true;
+    }
 }
 
 int CodeEditor::lineNumberAreaWidth() {
@@ -279,12 +289,28 @@ void CodeEditor::setShowEOL(bool enabled) {
     }
 }
 
-bool CodeEditor::showTabs() const {
-    return m_showTabs;
+void CodeEditor::setShowAllCharacters(bool enabled) {
+    if (m_showAllCharacters != enabled) {
+        m_showAllCharacters = enabled;
+        m_showTabs = enabled;
+        m_showSpaces = enabled;
+        m_showEOL = enabled;
+        viewport()->update();
+    }
 }
 
-bool CodeEditor::showSpaces() const {
-    return m_showSpaces;
+void CodeEditor::setShowIndentGuide(bool enabled) {
+    if (m_showIndentGuide != enabled) {
+        m_showIndentGuide = enabled;
+        viewport()->update();
+    }
+}
+
+void CodeEditor::setShowWrapSymbol(bool enabled) {
+    if (m_showWrapSymbol != enabled) {
+        m_showWrapSymbol = enabled;
+        viewport()->update();
+    }
 }
 
 // TODO: Implement in UI
@@ -293,7 +319,105 @@ void CodeEditor::setTabWidth(int width = 4) {
     viewport()->update(); // Trigger a repaint to apply the new width
 }
 
-void CodeEditor::paintEvent(QPaintEvent *event) {
+void CodeEditor::setShowMathRendering(bool enabled) {
+    Q_UNUSED(enabled);
+    // TODO: Implement
+}
+
+void CodeEditor::paintTabs(QPainter& painter, const QTextBlock& block, int top) {
+    QTextLayout* layout = block.layout();
+    if (!layout) return;
+
+    QFontMetrics metrics(font());
+    QString text = block.text();
+
+    for (int i = 0; i < text.size(); ++i) {
+        if (text.at(i) == '\t') {
+            QTextLine line = layout->lineForTextPosition(i);
+            if (!line.isValid()) continue;
+
+            int x = line.cursorToX(i) + contentOffset().x();
+            QPoint position(x + metrics.ascent(), top + metrics.ascent());
+            painter.drawText(position, "→");
+        }
+    }
+}
+
+void CodeEditor::paintSpaces(QPainter& painter, const QTextBlock& block, int top) {
+    QTextLayout* layout = block.layout();
+    if (!layout) return;
+
+    QFontMetrics metrics(font());
+    QString text = block.text();
+
+    for (int i = 0; i < text.size(); ++i) {
+        if (text.at(i) == ' ') {
+            QTextLine line = layout->lineForTextPosition(i);
+            if (!line.isValid()) continue;
+
+            int x = line.cursorToX(i) + contentOffset().x();
+            QPoint position(
+                x + metrics.horizontalAdvance(' ') / 4,
+                top + metrics.ascent() / 2 + metrics.height() / 3
+                );
+            painter.drawText(position, ".");
+        }
+    }
+}
+
+void CodeEditor::paintEOL(QPainter& painter, const QTextBlock& block, int top, int bottom) {
+    Q_UNUSED(bottom);
+    QFontMetrics metrics(font());
+    QString text = block.text();
+    QTextCursor blockCursor(block);
+
+    blockCursor.setPosition(block.position() + text.length());
+    QRect rect = cursorRect(blockCursor);
+
+    QPoint position(rect.left() + metrics.horizontalAdvance(' '), top + metrics.ascent());
+    painter.drawText(position, "↵");
+}
+
+void CodeEditor::paintIndentGuides(QPainter& painter, const QTextBlock& block, int top, int bottom) {
+    QFontMetrics metrics(font());
+    QString blockText = block.text();
+    int indentWidth = metrics.horizontalAdvance(' ') * 4;  // Assuming 4 spaces per indent level
+
+    int horizontalOffset = 0;
+    for (const QChar& ch : blockText) {
+        if (ch == '\t') {
+            horizontalOffset += indentWidth;
+        } else if (ch == ' ') {
+            horizontalOffset += metrics.horizontalAdvance(' ');
+        } else {
+            break;
+        }
+    }
+
+    if (horizontalOffset > 0) {
+        int x = horizontalOffset + contentOffset().x();
+        painter.drawLine(QPoint(x, top), QPoint(x, bottom));
+    }
+}
+
+void CodeEditor::paintWrapSymbols(QPainter& painter, const QTextBlock& block, int top, int bottom) {
+    Q_UNUSED(bottom);
+    QTextLayout* layout = block.layout();
+    if (!layout || layout->lineCount() <= 1) return;
+
+    QFontMetrics metrics(font());
+
+    for (int i = 1; i < layout->lineCount(); ++i) {
+        QTextLine line = layout->lineAt(i);
+
+        int y = top + line.y() + metrics.ascent();
+        int x = viewport()->width() - metrics.horizontalAdvance("↩") - 5;
+
+        painter.drawText(QPoint(x, y), "↩");
+    }
+}
+
+void CodeEditor::paintEvent(QPaintEvent* event) {
     QPlainTextEdit::paintEvent(event);
 
     QPainter painter(viewport());
@@ -302,55 +426,70 @@ void CodeEditor::paintEvent(QPaintEvent *event) {
     QTextBlock block = document()->firstBlock();
     QFontMetrics metrics(font());
 
-    while (block.isValid()) {
-        QString text = block.text();
-        int blockStart = block.position();
-        QTextCursor blockCursor(block);
-
-        // Handle Tabs and Spaces in the line
-        for (int i = 0; i < text.length(); ++i) {
-            if (text[i] == '\t' && m_showTabs) {
-                // Move the cursor to the tab character
-                blockCursor.setPosition(blockStart + i);
-
-                // Get the rectangle of the cursor position
-                QRect rect = cursorRect(blockCursor);
-
-                // Adjust the position for the tab symbol
-                QPoint position(rect.left() + metrics.ascent(), rect.top() + metrics.ascent());
-
-                // Draw the tab symbol
-                painter.drawText(position, "→");
-            } else if (text[i] == ' ' && m_showSpaces) {
-                // Move the cursor to the space character
-                blockCursor.setPosition(blockStart + i);
-
-                // Get the rectangle of the cursor position
-                QRect rect = cursorRect(blockCursor);
-
-                // Adjust the position for the space dot
-                QPoint position(
-                    rect.left() + metrics.horizontalAdvance(' ') / 4,  // Push right slightly
-                    rect.top() + metrics.ascent() / 2 + metrics.height() / 3  // Vertically center the dot lower
-                    );
-
-                // Draw the space as a dot
-                painter.drawText(position, ".");
+    // Draw indent guides if enabled
+    if (m_showIndentGuide) {
+        while (block.isValid()) {
+            if (block.isVisible()) {
+                QRect blockRect = blockBoundingGeometry(block).translated(contentOffset()).toRect();
+                paintIndentGuides(painter, block, blockRect.top(), blockRect.bottom());
             }
+            block = block.next();
         }
+        block = document()->firstBlock();  // Reset block for next drawing loop
+    }
 
-        // Add the EOL character if enabled
-        if (m_showEOL) {
-            blockCursor.setPosition(blockStart + text.length());  // Move to the end of the line
-            QRect rect = cursorRect(blockCursor);
+    // Handle Tabs, Spaces, EOL, and Wrap Symbols
+    while (block.isValid()) {
+        QRect blockRect = blockBoundingGeometry(block).translated(contentOffset()).toRect();
 
-            // Position for the EOL character
-            QPoint position(rect.left() + metrics.horizontalAdvance(' '), rect.top() + metrics.ascent());
+        if (block.isVisible()) {
+            // Draw Tabs
+            if (m_showTabs) {
+                paintTabs(painter, block, blockRect.top());
+            }
 
-            // Draw the EOL character (e.g., "↵")
-            painter.drawText(position, "↵");
+            // Draw Spaces
+            if (m_showSpaces) {
+                paintSpaces(painter, block, blockRect.top());
+            }
+
+            // Draw EOL
+            if (m_showEOL) {
+                paintEOL(painter, block, blockRect.top(), blockRect.bottom());
+            }
+
+            // Draw Wrap Symbols
+            if (m_showWrapSymbol) {
+                paintWrapSymbols(painter, block, blockRect.top(), blockRect.bottom());
+            }
         }
 
         block = block.next();
     }
 }
+
+void CodeEditor::zoomIn() {
+    QFont currentFont = this->font();
+    int currentSize = currentFont.pointSize();
+    if (currentSize < 72) {
+        currentFont.setPointSize(currentSize + 1);
+        this->setFont(currentFont);
+    }
+}
+
+void CodeEditor::zoomOut() {
+    QFont currentFont = this->font();
+    int currentSize = currentFont.pointSize();
+    if (currentSize > 8) {
+        currentFont.setPointSize(currentSize - 1);
+        this->setFont(currentFont);
+    }
+}
+
+void CodeEditor::defaultZoom() {
+    QFont currentFont = this->font();
+    currentFont.setPointSize(12);
+    this->setFont(currentFont);
+}
+
+

@@ -27,9 +27,14 @@ public:
     void setShowTabs(bool enabled);
     void setShowSpaces(bool enabled);
     void setShowEOL(bool enabled);
-    bool showTabs() const;
-    bool showSpaces() const;
+    void setShowAllCharacters(bool enabled);
+    void setShowIndentGuide(bool enabled);
+    void setShowWrapSymbol(bool enabled);
     void setTabWidth(int width);
+    void zoomIn();
+    void zoomOut();
+    void defaultZoom();
+    void setShowMathRendering(bool enabled);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -51,7 +56,17 @@ private:
     bool m_showTabs = false;
     bool m_showSpaces = false;
     bool m_showEOL = false;
+    bool m_showAllCharacters = false;
+    bool m_showIndentGuide = false;
+    bool m_showWrapSymbol = false;
     int m_tabWidth;
+    bool m_showMathRendering = false;
+
+    void paintTabs(QPainter& painter, const QTextBlock& block, int top);
+    void paintSpaces(QPainter& painter, const QTextBlock& block, int top);
+    void paintEOL(QPainter& painter, const QTextBlock& block, int top, int bottom);
+    void paintIndentGuides(QPainter& painter, const QTextBlock& block, int top, int bottom);
+    void paintWrapSymbols(QPainter& painter, const QTextBlock& block, int top, int bottom);
 };
 
 class LineNumberArea : public QWidget {

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>222</width>
-    <height>198</height>
+    <height>241</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,9 +52,9 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>16</x>
-     <y>90</y>
-     <width>191</width>
+     <x>30</x>
+     <y>140</y>
+     <width>171</width>
      <height>31</height>
     </rect>
    </property>
@@ -64,14 +64,14 @@
     </font>
    </property>
    <property name="text">
-    <string>By: Remisa Yousefvand</string>
+    <string>- Remisa Yousefvand</string>
    </property>
   </widget>
   <widget class="QPushButton" name="closeButton">
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>160</y>
+     <y>200</y>
      <width>80</width>
      <height>25</height>
     </rect>
@@ -83,8 +83,8 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>14</x>
-     <y>123</y>
+     <x>16</x>
+     <y>83</y>
      <width>191</width>
      <height>31</height>
     </rect>
@@ -95,7 +95,31 @@
     </font>
    </property>
    <property name="text">
-    <string>https://github.com/yousefvand</string>
+    <string>&lt;a href=&quot;https://github.com/yousefvand&quot;&gt;https://github.com/yousefvand&lt;/a&gt;</string>
+   </property>
+   <property name="openExternalLinks">
+    <bool>true</bool>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>110</y>
+     <width>111</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Contributors:</string>
    </property>
   </widget>
  </widget>

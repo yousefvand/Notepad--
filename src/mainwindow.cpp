@@ -20,14 +20,21 @@
 #include "replace/replacedialog.h"
 #include "systemfind/systemfinddialog.h"
 #include "systemreplace/systemreplacedialog.h"
+#include "view/movetootherview.h"
+#include "view/movetonewview.h"
+#include "view/openinnewwindow.h"
+#include "view/wordwrap.h"
 #include "aboutdialog.h"
+#include "view/toggletoformertab.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
     indentationManager(new IndentationManager(this)),
     findDialog(new FindDialog(this)),
-    replaceDialog(new ReplaceDialog(this))
+    replaceDialog(new ReplaceDialog(this)),
+    m_currentTabIndex(-1),
+    m_formerTabIndex(-1)
 {
 
     ui->setupUi(this);  // Ensure the UI is set up before using it
@@ -57,9 +64,17 @@ MainWindow::MainWindow(QWidget* parent)
     Helpers::RemoveMe(ui->documentsTab);
     fileOperations->newDocument();
     Helpers::zMenu(ui->menu_Language, this);
+    m_wordWrap = new WordWrap(this);
 
     m_mainWindowConfigLoader = new MainWindowConfigLoader(this);
     m_mainWindowConfigLoader->loadMainWindowConfig();
+
+    connect(ui->documentsTab, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+    if (ui->documentsTab->count() > 0) {
+        m_currentTabIndex = ui->documentsTab->currentIndex();
+    }
+
+    connect(ui->action_Full_Screen, &QAction::toggled, this, &MainWindow::on_action_Full_Screen_toggled);
 
     qDebug() << "MainWindow initialized...";
 }
@@ -536,6 +551,236 @@ void MainWindow::on_actionShow_End_of_Lines_triggered(bool checked)
     }
 }
 
+void MainWindow::on_actionShow_All_Characters_triggered(bool checked)
+{
+    Settings::instance()->saveSetting("View", "ShowAllCharacters", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowAllCharacters(checked);
+        }
+    }
+}
+
+void MainWindow::on_actionShow_Indent_Guide_triggered(bool checked)
+{
+    Settings::instance()->saveSetting("View", "ShowIndentGuide", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowIndentGuide(checked);
+        }
+    }
+}
+
+void MainWindow::on_actionShow_Wrap_Symbol_triggered(bool checked)
+{
+    Settings::instance()->saveSetting("View", "ShowWrapSymbol", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowWrapSymbol(checked);
+        }
+    }
+}
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->zoomIn();
+        }
+    }
+}
+
+void MainWindow::on_actionoom_Out_triggered()
+{
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->zoomOut();
+        }
+    }
+}
+
+void MainWindow::on_action_Restore_Default_Zoom_triggered()
+{
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->defaultZoom();
+        }
+    }
+}
+
+void MainWindow::on_action_Move_to_Other_View_triggered()
+{
+    if (!ui->documentsTab) {
+        qDebug() << "documentsTab is null!";
+        return;
+    }
+
+    if (m_moveToOtherView) {
+        m_moveToOtherView->execute();
+    } else {
+        MoveToOtherView* m_moveToOtherView = new MoveToOtherView(ui->documentsTab, this);
+        m_moveToOtherView->execute();
+    }
+    delete m_moveToOtherView;
+}
+
+void MainWindow::on_actionMove_to_a_New_View_triggered()
+{
+    if (!ui->documentsTab) {
+        qDebug() << "documentsTab is null!";
+        return;
+    }
+
+    if (m_moveToNewView) {
+        m_moveToNewView->execute();
+    } else {
+        MoveToNewView* m_moveToNewView = new MoveToNewView(ui->documentsTab, this);
+        m_moveToNewView->execute();
+    }
+    delete m_moveToNewView;
+}
+
+void MainWindow::on_action_Open_in_a_New_Window_triggered()
+{
+    if (!ui->documentsTab) {
+        qDebug() << "documentsTab is null!";
+        return;
+    }
+
+    if (m_openInNewWindow) {
+        m_openInNewWindow->execute();
+    } else {
+        OpenInNewWindow* m_openInNewWindow = new OpenInNewWindow(ui->documentsTab, this);
+        m_openInNewWindow->execute();
+    }
+    delete m_openInNewWindow;
+}
+
+void MainWindow::on_action_Word_wrap_triggered()
+{
+    if (QPlainTextEdit* currentEditor = qobject_cast<QPlainTextEdit*>(ui->documentsTab->currentWidget())) {
+        m_wordWrap->toggle(currentEditor);
+        bool checked = m_wordWrap->isWordWrapEnabled(currentEditor);
+        ui->action_Word_wrap->setChecked(checked);
+        Settings::instance()->saveSetting("View", "WordWrap", checked);
+    } else {
+        qDebug() << "No active text editor found to toggle word wrap.";
+    }
+}
+// FIXME: Setting doesn't save
+void MainWindow::toggleWordWrap() {
+    // Get the current text editor
+    if (QPlainTextEdit* currentEditor = qobject_cast<QPlainTextEdit*>(ui->documentsTab->currentWidget())) {
+        // Use the WordWrap instance to toggle word wrap
+        m_wordWrap->toggle(currentEditor);
+
+        // Optionally update the UI action's checked state
+        bool checked = m_wordWrap->isWordWrapEnabled(currentEditor);
+        ui->action_Word_wrap->setChecked(checked);
+        Settings::instance()->saveSetting("View", "WordWrap", checked);
+    } else {
+        qDebug() << "No active text editor found to toggle word wrap.";
+    }
+}
+
+void MainWindow::onTabChanged(int currentIndex)
+{
+    // Skip updates if the change was triggered by toggling
+    if (currentIndex == m_formerTabIndex) {
+        return; // Do nothing; indices are already updated in the toggle logic
+    }
+
+    // Update former and current tab indices
+    m_formerTabIndex = m_currentTabIndex;
+    m_currentTabIndex = currentIndex;
+}
+
+void MainWindow::on_actionMath_Rendering_triggered(bool checked)
+{
+    Helpers::notImplemented(this);
+    Settings::instance()->saveSetting("View", "MathRendering", checked);
+
+    for (int i = 0; i < ui->documentsTab->count(); ++i) {
+        Document *doc = qobject_cast<Document *>(ui->documentsTab->widget(i));
+        if (doc) {
+            doc->editor()->setShowMathRendering(checked);
+        }
+    }
+}
+
+void MainWindow::on_actionToggle_to_Former_Tab_triggered()
+{
+    // Ensure a valid former tab exists
+    if (m_formerTabIndex != -1) {
+        // Temporarily disconnect the currentChanged signal to avoid overwriting indices
+        disconnect(ui->documentsTab, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+
+        // Swap the tabs
+        ui->documentsTab->setCurrentIndex(m_formerTabIndex);
+
+        // Update indices after the toggle
+        std::swap(m_currentTabIndex, m_formerTabIndex);
+
+        // Reconnect the currentChanged signal
+        connect(ui->documentsTab, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+    }
+}
+
+void MainWindow::on_action_Full_Screen_toggled(bool enabled)
+{
+    if (enabled) {
+        // Enter full screen mode
+        showFullScreen();
+        Settings::instance()->saveSetting("View", "FullScreen", "true");
+    } else {
+        // Exit full screen mode
+        showNormal();
+        Settings::instance()->saveSetting("View", "FullScreen", "false");
+    }
+
+    // Update the action's checked state based on window state
+    ui->action_Full_Screen->setChecked(isFullScreen());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -705,7 +950,5 @@ void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, tr("About Qt"));
 }
-
-
 
 

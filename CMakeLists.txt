@@ -107,6 +107,16 @@ set(PROJECT_SOURCES
     src/mainwindow/mainwindowconfigloader.h
     src/aboutdialog.cpp
     src/aboutdialog.h
+    src/view/movetootherview.cpp
+    src/view/movetootherview.h
+    src/view/movetonewview.cpp
+    src/view/movetonewview.h
+    src/view/openinnewwindow.cpp
+    src/view/openinnewwindow.h
+    src/view/wordwrap.cpp
+    src/view/wordwrap.h
+    src/view/toggletoformertab.cpp
+    src/view/toggletoformertab.h
     ${PROJECT_UI}
 )
 
