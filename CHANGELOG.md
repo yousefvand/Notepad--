@@ -2,6 +2,56 @@
 
 ============
 
+## 0.0.71
+
+- Implemented:
+- View Menu -> Full Screen
+
+## 0.0.70
+
+- Implemented:
+- View Menu -> Toggle to Former Tab
+
+## 0.0.69
+
+- Implemented:
+- View Menu -> Word Wrap
+
+## 0.0.68
+
+- Implemented:
+- View Menu -> Open in a New Window
+
+## 0.0.67
+
+- Implemented:
+- View Menu -> Move to a New View
+
+## 0.0.66
+
+- Implemented:
+- View Menu -> Move to Other View
+
+## 0.0.65
+
+- Implemented:
+- View Menu -> Zoom
+
+## 0.0.64
+
+- Implemented:
+- View Menu -> Show Wrap Symbol
+
+## 0.0.63
+
+- Implemented:
+- View Menu -> Show Indent Guide
+
+## 0.0.62
+
+- Implemented:
+- View Menu -> Show All Characters
+
 ## 0.0.61
 
 - Implemented:

@@ -33,6 +33,9 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QTextEdit" name="textEdit">
+          <property name="layoutDirection">
+           <enum>Qt::LayoutDirection::LeftToRight</enum>
+          </property>
           <property name="autoFillBackground">
            <bool>false</bool>
           </property>
@@ -525,13 +528,6 @@
     <addaction name="action_Show_menu_bar"/>
     <addaction name="actionS_how_Toolbar"/>
    </widget>
-   <widget class="QMenu" name="menu_Run">
-    <property name="title">
-     <string>&amp;Run</string>
-    </property>
-    <addaction name="actionRun"/>
-    <addaction name="actionModify_run_commands"/>
-   </widget>
    <widget class="QMenu" name="menu_Window">
     <property name="title">
      <string>&amp;Window</string>
@@ -552,7 +548,6 @@
    <addaction name="menuEn_coding"/>
    <addaction name="menu_Language"/>
    <addaction name="menuSettin_gs"/>
-   <addaction name="menu_Run"/>
    <addaction name="menu_Window"/>
    <addaction name="menuAbo_ut"/>
   </widget>
@@ -1949,6 +1944,9 @@
    </property>
   </action>
   <action name="action_Move_to_Other_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Move to Other View</string>
    </property>

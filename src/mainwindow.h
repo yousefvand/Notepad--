@@ -15,6 +15,10 @@
 #include "systemfind/systemfinddialog.h"
 #include "systemreplace/systemreplacedialog.h"
 #include "systemsearchresultdialog.h"
+#include "view/movetootherview.h"
+#include "view/movetonewview.h"
+#include "view/openinnewwindow.h"
+#include "view/wordwrap.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -51,6 +55,8 @@ private slots:
     void on_action_Open_triggered();
     void on_action_Save_triggered();
     void onActionZ80Triggered();
+    void toggleWordWrap();
+    void onTabChanged(int currentIndex);
 
     void on_actionOpen_Folder_triggered();
 
@@ -156,6 +162,32 @@ private slots:
 
     void on_actionShow_End_of_Lines_triggered(bool checked);
 
+    void on_actionShow_All_Characters_triggered(bool checked);
+
+    void on_actionShow_Indent_Guide_triggered(bool checked);
+
+    void on_actionShow_Wrap_Symbol_triggered(bool checked);
+
+    void on_actionZoom_In_triggered();
+
+    void on_actionoom_Out_triggered();
+
+    void on_action_Restore_Default_Zoom_triggered();
+
+    void on_action_Move_to_Other_View_triggered();
+
+    void on_actionMove_to_a_New_View_triggered();
+
+    void on_action_Open_in_a_New_Window_triggered();
+
+    void on_action_Word_wrap_triggered();
+
+    void on_actionToggle_to_Former_Tab_triggered();
+
+    void on_actionMath_Rendering_triggered(bool checked);
+
+    void on_action_Full_Screen_toggled(bool enabled);
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
@@ -186,4 +218,10 @@ private:
     SearchOptions* m_searchOptions;
     Find* m_find = nullptr;
     MainWindowConfigLoader* m_mainWindowConfigLoader;
+    MoveToOtherView* m_moveToOtherView = nullptr;
+    MoveToNewView* m_moveToNewView = nullptr;
+    OpenInNewWindow* m_openInNewWindow = nullptr;
+    WordWrap* m_wordWrap = nullptr;
+    int m_currentTabIndex;
+    int m_formerTabIndex;
 };
