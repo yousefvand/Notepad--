@@ -222,7 +222,7 @@
     <addaction name="action_Interpret_as_UTF_8"/>
     <addaction name="actionInterpret_as_utf_8_without_BOM"/>
     <addaction name="actionInterpret_as_16_BE"/>
-    <addaction name="actionInterpret_as_UTF_16BE_UCS_2_Big_Endian"/>
+    <addaction name="actionInterpret_as_16_LE"/>
     <addaction name="actionInterpret_As"/>
     <addaction name="separator"/>
     <addaction name="action_Reload_file_interpreted_as"/>
@@ -893,7 +893,7 @@
     <string>Interpret as UTF-16BE (UCS-2 &amp;Big Endian)</string>
    </property>
   </action>
-  <action name="actionInterpret_as_UTF_16BE_UCS_2_Big_Endian">
+  <action name="actionInterpret_as_16_LE">
    <property name="text">
     <string>Interpret as UTF-16LE (UCS-2 &amp;Little Endian)</string>
    </property>

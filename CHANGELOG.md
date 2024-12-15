@@ -2,6 +2,15 @@
 
 ============
 
+## 0.0.72
+
+- Implemented:
+- Encoding Menu -> Interpret as UTF-8
+- Encoding Menu -> Interpret as UTF-8 without BOM
+- Encoding Menu -> Interpret as UTF-16BE (UCS2 Big Endian)
+- Encoding Menu -> Interpret as UTF-16LE (UCS2 Little Endian)
+- Encoding Menu -> Interpret as ...
+
 ## 0.0.71
 
 - Implemented:

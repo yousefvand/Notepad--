@@ -38,6 +38,7 @@ set(PROJECT_UI
     src/systemreplace/systemreplacedialog.ui
     src/systemsearchresultdialog.ui
     src/aboutdialog.ui
+    src/encoding/interpreteasdialog.ui
 )
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS src)
@@ -117,6 +118,18 @@ set(PROJECT_SOURCES
     src/view/wordwrap.h
     src/view/toggletoformertab.cpp
     src/view/toggletoformertab.h
+    src/encoding/interpretcurrentdocumentasutf8.cpp
+    src/encoding/interpretcurrentdocumentasutf8.h
+    src/encoding/interpretcurrentdocumentasutf8withoutbom.cpp
+    src/encoding/interpretcurrentdocumentasutf8withoutbom.h
+    src/encoding/interpretcurrentdocumentasutf16be.cpp
+    src/encoding/interpretcurrentdocumentasutf16be.h
+    src/encoding/interpretcurrentdocumentasutf16le.cpp
+    src/encoding/interpretcurrentdocumentasutf16le.h
+    src/encoding/interpreteasdialog.cpp
+    src/encoding/interpreteasdialog.h
+    src/encoding/interpreteasutf8.cpp
+    src/encoding/interpreteasutf8.h
     ${PROJECT_UI}
 )
 

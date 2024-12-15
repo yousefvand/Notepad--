@@ -15,7 +15,6 @@
 #include "mainwindow/session.h"
 #include "src/ui_mainwindow.h"
 #include "helpers.h"
-#include "indentation/indentationdialog.h"
 #include "find/finddialog.h"
 #include "replace/replacedialog.h"
 #include "systemfind/systemfinddialog.h"
@@ -25,7 +24,12 @@
 #include "view/openinnewwindow.h"
 #include "view/wordwrap.h"
 #include "aboutdialog.h"
-#include "view/toggletoformertab.h"
+#include "encoding/interpretcurrentdocumentasutf8.h"
+#include "encoding/interpretcurrentdocumentasutf8withoutbom.h"
+#include "encoding/interpretcurrentdocumentasutf16be.h"
+#include "encoding/interpretcurrentdocumentasutf16le.h"
+#include "encoding/interpreteasdialog.h"
+#include "encoding/interpreteasutf8.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -750,6 +754,82 @@ void MainWindow::on_action_Full_Screen_toggled(bool enabled)
     // Update the action's checked state based on window state
     ui->action_Full_Screen->setChecked(isFullScreen());
 }
+
+/* Encoding */
+
+void MainWindow::on_action_Interpret_as_UTF_8_triggered()
+{
+    CodeEditor* editor = dynamic_cast<CodeEditor*>(ui->documentsTab->currentWidget());
+    InterpretCurrentDocumentAsUTF8::instance().execute(editor);
+}
+
+void MainWindow::on_actionInterpret_as_utf_8_without_BOM_triggered()
+{
+    CodeEditor* editor = dynamic_cast<CodeEditor*>(ui->documentsTab->currentWidget());
+    InterpretCurrentDocumentAsUTF8WithoutBOM::instance().execute(editor);
+}
+
+void MainWindow::on_actionInterpret_as_16_BE_triggered()
+{
+    Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    CodeEditor* editor = doc->editor();
+    InterpretCurrentDocumentAsUTF16BE::instance().execute(editor);
+}
+
+void MainWindow::on_actionInterpret_as_16_LE_triggered()
+{
+    Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    CodeEditor* editor = doc->editor();
+    InterpretCurrentDocumentAsUTF16LE::instance().execute(editor);
+}
+
+void MainWindow::on_actionInterpret_As_triggered()
+{
+    InterpreteAsDialog dialog(this); // Create the CCC with MainWindow as the parent
+
+    if (dialog.exec() == QDialog::Accepted) {
+        // OK clicked
+        QString selectedItem = dialog.getSelectedItem();
+        qDebug() << "Selected item:" << selectedItem;
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+        CodeEditor* editor = doc->editor();
+        if (!editor) {
+            qFatal("No active editor");
+            return;
+        }
+        if (selectedItem == "UTF-8") {
+            InterpreteAsUtf8::instance().execute(editor);
+        } // TODO: Implement UTF-7 and ...
+
+    } else {
+        // Cancel clicked
+        qDebug() << "Dialog canceled.";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
