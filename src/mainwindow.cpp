@@ -30,6 +30,8 @@
 #include "encoding/interpretcurrentdocumentasutf16le.h"
 #include "encoding/interpreteasdialog.h"
 #include "encoding/interpreteasutf8.h"
+#include "encoding/interpreteasutf7.h"
+#include "encoding/interpretcurrentdocumentasutf32le.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -799,13 +801,25 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "UTF-8") {
             InterpreteAsUtf8::instance().execute(editor);
-        } // TODO: Implement UTF-7 and ...
-
-    } else {
-        // Cancel clicked
-        qDebug() << "Dialog canceled.";
+        }
+        if (selectedItem == "UTF-7") {
+            Helpers::notImplemented(this);
+            InterpreteAsUtf7::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-32LE") {
+            InterpreteAsUTF32LE::instance().execute(editor);
+        }
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 

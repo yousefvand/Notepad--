@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.73
+
+- Implemented:
+- Encoding Menu -> Interpret as ... UTF-32LE
+
 ## 0.0.72
 
 - Implemented:

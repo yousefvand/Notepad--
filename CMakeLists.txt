@@ -130,6 +130,12 @@ set(PROJECT_SOURCES
     src/encoding/interpreteasdialog.h
     src/encoding/interpreteasutf8.cpp
     src/encoding/interpreteasutf8.h
+    src/encoding/interpreteasutf7.cpp
+    src/encoding/interpreteasutf7.h
+    src/encoding/utf7handler.cpp
+    src/encoding/utf7handler.h
+    src/encoding/interpretcurrentdocumentasutf32le.cpp
+    src/encoding/interpretcurrentdocumentasutf32le.h
     ${PROJECT_UI}
 )
 
@@ -140,7 +146,7 @@ qt_add_executable(Notepad--
 )
 
 # Link Qt6 libraries
-target_link_libraries(Notepad--
+target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Concurrent Qt6::PrintSupport
 )
 

@@ -11,8 +11,9 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
     // Create and populate the combobox
     comboBox = new QComboBox(this);
     comboBox->addItems({
-            "UTF-8",
-            "UTF-7"
+        "UTF-8",
+        "UTF-7",
+        "UTF-32LE"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

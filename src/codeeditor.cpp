@@ -16,7 +16,7 @@ CodeEditor::CodeEditor(QWidget *parent)
     this->setStyleSheet("QPlainTextEdit { background-color: white; }");
 
     QFont font;
-    font.setFamily("sans serif");
+    font.setFamily("Noto Sans CJK");
     font.setFixedPitch(true);
     font.setPointSize(12);
     this->setFont(font);
