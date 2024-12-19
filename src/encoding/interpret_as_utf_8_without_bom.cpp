@@ -1,14 +1,14 @@
-#include "interpretcurrentdocumentasutf8withoutbom.h"
+#include "interpret_as_utf_8_without_bom.h"
 #include "../codeeditor.h"
 #include <QDebug>
 
-InterpretCurrentDocumentAsUTF8WithoutBOM& InterpretCurrentDocumentAsUTF8WithoutBOM::instance()
+InterpretAsUTF8WithoutBOM& InterpretAsUTF8WithoutBOM::instance()
 {
-    static InterpretCurrentDocumentAsUTF8WithoutBOM instance;
+    static InterpretAsUTF8WithoutBOM instance;
     return instance;
 }
 
-void InterpretCurrentDocumentAsUTF8WithoutBOM::execute(CodeEditor* editor)
+void InterpretAsUTF8WithoutBOM::execute(CodeEditor* editor)
 {
     if (!editor) {
         qDebug() << "Error: No CodeEditor instance provided.";

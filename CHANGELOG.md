@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.74
+
+- Implemented:
+- Encoding Menu -> Interpret as ... UTF-7, 32LE, 32BE, UTF32, UTF-16, US-ASCII, TSCII
+
 ## 0.0.73
 
 - Implemented:

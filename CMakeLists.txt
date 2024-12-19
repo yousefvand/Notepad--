@@ -38,7 +38,7 @@ set(PROJECT_UI
     src/systemreplace/systemreplacedialog.ui
     src/systemsearchresultdialog.ui
     src/aboutdialog.ui
-    src/encoding/interpreteasdialog.ui
+    src/encoding/interpret_as_dialog.ui
 )
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS src)
@@ -118,24 +118,34 @@ set(PROJECT_SOURCES
     src/view/wordwrap.h
     src/view/toggletoformertab.cpp
     src/view/toggletoformertab.h
-    src/encoding/interpretcurrentdocumentasutf8.cpp
-    src/encoding/interpretcurrentdocumentasutf8.h
-    src/encoding/interpretcurrentdocumentasutf8withoutbom.cpp
-    src/encoding/interpretcurrentdocumentasutf8withoutbom.h
-    src/encoding/interpretcurrentdocumentasutf16be.cpp
-    src/encoding/interpretcurrentdocumentasutf16be.h
-    src/encoding/interpretcurrentdocumentasutf16le.cpp
-    src/encoding/interpretcurrentdocumentasutf16le.h
-    src/encoding/interpreteasdialog.cpp
-    src/encoding/interpreteasdialog.h
-    src/encoding/interpreteasutf8.cpp
-    src/encoding/interpreteasutf8.h
-    src/encoding/interpreteasutf7.cpp
-    src/encoding/interpreteasutf7.h
+    src/encoding/interpret_as_utf_8.cpp
+    src/encoding/interpret_as_utf_8.h
+    src/encoding/interpret_as_utf_8_without_bom.cpp
+    src/encoding/interpret_as_utf_8_without_bom.h
+    src/encoding/interpret_as_utf_16_be.cpp
+    src/encoding/interpret_as_utf_16_be.h
+    src/encoding/interpret_as_utf_16_le.cpp
+    src/encoding/interpret_as_utf_16_le.h
+    src/encoding/interpret_as_dialog.cpp
+    src/encoding/interpret_as_dialog.h
+    src/encoding/interpret_as_utf_8.cpp
+    src/encoding/interpret_as_utf_8.h
+    src/encoding/interpret_as_utf_7.cpp
+    src/encoding/interpret_as_utf_7.h
     src/encoding/utf7handler.cpp
     src/encoding/utf7handler.h
-    src/encoding/interpretcurrentdocumentasutf32le.cpp
-    src/encoding/interpretcurrentdocumentasutf32le.h
+    src/encoding/interpret_as_utf_32_le.cpp
+    src/encoding/interpret_as_utf_32_le.h
+    src/encoding/interpret_as_utf_32_be.cpp
+    src/encoding/interpret_as_utf_32_be.h
+    src/encoding/interpret_as_utf_32.cpp
+    src/encoding/interpret_as_utf_32.h
+    src/encoding/interpret_as_utf_16.cpp
+    src/encoding/interpret_as_utf_16.h
+    src/encoding/interpret_as_us_ascii.cpp
+    src/encoding/interpret_as_us_ascii.h
+    src/encoding/interprete_as_tscii.cpp
+    src/encoding/interprete_as_tscii.h
     ${PROJECT_UI}
 )
 

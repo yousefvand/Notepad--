@@ -1,18 +1,18 @@
-#include "interpretcurrentdocumentasutf16le.h"
+#include "interpret_as_utf_16_le.h"
 #include "../codeeditor.h"
 #include <QDebug>
 
-InterpretCurrentDocumentAsUTF16LE& InterpretCurrentDocumentAsUTF16LE::instance()
+InterpretAsUTF16LE& InterpretAsUTF16LE::instance()
 {
-    static InterpretCurrentDocumentAsUTF16LE instance;
+    static InterpretAsUTF16LE instance;
     return instance;
 }
 
-InterpretCurrentDocumentAsUTF16LE::InterpretCurrentDocumentAsUTF16LE() = default;
+InterpretAsUTF16LE::InterpretAsUTF16LE() = default;
 
-InterpretCurrentDocumentAsUTF16LE::~InterpretCurrentDocumentAsUTF16LE() = default;
+InterpretAsUTF16LE::~InterpretAsUTF16LE() = default;
 
-void InterpretCurrentDocumentAsUTF16LE::execute(CodeEditor* editor)
+void InterpretAsUTF16LE::execute(CodeEditor* editor)
 {
     if (!editor) {
         qDebug() << "Error: No CodeEditor instance provided.";

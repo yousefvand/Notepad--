@@ -1,4 +1,4 @@
-#include "interpreteasdialog.h"
+#include "interpret_as_dialog.h"
 #include <QComboBox>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
@@ -13,7 +13,14 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
     comboBox->addItems({
         "UTF-8",
         "UTF-7",
-        "UTF-32LE"
+        "UTF-32LE",
+        "UTF-32BE",
+        "UTF-32",
+        "UTF-16LE",
+        "UTF16BE",
+        "UTF-16",
+        "US-ASCII",
+        "TSCII"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

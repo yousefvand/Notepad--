@@ -24,14 +24,18 @@
 #include "view/openinnewwindow.h"
 #include "view/wordwrap.h"
 #include "aboutdialog.h"
-#include "encoding/interpretcurrentdocumentasutf8.h"
-#include "encoding/interpretcurrentdocumentasutf8withoutbom.h"
-#include "encoding/interpretcurrentdocumentasutf16be.h"
-#include "encoding/interpretcurrentdocumentasutf16le.h"
-#include "encoding/interpreteasdialog.h"
-#include "encoding/interpreteasutf8.h"
-#include "encoding/interpreteasutf7.h"
-#include "encoding/interpretcurrentdocumentasutf32le.h"
+#include "encoding/interpret_as_utf_8.h"
+#include "encoding/interpret_as_utf_8_without_bom.h"
+#include "encoding/interpret_as_utf_16_be.h"
+#include "encoding/interpret_as_utf_16_le.h"
+#include "encoding/interpret_as_dialog.h"
+#include "encoding/interpret_as_utf_8.h"
+#include "encoding/interpret_as_utf_7.h"
+#include "encoding/interpret_as_utf_32_le.h"
+#include "encoding/interpret_as_utf_32_be.h"
+#include "encoding/interpret_as_utf_16.h"
+#include "encoding/interpret_as_us_ascii.h"
+#include "encoding/interprete_as_tscii.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -762,27 +766,27 @@ void MainWindow::on_action_Full_Screen_toggled(bool enabled)
 void MainWindow::on_action_Interpret_as_UTF_8_triggered()
 {
     CodeEditor* editor = dynamic_cast<CodeEditor*>(ui->documentsTab->currentWidget());
-    InterpretCurrentDocumentAsUTF8::instance().execute(editor);
+    InterpreteAsUtf8::instance().execute(editor);
 }
 
 void MainWindow::on_actionInterpret_as_utf_8_without_BOM_triggered()
 {
     CodeEditor* editor = dynamic_cast<CodeEditor*>(ui->documentsTab->currentWidget());
-    InterpretCurrentDocumentAsUTF8WithoutBOM::instance().execute(editor);
+    InterpretAsUTF8WithoutBOM::instance().execute(editor);
 }
 
 void MainWindow::on_actionInterpret_as_16_BE_triggered()
 {
     Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
     CodeEditor* editor = doc->editor();
-    InterpretCurrentDocumentAsUTF16BE::instance().execute(editor);
+    InterpretAsUTF16BE::instance().execute(editor);
 }
 
 void MainWindow::on_actionInterpret_as_16_LE_triggered()
 {
     Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
     CodeEditor* editor = doc->editor();
-    InterpretCurrentDocumentAsUTF16LE::instance().execute(editor);
+    InterpretAsUTF16LE::instance().execute(editor);
 }
 
 void MainWindow::on_actionInterpret_As_triggered()
@@ -807,10 +811,71 @@ void MainWindow::on_actionInterpret_As_triggered()
             InterpreteAsUtf7::instance().execute(editor);
         }
         if (selectedItem == "UTF-32LE") {
+            Helpers::notImplemented(this);
             InterpreteAsUTF32LE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-32BE") {
+            InterpreteAsUTF32BE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-16LE") {
+            InterpretAsUTF16LE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-16BE") {
+            InterpretAsUTF16BE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-16") {
+            Interpret_As_UTF_16::instance().execute(editor);
+        }
+        if (selectedItem == "US-ASCII") {
+            Interpret_As_US_ASCII::instance().execute(editor);
+        }
+        if (selectedItem == "TSCII") {
+            Helpers::notImplemented(this);
+            Interprete_As_TSCII::instance().execute(editor);
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

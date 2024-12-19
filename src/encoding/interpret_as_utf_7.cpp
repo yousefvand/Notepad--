@@ -1,4 +1,4 @@
-#include "interpreteasutf7.h"
+#include "interpret_as_utf_7.h"
 #include <QDebug>
 
 // Singleton instance
