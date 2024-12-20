@@ -20,7 +20,10 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "UTF16BE",
         "UTF-16",
         "US-ASCII",
-        "TSCII"
+        "TSCII",
+        "TIS-620",
+        "SHIFT-JTS",
+        "SCSU"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

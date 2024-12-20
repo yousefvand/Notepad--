@@ -144,8 +144,14 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_utf_16.h
     src/encoding/interpret_as_us_ascii.cpp
     src/encoding/interpret_as_us_ascii.h
-    src/encoding/interprete_as_tscii.cpp
-    src/encoding/interprete_as_tscii.h
+    src/encoding/interpret_as_tscii.cpp
+    src/encoding/interpret_as_tscii.h
+    src/encoding/interpret_as_tis_620.cpp
+    src/encoding/interpret_as_tis_620.h
+    src/encoding/interpret_as_shift_jts.cpp
+    src/encoding/interpret_as_shift_jts.h
+    src/encoding/interpret_as_scsu.cpp
+    src/encoding/interpret_as_scsu.h
     ${PROJECT_UI}
 )
 

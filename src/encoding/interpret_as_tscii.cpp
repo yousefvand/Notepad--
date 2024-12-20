@@ -1,17 +1,17 @@
-#include "interprete_as_tscii.h"
+#include "interpret_as_tscii.h"
 #include <QDebug>
 #include <QByteArray>
 #include <QMap>
 
 // Constructor
-Interprete_As_TSCII::Interprete_As_TSCII() = default;
+Interpret_As_TSCII::Interpret_As_TSCII() = default;
 
 // Destructor definition
-Interprete_As_TSCII::~Interprete_As_TSCII() = default;
+Interpret_As_TSCII::~Interpret_As_TSCII() = default;
 
 // Singleton instance
-Interprete_As_TSCII& Interprete_As_TSCII::instance() {
-    static Interprete_As_TSCII instance;
+Interpret_As_TSCII& Interpret_As_TSCII::instance() {
+    static Interpret_As_TSCII instance;
     return instance;
 }
 
@@ -44,7 +44,7 @@ QString decodeTSCII(const QByteArray& data) {
 }
 
 // Execute TSCII interpretation
-void Interprete_As_TSCII::execute(QPlainTextEdit* editor) {
+void Interpret_As_TSCII::execute(QPlainTextEdit* editor) {
     if (!editor) {
         qDebug() << "[ERROR] No editor provided.";
         return;

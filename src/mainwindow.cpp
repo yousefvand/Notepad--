@@ -35,7 +35,10 @@
 #include "encoding/interpret_as_utf_32_be.h"
 #include "encoding/interpret_as_utf_16.h"
 #include "encoding/interpret_as_us_ascii.h"
-#include "encoding/interprete_as_tscii.h"
+#include "encoding/interpret_as_tscii.h"
+#include "encoding/interpret_as_tis_620.h"
+#include "encoding/interpret_as_shift_jts.h"
+#include "encoding/interpret_as_scsu.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -831,7 +834,17 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "TSCII") {
             Helpers::notImplemented(this);
-            Interprete_As_TSCII::instance().execute(editor);
+            Interpret_As_TSCII::instance().execute(editor);
+        }
+        if (selectedItem == "TIS-620") {
+            Helpers::notImplemented(this);
+            Interpret_As_TIS_620::instance().execute(editor);
+        }
+        if (selectedItem == "TIS-620") {
+            Interpret_As_Shift_JTS::instance().execute(editor);
+        }
+        if (selectedItem == "SCSU") {
+            Interpret_As_SCSU::instance().execute(editor);
         }
     }
 }

@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.75
+
+- Implemented:
+- Encoding Menu -> Interpret as ... TIS-620, SHIFT-JIS, SCSU
+
 ## 0.0.74
 
 - Implemented:

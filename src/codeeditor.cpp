@@ -1,3 +1,5 @@
+#define FONT_NAME "VL Gothic"
+
 #include "codeeditor.h"
 #include <QPainter>
 #include <QTextBlock>
@@ -16,7 +18,7 @@ CodeEditor::CodeEditor(QWidget *parent)
     this->setStyleSheet("QPlainTextEdit { background-color: white; }");
 
     QFont font;
-    font.setFamily("Noto Sans CJK");
+    font.setFamily(FONT_NAME); // Macro defined at top of the file
     font.setFixedPitch(true);
     font.setPointSize(12);
     this->setFont(font);
