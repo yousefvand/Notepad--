@@ -39,6 +39,7 @@
 #include "encoding/interpret_as_tis_620.h"
 #include "encoding/interpret_as_shift_jts.h"
 #include "encoding/interpret_as_scsu.h"
+#include "encoding/interpret_as_koi8_u.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -845,6 +846,10 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "SCSU") {
             Interpret_As_SCSU::instance().execute(editor);
+        }
+        if (selectedItem == "KOI8-U") {
+            Helpers::notImplemented(this);
+            Interpret_As_KOI8_U::instance().execute(editor);
         }
     }
 }

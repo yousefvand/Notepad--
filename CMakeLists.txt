@@ -152,6 +152,8 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_shift_jts.h
     src/encoding/interpret_as_scsu.cpp
     src/encoding/interpret_as_scsu.h
+    src/encoding/interpret_as_koi8_u.cpp
+    src/encoding/interpret_as_koi8_u.h
     ${PROJECT_UI}
 )
 

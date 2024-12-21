@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.76
+
+- Implemented:
+- Encoding Menu -> Interpret as ... KOI8-U (needs fundamental change in file loading)
+
 ## 0.0.75
 
 - Implemented:

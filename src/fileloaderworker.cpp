@@ -47,7 +47,7 @@ void FileLoaderWorker::startLoading() {
 
     const qint64 chunkSize = 16 * 1024;  // Use 16KB chunks for finer updates
     QTextStream in(&file);
-    in.setEncoding(QStringConverter::Utf8);
+    in.setEncoding(QStringConverter::Utf8); // FIXME: Load in QByteArray buffer too (for encodings)
 
     qint64 bytesRead = 0;
     int lastReportedProgress = 0;
