@@ -24,7 +24,8 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "TIS-620",
         "SHIFT-JTS",
         "SCSU",
-        "KOI8-U"
+        "KOI8-U",
+        "KOI8-R"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

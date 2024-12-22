@@ -1,4 +1,5 @@
 #include "interpret_as_koi8_u.h"
+#include "../codeeditor.h"
 #include <QFile>
 #include <QDebug>
 
@@ -40,19 +41,42 @@ QString Interpret_As_KOI8_U::decodeKOI8U(const QByteArray& koi8uData) {
 }
 
 // Execute the KOI8-U interpretation
+
 void Interpret_As_KOI8_U::execute(QPlainTextEdit* editor) {
     if (!editor) {
         qWarning() << "[ERROR] No editor instance provided.";
         return;
     }
 
-    // Access the raw QByteArray from the editor's document
-    QTextDocument* doc = editor->document();
-    QByteArray rawBytes = doc->toRawText().toLocal8Bit();
+    CodeEditor* codeEditor = qobject_cast<CodeEditor*>(editor);
+    if (!codeEditor) {
+        qWarning() << "[ERROR] Editor is not a CodeEditor instance.";
+        return;
+    }
 
-    // Decode KOI8-U from raw bytes
-    QString decodedText = decodeKOI8U(rawBytes);
+    QString filePath = codeEditor->filePath();
+    if (filePath.isEmpty()) {
+        qWarning() << "[ERROR] No file path associated with the editor.";
+        return;
+    }
 
-    // Replace the text in the editor with the decoded text
-    editor->setPlainText(decodedText);
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "[ERROR] Cannot open file: " << filePath;
+        return;
+    }
+
+    QByteArray koi8uData = file.readAll();
+    file.close();
+
+    // Use QStringDecoder to decode KOI8-U
+    QStringDecoder decoder("KOI8-U");
+
+    // Decode KOI8-U data to QString
+    QString decodedText = decoder.decode(koi8uData);
+
+    // Replace text in the editor with the correctly decoded text
+    codeEditor->setPlainText(decodedText);
+
+    qDebug() << "[DEBUG] Successfully reloaded and decoded as KOI8-U:" << filePath;
 }

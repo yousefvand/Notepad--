@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.77
+
+- Implemented:
+- Encoding Menu -> Interpret as ... KOI8-R
+
 ## 0.0.76
 
 - Implemented:

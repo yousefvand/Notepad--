@@ -3,20 +3,20 @@
 #include <QString>
 #include <QPlainTextEdit>
 
-class InterpreteAsUTF32BE {
+class Interpret_As_UTF_32_BE {
 public:
     // Singleton instance accessor
-    static InterpreteAsUTF32BE& instance();
+    static Interpret_As_UTF_32_BE& instance();
 
     // Main functionality: Decode and interpret as UTF-32BE
     void execute(QPlainTextEdit* editor);
 
 private:
     // Private constructor and destructor to enforce singleton
-    InterpreteAsUTF32BE();
-    ~InterpreteAsUTF32BE();
+    Interpret_As_UTF_32_BE();
+    ~Interpret_As_UTF_32_BE();
 
     // Disable copy and assignment
-    InterpreteAsUTF32BE(const InterpreteAsUTF32BE&) = delete;
-    InterpreteAsUTF32BE& operator=(const InterpreteAsUTF32BE&) = delete;
+    Interpret_As_UTF_32_BE(const Interpret_As_UTF_32_BE&) = delete;
+    Interpret_As_UTF_32_BE& operator=(const Interpret_As_UTF_32_BE&) = delete;
 };

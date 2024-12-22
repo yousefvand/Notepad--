@@ -2,13 +2,13 @@
 #include "../codeeditor.h"
 #include <QDebug>
 
-InterpretAsUTF16BE& InterpretAsUTF16BE::instance()
+Interpret_As_UTF_16_BE& Interpret_As_UTF_16_BE::instance()
 {
-    static InterpretAsUTF16BE instance;
+    static Interpret_As_UTF_16_BE instance;
     return instance;
 }
 
-void InterpretAsUTF16BE::execute(CodeEditor* editor)
+void Interpret_As_UTF_16_BE::execute(CodeEditor* editor)
 {
     if (!editor) {
         qDebug() << "Error: No CodeEditor instance provided.";

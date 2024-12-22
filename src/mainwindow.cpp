@@ -40,6 +40,7 @@
 #include "encoding/interpret_as_shift_jts.h"
 #include "encoding/interpret_as_scsu.h"
 #include "encoding/interpret_as_koi8_u.h"
+#include "encoding/interpret_as_koi8_r.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -770,20 +771,20 @@ void MainWindow::on_action_Full_Screen_toggled(bool enabled)
 void MainWindow::on_action_Interpret_as_UTF_8_triggered()
 {
     CodeEditor* editor = dynamic_cast<CodeEditor*>(ui->documentsTab->currentWidget());
-    InterpreteAsUtf8::instance().execute(editor);
+    Interpret_As_Utf_8::instance().execute(editor);
 }
 
 void MainWindow::on_actionInterpret_as_utf_8_without_BOM_triggered()
 {
     CodeEditor* editor = dynamic_cast<CodeEditor*>(ui->documentsTab->currentWidget());
-    InterpretAsUTF8WithoutBOM::instance().execute(editor);
+    Interpret_As_UTF_8_Without_BOM::instance().execute(editor);
 }
 
 void MainWindow::on_actionInterpret_as_16_BE_triggered()
 {
     Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
     CodeEditor* editor = doc->editor();
-    InterpretAsUTF16BE::instance().execute(editor);
+    Interpret_As_UTF_16_BE::instance().execute(editor);
 }
 
 void MainWindow::on_actionInterpret_as_16_LE_triggered()
@@ -808,24 +809,22 @@ void MainWindow::on_actionInterpret_As_triggered()
             return;
         }
         if (selectedItem == "UTF-8") {
-            InterpreteAsUtf8::instance().execute(editor);
+            Interpret_As_Utf_8::instance().execute(editor);
         }
         if (selectedItem == "UTF-7") {
-            Helpers::notImplemented(this);
-            InterpreteAsUtf7::instance().execute(editor);
+            Interpret_As_Utf_7::instance().execute(editor);
         }
         if (selectedItem == "UTF-32LE") {
-            Helpers::notImplemented(this);
-            InterpreteAsUTF32LE::instance().execute(editor);
+            Interpret_As_UTF_32_LE::instance().execute(editor);
         }
         if (selectedItem == "UTF-32BE") {
-            InterpreteAsUTF32BE::instance().execute(editor);
+            Interpret_As_UTF_32_BE::instance().execute(editor);
         }
         if (selectedItem == "UTF-16LE") {
             InterpretAsUTF16LE::instance().execute(editor);
         }
         if (selectedItem == "UTF-16BE") {
-            InterpretAsUTF16BE::instance().execute(editor);
+            Interpret_As_UTF_16_BE::instance().execute(editor);
         }
         if (selectedItem == "UTF-16") {
             Interpret_As_UTF_16::instance().execute(editor);
@@ -834,11 +833,9 @@ void MainWindow::on_actionInterpret_As_triggered()
             Interpret_As_US_ASCII::instance().execute(editor);
         }
         if (selectedItem == "TSCII") {
-            Helpers::notImplemented(this);
             Interpret_As_TSCII::instance().execute(editor);
         }
         if (selectedItem == "TIS-620") {
-            Helpers::notImplemented(this);
             Interpret_As_TIS_620::instance().execute(editor);
         }
         if (selectedItem == "TIS-620") {
@@ -848,8 +845,11 @@ void MainWindow::on_actionInterpret_As_triggered()
             Interpret_As_SCSU::instance().execute(editor);
         }
         if (selectedItem == "KOI8-U") {
-            Helpers::notImplemented(this);
             Interpret_As_KOI8_U::instance().execute(editor);
+        }
+        if (selectedItem == "KOI8-R") {
+            Helpers::notImplemented(this);
+            Interpret_As_KOI8_R::instance().execute(editor);
         }
     }
 }

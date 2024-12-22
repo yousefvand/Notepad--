@@ -4,13 +4,13 @@
 
 class CodeEditor;
 
-class InterpreteAsUtf8
+class Interpret_As_Utf_8
 {
 public:
-    static InterpreteAsUtf8& instance();
+    static Interpret_As_Utf_8& instance();
     void execute(CodeEditor* editor);
 
 private:
-    InterpreteAsUtf8() = default; // Singleton: private constructor
-    ~InterpreteAsUtf8() = default;
+    Interpret_As_Utf_8() = default; // Singleton: private constructor
+    ~Interpret_As_Utf_8() = default;
 };

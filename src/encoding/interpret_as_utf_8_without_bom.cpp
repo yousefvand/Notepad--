@@ -2,13 +2,13 @@
 #include "../codeeditor.h"
 #include <QDebug>
 
-InterpretAsUTF8WithoutBOM& InterpretAsUTF8WithoutBOM::instance()
+Interpret_As_UTF_8_Without_BOM& Interpret_As_UTF_8_Without_BOM::instance()
 {
-    static InterpretAsUTF8WithoutBOM instance;
+    static Interpret_As_UTF_8_Without_BOM instance;
     return instance;
 }
 
-void InterpretAsUTF8WithoutBOM::execute(CodeEditor* editor)
+void Interpret_As_UTF_8_Without_BOM::execute(CodeEditor* editor)
 {
     if (!editor) {
         qDebug() << "Error: No CodeEditor instance provided.";

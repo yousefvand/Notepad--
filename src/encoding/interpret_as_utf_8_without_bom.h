@@ -4,21 +4,21 @@
 
 class CodeEditor; // Forward declaration
 
-class InterpretAsUTF8WithoutBOM
+class Interpret_As_UTF_8_Without_BOM
 {
 public:
     // Singleton access method
-    static InterpretAsUTF8WithoutBOM& instance();
+    static Interpret_As_UTF_8_Without_BOM& instance();
 
     // Method to interpret the current document as UTF-8 without BOM
     void execute(CodeEditor* editor);
 
 private:
     // Private constructor for singleton pattern
-    InterpretAsUTF8WithoutBOM() = default;
-    ~InterpretAsUTF8WithoutBOM() = default;
+    Interpret_As_UTF_8_Without_BOM() = default;
+    ~Interpret_As_UTF_8_Without_BOM() = default;
 
     // Delete copy constructor and assignment operator
-    InterpretAsUTF8WithoutBOM(const InterpretAsUTF8WithoutBOM&) = delete;
-    InterpretAsUTF8WithoutBOM& operator=(const InterpretAsUTF8WithoutBOM&) = delete;
+    Interpret_As_UTF_8_Without_BOM(const Interpret_As_UTF_8_Without_BOM&) = delete;
+    Interpret_As_UTF_8_Without_BOM& operator=(const Interpret_As_UTF_8_Without_BOM&) = delete;
 };

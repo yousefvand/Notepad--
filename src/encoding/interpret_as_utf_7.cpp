@@ -1,175 +1,124 @@
 #include "interpret_as_utf_7.h"
+#include "../codeeditor.h"
+#include <QFile>
 #include <QDebug>
+#include <QPlainTextEdit>
 
 // Singleton instance
-InterpreteAsUtf7& InterpreteAsUtf7::instance()
-{
-    static InterpreteAsUtf7 instance;
+Interpret_As_Utf_7& Interpret_As_Utf_7::instance() {
+    static Interpret_As_Utf_7 instance;
     return instance;
 }
 
-InterpreteAsUtf7::InterpreteAsUtf7() = default;
-InterpreteAsUtf7::~InterpreteAsUtf7() = default;
+// Helper to decode Base64 for UTF-7 sections
+QByteArray decodeBase64SectionUtf7(const QByteArray& input) {
+    static const char base64Table[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    QByteArray output;
+    int buffer = 0;
+    int bitsCollected = 0;
 
-// Main UTF-7 decoding function
-QString InterpreteAsUtf7::fromUtf7(const QByteArray& utf7Data)
-{
-    QString result;
-    QByteArray base64Buffer;
-    bool inBase64 = false;  // Tracks if we are inside a Base64-encoded section
-    bool decodingError = false;
-
-    qDebug() << "[DEBUG] Starting UTF-7 decoding.";
-
-    for (char c : utf7Data) {
-        if (c == '+') {
-            // Handle the start of a Base64 section
-            if (inBase64) {
-                // If we encounter another '+' without closing '-', treat previous as literal
-                qWarning() << "[WARNING] Unclosed Base64 section detected. Treating as literal.";
-                result += "+" + base64Buffer;
-                base64Buffer.clear();
-            }
-            inBase64 = true; // Enter Base64 mode
-            continue;
+    for (char ch : input) {
+        if (ch == '-') {
+            break;  // End of shift section
         }
 
-        if (c == '-' && inBase64) {
-            // Handle the end of a Base64 section
-            QString decodedSegment = processBase64Segment(base64Buffer, decodingError);
-            if (decodingError) {
-                // Fallback: Append as literal Base64 if decoding failed
-                qWarning() << "[WARNING] Decoding error; appending literal Base64 data.";
-                result += "+" + base64Buffer + "-";
+        int value = strchr(base64Table, ch) - base64Table;
+        if (value < 0) {
+            continue;  // Ignore invalid characters
+        }
+
+        buffer = (buffer << 6) | value;
+        bitsCollected += 6;
+
+        // Extract 16-bit units (UTF-16 codepoints)
+        while (bitsCollected >= 16) {
+            bitsCollected -= 16;
+            output.append(static_cast<char>((buffer >> bitsCollected) & 0xFF));      // Low byte
+            output.append(static_cast<char>((buffer >> (bitsCollected + 8)) & 0xFF)); // High byte
+        }
+    }
+
+    // Handle leftover bits (padding)
+    if (bitsCollected > 0) {
+        buffer <<= (16 - bitsCollected);  // Pad to 16 bits
+        output.append(static_cast<char>((buffer >> 8) & 0xFF));  // Low byte
+        output.append(static_cast<char>(buffer & 0xFF));         // High byte
+    }
+
+    return output;
+}
+
+// Decode UTF-7 Byte Array to QString (Manual Decoder)
+QString Interpret_As_Utf_7::decodeUTF7(const QByteArray& utf7Data) {
+    QString result;
+    QByteArray buffer;
+    bool inShift = false;
+
+    for (char byte : utf7Data) {
+        if (byte == '+') {
+            // Start of Base64 section
+            inShift = true;
+            if (!buffer.isEmpty()) {
+                result.append(QString::fromLatin1(buffer));
+                buffer.clear();
+            }
+        } else if (inShift) {
+            if (byte == '-') {
+                // End of Base64 section
+                QByteArray decoded = decodeBase64SectionUtf7(buffer);
+                result.append(QString::fromUtf16(reinterpret_cast<const char16_t*>(decoded.constData()), decoded.size() / 2));
+                buffer.clear();
+                inShift = false;
             } else {
-                result += decodedSegment; // Append decoded content
+                buffer.append(byte);
             }
-            base64Buffer.clear();
-            inBase64 = false;
-            continue;
-        }
-
-        if (inBase64) {
-            // Collect Base64 characters
-            base64Buffer.append(c);
         } else {
-            // Handle literal characters
-            result += handleLiteralCharacter(c);
+            // Direct ASCII passthrough
+            result.append(QChar(byte));
         }
     }
 
-    // Handle unclosed Base64 section at the end
-    if (inBase64 && !base64Buffer.isEmpty()) {
-        qWarning() << "[WARNING] Unclosed Base64 section at the end. Treating as literal.";
-        result += "+" + base64Buffer;
+    // Handle remaining ASCII buffer
+    if (!buffer.isEmpty()) {
+        result.append(QString::fromLatin1(buffer));
     }
 
-    qDebug() << "[DEBUG] Final UTF-7 decoded result:" << result;
     return result;
 }
 
-// Handle literal (non-encoded) characters
-QString InterpreteAsUtf7::handleLiteralCharacter(char c)
-{
-    return QString(c);
-}
-
-QByteArray InterpreteAsUtf7::decodeBase64Segment(const QByteArray& base64Segment, bool& errorFlag)
-{
-    QByteArray decodedBytes = QByteArray::fromBase64(base64Segment);
-    if (decodedBytes.isEmpty()) {
-        errorFlag = true;
-        qWarning() << "[ERROR] Base64 decoding failed for segment:" << base64Segment;
-    } else {
-        qDebug() << "[DEBUG] Decoded Base64 bytes:" << decodedBytes.toHex();
-    }
-    return decodedBytes;
-}
-
-// Convert decoded bytes to UTF-16 LE
-QString InterpreteAsUtf7::convertToUtf16LE(const QByteArray& decodedBytes, bool& errorFlag)
-{
-    if (decodedBytes.size() % 2 != 0) {
-        errorFlag = true;
-        qWarning() << "[ERROR] Decoded bytes size is not even for UTF-16 LE conversion.";
-        return QString();
-    }
-
-    QString result;
-    for (int i = 0; i < decodedBytes.size(); i += 2) {
-        ushort codeUnit = static_cast<uchar>(decodedBytes[i]) |
-                          (static_cast<uchar>(decodedBytes[i + 1]) << 8);
-        qDebug() << "[DEBUG] Code unit:" << QString::number(codeUnit, 16);
-        result.append(QChar(codeUnit));
-    }
-
-    qDebug() << "[DEBUG] UTF-16 LE result:" << result;
-    return result;
-}
-
-// Check if a character is a valid Base64 character
-bool InterpreteAsUtf7::isBase64Character(char c)
-{
-    return (c >= 'A' && c <= 'Z') ||
-           (c >= 'a' && c <= 'z') ||
-           (c >= '0' && c <= '9') ||
-           c == '+' || c == '/';
-}
-
-// Executes UTF-7 decoding on the editor content
-void InterpreteAsUtf7::execute(QPlainTextEdit* editor)
-{
+// Execute UTF-7 Interpretation
+void Interpret_As_Utf_7::execute(QPlainTextEdit* editor) {
     if (!editor) {
-        qDebug() << "[ERROR] No QPlainTextEdit instance provided.";
-        return; // Exit early if the editor is null
+        qWarning() << "[ERROR] No editor instance provided.";
+        return;
     }
 
-    // 1. Retrieve the original text from the editor
-    QString originalText = editor->toPlainText();
-    qDebug() << "[DEBUG] Original text:" << originalText;
-
-    // 2. Decode the original text from UTF-7
-    QByteArray utf7Data = originalText.toUtf8();
-    QString decodedText = fromUtf7(utf7Data);
-
-    if (decodedText.isEmpty()) {
-        qWarning() << "[WARNING] Decoding failed or resulted in empty content. Keeping original text.";
-        return; // Exit without updating the editor if decoding fails
+    CodeEditor* codeEditor = qobject_cast<CodeEditor*>(editor);
+    if (!codeEditor) {
+        qWarning() << "[ERROR] Editor is not a CodeEditor instance.";
+        return;
     }
 
-    // 3. Update the editor only if the decoded text differs
-    if (decodedText != originalText) {
-        editor->setPlainText(decodedText);
-        qDebug() << "[DEBUG] Updated editor content with UTF-7 decoded text.";
-    } else {
-        qDebug() << "[INFO] No changes detected after decoding.";
-    }
-}
-
-// Decode Base64 segment into UTF-16 Little Endian
-QString InterpreteAsUtf7::processBase64Segment(QByteArray& base64Buffer, bool& errorFlag) {
-    // Step 1: Decode Base64
-    QByteArray decodedBytes = QByteArray::fromBase64(base64Buffer, QByteArray::Base64Encoding);
-    if (decodedBytes.isEmpty()) {
-        errorFlag = true;
-        qWarning() << "[WARNING] Base64 decoding failed for:" << base64Buffer;
-        return QString();
+    QString filePath = codeEditor->filePath();
+    if (filePath.isEmpty()) {
+        qWarning() << "[ERROR] No file path associated with the editor.";
+        return;
     }
 
-    // Step 2: Interpret as UTF-16 Little Endian
-    if (decodedBytes.size() % 2 != 0) {
-        errorFlag = true;
-        qWarning() << "[WARNING] Decoded bytes are not aligned for UTF-16:" << decodedBytes;
-        return QString();
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "[ERROR] Cannot open file: " << filePath;
+        return;
     }
 
-    QString decodedText;
-    for (int i = 0; i < decodedBytes.size(); i += 2) {
-        // Little-endian decoding
-        ushort codeUnit = static_cast<uchar>(decodedBytes[i]) |
-                          (static_cast<uchar>(decodedBytes[i + 1]) << 8);
-        decodedText.append(QChar(codeUnit));
-    }
+    QByteArray utf7Data = file.readAll();
+    file.close();
 
-    return decodedText;
+    qDebug() << "[DEBUG] Raw File Data (Hex):" << utf7Data.toHex();
+
+    QString decodedText = decodeUTF7(utf7Data);
+
+    codeEditor->setPlainText(decodedText);
+    qDebug() << "[DEBUG] Successfully decoded as UTF-7:" << filePath;
 }

@@ -3,15 +3,15 @@
 #include <QFile>
 #include <QDebug>
 
-InterpreteAsUTF32BE& InterpreteAsUTF32BE::instance() {
-    static InterpreteAsUTF32BE instance;
+Interpret_As_UTF_32_BE& Interpret_As_UTF_32_BE::instance() {
+    static Interpret_As_UTF_32_BE instance;
     return instance;
 }
 
-InterpreteAsUTF32BE::InterpreteAsUTF32BE() = default;
-InterpreteAsUTF32BE::~InterpreteAsUTF32BE() = default;
+Interpret_As_UTF_32_BE::Interpret_As_UTF_32_BE() = default;
+Interpret_As_UTF_32_BE::~Interpret_As_UTF_32_BE() = default;
 
-void InterpreteAsUTF32BE::execute(QPlainTextEdit* editor) {
+void Interpret_As_UTF_32_BE::execute(QPlainTextEdit* editor) {
     if (!editor) {
         qWarning() << "[ERROR] No QPlainTextEdit instance provided.";
         return;

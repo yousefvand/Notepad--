@@ -17,7 +17,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 # Find Qt6 packages in a single call
-find_package(Qt6 REQUIRED COMPONENTS
+find_package(
+    Qt6
+    REQUIRED
+    COMPONENTS
     Core
     Gui
     Widgets
@@ -154,6 +157,8 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_scsu.h
     src/encoding/interpret_as_koi8_u.cpp
     src/encoding/interpret_as_koi8_u.h
+    src/encoding/interpret_as_koi8_r.cpp
+    src/encoding/interpret_as_koi8_r.h
     ${PROJECT_UI}
 )
 

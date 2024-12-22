@@ -2,13 +2,13 @@
 #include "../codeeditor.h"
 #include <QDebug>
 
-InterpreteAsUtf8& InterpreteAsUtf8::instance()
+Interpret_As_Utf_8& Interpret_As_Utf_8::instance()
 {
-    static InterpreteAsUtf8 instance;
+    static Interpret_As_Utf_8 instance;
     return instance;
 }
 
-void InterpreteAsUtf8::execute(CodeEditor* editor) {
+void Interpret_As_Utf_8::execute(CodeEditor* editor) {
     if (!editor) {
         qDebug() << "[ERROR] CodeEditor instance is null.";
         return;

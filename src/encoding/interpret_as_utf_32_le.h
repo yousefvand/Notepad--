@@ -2,21 +2,21 @@
 
 #include <QString>
 #include <QPlainTextEdit>
+#include <QByteArray>
 
-class InterpreteAsUTF32LE
-{
+class Interpret_As_UTF_32_LE {
 public:
-    static InterpreteAsUTF32LE& instance();
+    static Interpret_As_UTF_32_LE& instance();
 
+    // Execute UTF-32LE interpretation for the given editor
     void execute(QPlainTextEdit* editor);
 
 private:
-    InterpreteAsUTF32LE();
-    ~InterpreteAsUTF32LE();
+    Interpret_As_UTF_32_LE() = default;
+    ~Interpret_As_UTF_32_LE() = default;
 
-    InterpreteAsUTF32LE(const InterpreteAsUTF32LE&) = delete;
-    InterpreteAsUTF32LE& operator=(const InterpreteAsUTF32LE&) = delete;
+    Interpret_As_UTF_32_LE(const Interpret_As_UTF_32_LE&) = delete;
+    Interpret_As_UTF_32_LE& operator=(const Interpret_As_UTF_32_LE&) = delete;
 
-    QString fromUTF32LE(const QByteArray& data);
+    QString decodeUTF32LE(const QByteArray& utf32Data);
 };
-
