@@ -845,7 +845,8 @@ void MainWindow::on_actionInterpret_As_triggered()
             Interpret_As_SCSU::instance().execute(editor);
         }
         if (selectedItem == "KOI8-U") {
-            Interpret_As_KOI8_U::instance().execute(editor);
+            Helpers::notImplemented(this);
+            //Interpret_As_KOI8_U::instance().execute(editor);
         }
         if (selectedItem == "KOI8-R") {
             Helpers::notImplemented(this);
