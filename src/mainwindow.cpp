@@ -24,6 +24,7 @@
 #include "view/openinnewwindow.h"
 #include "view/wordwrap.h"
 #include "aboutdialog.h"
+// encodings
 #include "encoding/interpret_as_utf_8.h"
 #include "encoding/interpret_as_utf_8_without_bom.h"
 #include "encoding/interpret_as_utf_16_be.h"
@@ -42,6 +43,7 @@
 #include "encoding/interpret_as_koi8_u.h"
 #include "encoding/interpret_as_koi8_r.h"
 #include "encoding/interpret_as_iso_8859_9.h"
+#include "encoding/interpret_as_iso_8859_8.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -855,6 +857,9 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "ISO-8859-9") {
             Interpret_As_ISO_8859_9::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-8") {
+            Interpret_As_ISO_8859_8::instance().execute(editor);
         }
     }
 }

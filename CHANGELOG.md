@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.79
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-8
+
 ## 0.0.78
 
 - Implemented:
