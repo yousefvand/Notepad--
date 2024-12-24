@@ -159,6 +159,8 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_koi8_u.h
     src/encoding/interpret_as_koi8_r.cpp
     src/encoding/interpret_as_koi8_r.h
+    src/encoding/interpret_as_iso_8859_9.cpp
+    src/encoding/interpret_as_iso_8859_9.h
     ${PROJECT_UI}
 )
 
