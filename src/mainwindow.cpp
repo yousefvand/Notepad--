@@ -44,6 +44,8 @@
 #include "encoding/interpret_as_koi8_r.h"
 #include "encoding/interpret_as_iso_8859_9.h"
 #include "encoding/interpret_as_iso_8859_8.h"
+#include "encoding/interpret_as_iso_8859_7.h"
+#include "encoding/interpret_as_iso_8859_6.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -860,6 +862,12 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "ISO-8859-8") {
             Interpret_As_ISO_8859_8::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-7") {
+            Interpret_As_ISO_8859_7::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-6") {
+            Interpret_As_ISO_8859_6::instance().execute(editor);
         }
     }
 }

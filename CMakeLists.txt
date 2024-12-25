@@ -163,6 +163,10 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_8859_9.h
     src/encoding/interpret_as_iso_8859_8.cpp
     src/encoding/interpret_as_iso_8859_8.h
+    src/encoding/interpret_as_iso_8859_7.cpp
+    src/encoding/interpret_as_iso_8859_7.h
+    src/encoding/interpret_as_iso_8859_6.cpp
+    src/encoding/interpret_as_iso_8859_6.h
     ${PROJECT_UI}
 )
 
