@@ -46,6 +46,10 @@
 #include "encoding/interpret_as_iso_8859_8.h"
 #include "encoding/interpret_as_iso_8859_7.h"
 #include "encoding/interpret_as_iso_8859_6.h"
+#include "encoding/interpret_as_iso_8859_5.h"
+#include "encoding/interpret_as_iso_8859_4.h"
+#include "encoding/interpret_as_iso_8859_3.h"
+#include "encoding/interpret_as_iso_8859_2.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -868,6 +872,19 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "ISO-8859-6") {
             Interpret_As_ISO_8859_6::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-5") {
+            Helpers::notImplemented(this);
+            Interpret_As_ISO_8859_5::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-4") {
+            Interpret_As_ISO_8859_4::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-3") {
+            Interpret_As_ISO_8859_3::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-2") {
+            Interpret_As_ISO_8859_2::instance().execute(editor);
         }
     }
 }

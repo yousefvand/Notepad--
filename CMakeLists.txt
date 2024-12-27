@@ -167,6 +167,14 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_8859_7.h
     src/encoding/interpret_as_iso_8859_6.cpp
     src/encoding/interpret_as_iso_8859_6.h
+    src/encoding/interpret_as_iso_8859_5.cpp
+    src/encoding/interpret_as_iso_8859_5.h
+    src/encoding/interpret_as_iso_8859_4.cpp
+    src/encoding/interpret_as_iso_8859_4.h
+    src/encoding/interpret_as_iso_8859_3.cpp
+    src/encoding/interpret_as_iso_8859_3.h
+    src/encoding/interpret_as_iso_8859_2.cpp
+    src/encoding/interpret_as_iso_8859_2.h
     ${PROJECT_UI}
 )
 
