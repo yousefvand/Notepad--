@@ -43,6 +43,8 @@
 #include "encoding/interpret_as_koi8_u.h"
 #include "encoding/interpret_as_koi8_r.h"
 #include "encoding/interpret_as_iso_8859_15.h"
+#include "encoding/interpret_as_iso_8859_14.h"
+#include "encoding/interpret_as_iso_8859_13.h"
 #include "encoding/interpret_as_iso_8859_9.h"
 #include "encoding/interpret_as_iso_8859_8.h"
 #include "encoding/interpret_as_iso_8859_7.h"
@@ -865,6 +867,12 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "ISO-8859-15") {
             Interpret_As_ISO_8859_15::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-14") {
+            Interpret_As_ISO_8859_14::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-13") {
+            Interpret_As_ISO_8859_13::instance().execute(editor);
         }
         if (selectedItem == "ISO-8859-9") {
             Interpret_As_ISO_8859_9::instance().execute(editor);

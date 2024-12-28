@@ -27,6 +27,8 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "KOI8-U",
         "KOI8-R",
         "ISO-8859-15",
+        "ISO-8859-14",
+        "ISO-8859-13",
         "ISO-8859-9",
         "ISO-8859-8",
         "ISO-8859-7",

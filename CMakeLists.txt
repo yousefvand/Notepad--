@@ -161,6 +161,10 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_koi8_r.h
     src/encoding/interpret_as_iso_8859_15.cpp
     src/encoding/interpret_as_iso_8859_15.h
+    src/encoding/interpret_as_iso_8859_14.cpp
+    src/encoding/interpret_as_iso_8859_14.h
+    src/encoding/interpret_as_iso_8859_13.cpp
+    src/encoding/interpret_as_iso_8859_13.h
     src/encoding/interpret_as_iso_8859_9.cpp
     src/encoding/interpret_as_iso_8859_9.h
     src/encoding/interpret_as_iso_8859_8.cpp
