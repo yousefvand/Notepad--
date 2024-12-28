@@ -159,6 +159,8 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_koi8_u.h
     src/encoding/interpret_as_koi8_r.cpp
     src/encoding/interpret_as_koi8_r.h
+    src/encoding/interpret_as_iso_8859_15.cpp
+    src/encoding/interpret_as_iso_8859_15.h
     src/encoding/interpret_as_iso_8859_9.cpp
     src/encoding/interpret_as_iso_8859_9.h
     src/encoding/interpret_as_iso_8859_8.cpp
@@ -175,6 +177,8 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_8859_3.h
     src/encoding/interpret_as_iso_8859_2.cpp
     src/encoding/interpret_as_iso_8859_2.h
+    src/encoding/interpret_as_iso_8859_1.cpp
+    src/encoding/interpret_as_iso_8859_1.h
     ${PROJECT_UI}
 )
 
