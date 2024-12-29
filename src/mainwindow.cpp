@@ -45,6 +45,7 @@
 #include "encoding/interpret_as_iso_8859_15.h"
 #include "encoding/interpret_as_iso_8859_14.h"
 #include "encoding/interpret_as_iso_8859_13.h"
+#include "encoding/interpret_as_iso_8859_10.h"
 #include "encoding/interpret_as_iso_8859_9.h"
 #include "encoding/interpret_as_iso_8859_8.h"
 #include "encoding/interpret_as_iso_8859_7.h"
@@ -54,6 +55,7 @@
 #include "encoding/interpret_as_iso_8859_3.h"
 #include "encoding/interpret_as_iso_8859_2.h"
 #include "encoding/interpret_as_iso_8859_1.h"
+#include "encoding/interpret_as_iso_2022_kr.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -874,6 +876,9 @@ void MainWindow::on_actionInterpret_As_triggered()
         if (selectedItem == "ISO-8859-13") {
             Interpret_As_ISO_8859_13::instance().execute(editor);
         }
+        if (selectedItem == "ISO-8859-10") {
+            Interpret_As_ISO_8859_10::instance().execute(editor);
+        }
         if (selectedItem == "ISO-8859-9") {
             Interpret_As_ISO_8859_9::instance().execute(editor);
         }
@@ -901,6 +906,10 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "ISO-8859-1") {
             Interpret_As_ISO_8859_1::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-KR") {
+            Helpers::notImplemented(this);
+            Interpret_As_ISO_2022_KR::instance().execute(editor);
         }
     }
 }

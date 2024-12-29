@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.84
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-10, ISO-2022-KR
+
 ## 0.0.83
 
 - Implemented:

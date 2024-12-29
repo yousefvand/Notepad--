@@ -29,6 +29,7 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "ISO-8859-15",
         "ISO-8859-14",
         "ISO-8859-13",
+        "ISO-8859-10",
         "ISO-8859-9",
         "ISO-8859-8",
         "ISO-8859-7",
@@ -37,7 +38,8 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "ISO-8859-4",
         "ISO-8859-3",
         "ISO-8859-2",
-        "ISO-8859-1"
+        "ISO-8859-1",
+        "ISO-2022-KR"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

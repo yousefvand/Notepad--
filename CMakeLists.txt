@@ -165,6 +165,8 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_8859_14.h
     src/encoding/interpret_as_iso_8859_13.cpp
     src/encoding/interpret_as_iso_8859_13.h
+    src/encoding/interpret_as_iso_8859_10.cpp
+    src/encoding/interpret_as_iso_8859_10.h
     src/encoding/interpret_as_iso_8859_9.cpp
     src/encoding/interpret_as_iso_8859_9.h
     src/encoding/interpret_as_iso_8859_8.cpp
@@ -183,6 +185,8 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_8859_2.h
     src/encoding/interpret_as_iso_8859_1.cpp
     src/encoding/interpret_as_iso_8859_1.h
+    src/encoding/interpret_as_iso_2022_kr.cpp
+    src/encoding/interpret_as_iso_2022_kr.h
     ${PROJECT_UI}
 )
 
