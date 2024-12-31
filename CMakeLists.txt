@@ -187,6 +187,10 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_8859_1.h
     src/encoding/interpret_as_iso_2022_kr.cpp
     src/encoding/interpret_as_iso_2022_kr.h
+    src/encoding/interpret_as_iso_2022_jp_2.cpp
+    src/encoding/interpret_as_iso_2022_jp_2.h
+    src/encoding/interpret_as_iso_2022_jp_1.cpp
+    src/encoding/interpret_as_iso_2022_jp_1.h
     ${PROJECT_UI}
 )
 

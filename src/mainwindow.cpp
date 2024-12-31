@@ -56,6 +56,8 @@
 #include "encoding/interpret_as_iso_8859_2.h"
 #include "encoding/interpret_as_iso_8859_1.h"
 #include "encoding/interpret_as_iso_2022_kr.h"
+#include "encoding/interpret_as_iso_2022_jp_2.h"
+#include "encoding/interpret_as_iso_2022_jp_1.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -910,6 +912,13 @@ void MainWindow::on_actionInterpret_As_triggered()
         if (selectedItem == "ISO-2022-KR") {
             Helpers::notImplemented(this);
             Interpret_As_ISO_2022_KR::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-JP-2") {
+            Helpers::notImplemented(this);
+            Interpret_As_ISO_2022_JP_2::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-JP-1") {
+            Interpret_As_ISO_2022_JP_1::instance().execute(editor);
         }
     }
 }

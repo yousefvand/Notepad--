@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.85
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-2022-JP-1, ISO-2022-JP-2
+
 ## 0.0.84
 
 - Implemented:
