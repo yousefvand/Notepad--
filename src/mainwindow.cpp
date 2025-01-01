@@ -58,6 +58,9 @@
 #include "encoding/interpret_as_iso_2022_kr.h"
 #include "encoding/interpret_as_iso_2022_jp_2.h"
 #include "encoding/interpret_as_iso_2022_jp_1.h"
+#include "encoding/interpret_as_iso_2022_jp.h"
+#include "encoding/interpret_as_iso_2022_cn_ext.h"
+#include "encoding/interpret_as_iso_2022_cn.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -919,6 +922,15 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "ISO-2022-JP-1") {
             Interpret_As_ISO_2022_JP_1::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-JP") {
+            Interpret_As_ISO_2022_JP::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-CN-EXT") {
+            Interpret_As_ISO_2022_CN_EXT::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-CN") {
+            Interpret_As_ISO_2022_CN::instance().execute(editor);
         }
     }
 }

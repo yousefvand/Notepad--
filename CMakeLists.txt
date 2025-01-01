@@ -191,6 +191,12 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_2022_jp_2.h
     src/encoding/interpret_as_iso_2022_jp_1.cpp
     src/encoding/interpret_as_iso_2022_jp_1.h
+    src/encoding/interpret_as_iso_2022_jp.cpp
+    src/encoding/interpret_as_iso_2022_jp.h
+    src/encoding/interpret_as_iso_2022_cn_ext.cpp
+    src/encoding/interpret_as_iso_2022_cn_ext.h
+    src/encoding/interpret_as_iso_2022_cn.cpp
+    src/encoding/interpret_as_iso_2022_cn.h
     ${PROJECT_UI}
 )
 
