@@ -61,6 +61,7 @@
 #include "encoding/interpret_as_iso_2022_jp.h"
 #include "encoding/interpret_as_iso_2022_cn_ext.h"
 #include "encoding/interpret_as_iso_2022_cn.h"
+#include "encoding/interpret_as_ibm_918.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -931,6 +932,9 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "ISO-2022-CN") {
             Interpret_As_ISO_2022_CN::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-918") {
+            Interpret_As_IBM_918::instance().execute(editor);
         }
     }
 }

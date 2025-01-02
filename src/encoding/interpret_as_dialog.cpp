@@ -44,7 +44,8 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "ISO-2022-JP-1",
         "ISO-2022-JP",
         "ISO-2022-CN-EXT",
-        "ISO-2022-CN"
+        "ISO-2022-CN",
+        "IBM-918"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox
