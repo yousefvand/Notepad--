@@ -199,6 +199,10 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_iso_2022_cn.h
     src/encoding/interpret_as_ibm_918.cpp
     src/encoding/interpret_as_ibm_918.h
+    src/encoding/interpret_as_ibm_871.cpp
+    src/encoding/interpret_as_ibm_871.h
+    src/encoding/interpret_as_ibm_870.cpp
+    src/encoding/interpret_as_ibm_870.h
     ${PROJECT_UI}
 )
 

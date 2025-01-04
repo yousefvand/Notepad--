@@ -62,6 +62,8 @@
 #include "encoding/interpret_as_iso_2022_cn_ext.h"
 #include "encoding/interpret_as_iso_2022_cn.h"
 #include "encoding/interpret_as_ibm_918.h"
+#include "encoding/interpret_as_ibm_871.h"
+#include "encoding/interpret_as_ibm_870.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -935,6 +937,12 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "IBM-918") {
             Interpret_As_IBM_918::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-871") {
+            Interpret_As_IBM_871::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-870") {
+            Interpret_As_IBM_870::instance().execute(editor);
         }
     }
 }
