@@ -64,6 +64,8 @@
 #include "encoding/interpret_as_ibm_918.h"
 #include "encoding/interpret_as_ibm_871.h"
 #include "encoding/interpret_as_ibm_870.h"
+#include "encoding/interpret_as_ibm_869.h"
+#include "encoding/interpret_as_ibm_868.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -943,6 +945,9 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "IBM-870") {
             Interpret_As_IBM_870::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-868") {
+            Interpret_As_IBM_868::instance().execute(editor);
         }
     }
 }

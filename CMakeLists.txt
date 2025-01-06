@@ -203,6 +203,10 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_ibm_871.h
     src/encoding/interpret_as_ibm_870.cpp
     src/encoding/interpret_as_ibm_870.h
+    src/encoding/interpret_as_ibm_869.cpp
+    src/encoding/interpret_as_ibm_869.h
+    src/encoding/interpret_as_ibm_868.cpp
+    src/encoding/interpret_as_ibm_868.h
     ${PROJECT_UI}
 )
 

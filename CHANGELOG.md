@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.89
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-869, IBM-868
+
 ## 0.0.88
 
 - Implemented:

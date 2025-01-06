@@ -47,7 +47,9 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "ISO-2022-CN",
         "IBM-918",
         "IBM-871",
-        "IBM-870"
+        "IBM-870",
+        "IBM-869",
+        "IBM-868"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox
