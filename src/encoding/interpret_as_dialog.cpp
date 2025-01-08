@@ -2,13 +2,13 @@
 #include <QComboBox>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <qabstractitemview.h>
 
 InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
     : QDialog(parent)
 {
     setWindowTitle("Interpret As");
 
-    // Create and populate the combobox
     comboBox = new QComboBox(this);
     comboBox->addItems({
         "UTF-8",
@@ -49,7 +49,14 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "IBM-871",
         "IBM-870",
         "IBM-869",
-        "IBM-868"
+        "IBM-868",
+        "IBM-866",
+        "IBM-865",
+        "IBM-864",
+        "IBM-863",
+        "IBM-862",
+        "IBM-861",
+        "IBM-860"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

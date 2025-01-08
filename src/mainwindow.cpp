@@ -66,6 +66,13 @@
 #include "encoding/interpret_as_ibm_870.h"
 #include "encoding/interpret_as_ibm_869.h"
 #include "encoding/interpret_as_ibm_868.h"
+#include "encoding/interpret_as_ibm_866.h"
+#include "encoding/interpret_as_ibm_865.h"
+#include "encoding/interpret_as_ibm_864.h"
+#include "encoding/interpret_as_ibm_863.h"
+#include "encoding/interpret_as_ibm_862.h"
+#include "encoding/interpret_as_ibm_861.h"
+#include "encoding/interpret_as_ibm_860.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -946,8 +953,32 @@ void MainWindow::on_actionInterpret_As_triggered()
         if (selectedItem == "IBM-870") {
             Interpret_As_IBM_870::instance().execute(editor);
         }
+        if (selectedItem == "IBM-869") {
+            Interpret_As_IBM_869::instance().execute(editor);
+        }
         if (selectedItem == "IBM-868") {
             Interpret_As_IBM_868::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-866") {
+            Interpret_As_IBM_866::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-865") {
+            Interpret_As_IBM_865::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-864") {
+            Interpret_As_IBM_864::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-863") {
+            Interpret_As_IBM_863::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-862") {
+            Interpret_As_IBM_862::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-861") {
+            Interpret_As_IBM_861::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-860") {
+            Interpret_As_IBM_860::instance().execute(editor);
         }
     }
 }

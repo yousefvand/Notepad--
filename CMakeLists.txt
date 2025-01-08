@@ -207,6 +207,20 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_ibm_869.h
     src/encoding/interpret_as_ibm_868.cpp
     src/encoding/interpret_as_ibm_868.h
+    src/encoding/interpret_as_ibm_866.cpp
+    src/encoding/interpret_as_ibm_866.h
+    src/encoding/interpret_as_ibm_865.cpp
+    src/encoding/interpret_as_ibm_865.h
+    src/encoding/interpret_as_ibm_864.cpp
+    src/encoding/interpret_as_ibm_864.h
+    src/encoding/interpret_as_ibm_863.cpp
+    src/encoding/interpret_as_ibm_863.h
+    src/encoding/interpret_as_ibm_862.cpp
+    src/encoding/interpret_as_ibm_862.h
+    src/encoding/interpret_as_ibm_861.cpp
+    src/encoding/interpret_as_ibm_861.h
+    src/encoding/interpret_as_ibm_860.cpp
+    src/encoding/interpret_as_ibm_860.h
     ${PROJECT_UI}
 )
 
