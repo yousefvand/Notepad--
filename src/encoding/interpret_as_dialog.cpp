@@ -56,7 +56,11 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "IBM-863",
         "IBM-862",
         "IBM-861",
-        "IBM-860"
+        "IBM-860",
+        "IBM-857",
+        "IBM-855",
+        "IBM-852",
+        "IBM-850"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

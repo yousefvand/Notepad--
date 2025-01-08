@@ -73,6 +73,10 @@
 #include "encoding/interpret_as_ibm_862.h"
 #include "encoding/interpret_as_ibm_861.h"
 #include "encoding/interpret_as_ibm_860.h"
+#include "encoding/interpret_as_ibm_857.h"
+#include "encoding/interpret_as_ibm_855.h"
+#include "encoding/interpret_as_ibm_852.h"
+#include "encoding/interpret_as_ibm_850.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -979,6 +983,18 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "IBM-860") {
             Interpret_As_IBM_860::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-857") {
+            Interpret_As_IBM_857::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-855") {
+            Interpret_As_IBM_855::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-852") {
+            Interpret_As_IBM_852::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-850") {
+            Interpret_As_IBM_850::instance().execute(editor);
         }
     }
 }
