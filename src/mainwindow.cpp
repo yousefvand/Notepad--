@@ -77,6 +77,11 @@
 #include "encoding/interpret_as_ibm_855.h"
 #include "encoding/interpret_as_ibm_852.h"
 #include "encoding/interpret_as_ibm_850.h"
+#include "encoding/interpret_as_ibm_775.h"
+#include "encoding/interpret_as_ibm_500.h"
+#include "encoding/interpret_as_ibm_437.h"
+#include "encoding/interpret_as_ibm_424.h"
+#include "encoding/interpret_as_ibm_420.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -843,7 +848,7 @@ void MainWindow::on_actionInterpret_As_triggered()
         if (!editor) {
             qFatal("No active editor");
             return;
-        }
+        } // combobox items are in interpret as dialog.cpp
         if (selectedItem == "UTF-8") {
             Interpret_As_Utf_8::instance().execute(editor);
         }
@@ -995,6 +1000,21 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "IBM-850") {
             Interpret_As_IBM_850::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-775") {
+            Interpret_As_IBM_775::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-500") {
+            Interpret_As_IBM_500::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-437") {
+            Interpret_As_IBM_437::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-424") {
+            Interpret_As_IBM_424::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-420") {
+            Interpret_As_IBM_420::instance().execute(editor);
         }
     }
 }

@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.92
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-775, IBM-500, IBM-437, IBM-424, IBM-420
+
 ## 0.0.91
 
 - Implemented:

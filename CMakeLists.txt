@@ -229,6 +229,16 @@ set(PROJECT_SOURCES
     src/encoding/interpret_as_ibm_852.h
     src/encoding/interpret_as_ibm_850.cpp
     src/encoding/interpret_as_ibm_850.h
+    src/encoding/interpret_as_ibm_775.cpp
+    src/encoding/interpret_as_ibm_775.h
+    src/encoding/interpret_as_ibm_500.cpp
+    src/encoding/interpret_as_ibm_500.h
+    src/encoding/interpret_as_ibm_437.cpp
+    src/encoding/interpret_as_ibm_437.h
+    src/encoding/interpret_as_ibm_424.cpp
+    src/encoding/interpret_as_ibm_424.h
+    src/encoding/interpret_as_ibm_420.cpp
+    src/encoding/interpret_as_ibm_420.h
     ${PROJECT_UI}
 )
 
