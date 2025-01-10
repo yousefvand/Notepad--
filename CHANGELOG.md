@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.93
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-297, IBM-290, IBM-285, IBM-284, IBM-280, IBM-278, IBM-277
+
 ## 0.0.92
 
 - Implemented:
