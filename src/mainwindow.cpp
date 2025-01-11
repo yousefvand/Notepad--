@@ -89,6 +89,15 @@
 #include "encoding/interpret_as_ibm_280.h"
 #include "encoding/interpret_as_ibm_278.h"
 #include "encoding/interpret_as_ibm_277.h"
+#include "encoding/interpret_as_ibm_273.h"
+#include "encoding/interpret_as_ibm_1047.h"
+#include "encoding/interpret_as_ibm_1026.h"
+#include "encoding/interpret_as_ibm_037.h"
+#include "encoding/interpret_as_ibm_01149.h"
+#include "encoding/interpret_as_ibm_01148.h"
+#include "encoding/interpret_as_ibm_01147.h"
+#include "encoding/interpret_as_ibm_01146.h"
+#include "encoding/interpret_as_ibm_01145.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1043,6 +1052,33 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "IBM-277") {
             Interpret_As_IBM_277::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-273") {
+            Interpret_As_IBM_273::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-1047") {
+            Interpret_As_IBM_1047::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-1026") {
+            Interpret_As_IBM_1026::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-037") {
+            Interpret_As_IBM_037::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01149") {
+            Interpret_As_IBM_01149::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01148") {
+            Interpret_As_IBM_01148::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01147") {
+            Interpret_As_IBM_01147::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01146") {
+            Interpret_As_IBM_01146::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01145") {
+            Interpret_As_IBM_01145::instance().execute(editor);
         }
     }
 }
