@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.95
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-01144, IBM-01143, IBM-01142, IBM-01141, IBM-01140
+
 ## 0.0.94
 
 - Implemented:

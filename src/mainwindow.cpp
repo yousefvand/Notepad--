@@ -98,6 +98,11 @@
 #include "encoding/interpret_as_ibm_01147.h"
 #include "encoding/interpret_as_ibm_01146.h"
 #include "encoding/interpret_as_ibm_01145.h"
+#include "encoding/interpret_as_ibm_01144.h"
+#include "encoding/interpret_as_ibm_01143.h"
+#include "encoding/interpret_as_ibm_01142.h"
+#include "encoding/interpret_as_ibm_01141.h"
+#include "encoding/interpret_as_ibm_01140.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1079,6 +1084,21 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "IBM-01145") {
             Interpret_As_IBM_01145::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01144") {
+            Interpret_As_IBM_01144::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01143") {
+            Interpret_As_IBM_01143::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01142") {
+            Interpret_As_IBM_01142::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01141") {
+            Interpret_As_IBM_01141::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01140") {
+            Interpret_As_IBM_01140::instance().execute(editor);
         }
     }
 }
