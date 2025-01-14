@@ -24,85 +24,92 @@
 #include "view/openinnewwindow.h"
 #include "view/wordwrap.h"
 #include "aboutdialog.h"
-// encodings
-#include "encoding/interpret_as_utf_8.h"
-#include "encoding/interpret_as_utf_8_without_bom.h"
-#include "encoding/interpret_as_utf_16_be.h"
-#include "encoding/interpret_as_utf_16_le.h"
-#include "encoding/interpret_as_dialog.h"
-#include "encoding/interpret_as_utf_8.h"
-#include "encoding/interpret_as_utf_7.h"
-#include "encoding/interpret_as_utf_32_le.h"
-#include "encoding/interpret_as_utf_32_be.h"
-#include "encoding/interpret_as_utf_16.h"
-#include "encoding/interpret_as_us_ascii.h"
-#include "encoding/interpret_as_tscii.h"
-#include "encoding/interpret_as_tis_620.h"
-#include "encoding/interpret_as_shift_jts.h"
-#include "encoding/interpret_as_scsu.h"
-#include "encoding/interpret_as_koi8_u.h"
-#include "encoding/interpret_as_koi8_r.h"
-#include "encoding/interpret_as_iso_8859_15.h"
-#include "encoding/interpret_as_iso_8859_14.h"
-#include "encoding/interpret_as_iso_8859_13.h"
-#include "encoding/interpret_as_iso_8859_10.h"
-#include "encoding/interpret_as_iso_8859_9.h"
-#include "encoding/interpret_as_iso_8859_8.h"
-#include "encoding/interpret_as_iso_8859_7.h"
-#include "encoding/interpret_as_iso_8859_6.h"
-#include "encoding/interpret_as_iso_8859_5.h"
-#include "encoding/interpret_as_iso_8859_4.h"
-#include "encoding/interpret_as_iso_8859_3.h"
-#include "encoding/interpret_as_iso_8859_2.h"
-#include "encoding/interpret_as_iso_8859_1.h"
-#include "encoding/interpret_as_iso_2022_kr.h"
-#include "encoding/interpret_as_iso_2022_jp_2.h"
-#include "encoding/interpret_as_iso_2022_jp_1.h"
-#include "encoding/interpret_as_iso_2022_jp.h"
-#include "encoding/interpret_as_iso_2022_cn_ext.h"
-#include "encoding/interpret_as_iso_2022_cn.h"
-#include "encoding/interpret_as_ibm_918.h"
-#include "encoding/interpret_as_ibm_871.h"
-#include "encoding/interpret_as_ibm_870.h"
-#include "encoding/interpret_as_ibm_869.h"
-#include "encoding/interpret_as_ibm_868.h"
-#include "encoding/interpret_as_ibm_866.h"
-#include "encoding/interpret_as_ibm_865.h"
-#include "encoding/interpret_as_ibm_864.h"
-#include "encoding/interpret_as_ibm_863.h"
-#include "encoding/interpret_as_ibm_862.h"
-#include "encoding/interpret_as_ibm_861.h"
-#include "encoding/interpret_as_ibm_860.h"
-#include "encoding/interpret_as_ibm_857.h"
-#include "encoding/interpret_as_ibm_855.h"
-#include "encoding/interpret_as_ibm_852.h"
-#include "encoding/interpret_as_ibm_850.h"
-#include "encoding/interpret_as_ibm_775.h"
-#include "encoding/interpret_as_ibm_500.h"
-#include "encoding/interpret_as_ibm_437.h"
-#include "encoding/interpret_as_ibm_424.h"
-#include "encoding/interpret_as_ibm_420.h"
-#include "encoding/interpret_as_ibm_297.h"
-#include "encoding/interpret_as_ibm_290.h"
-#include "encoding/interpret_as_ibm_285.h"
-#include "encoding/interpret_as_ibm_284.h"
-#include "encoding/interpret_as_ibm_280.h"
-#include "encoding/interpret_as_ibm_278.h"
-#include "encoding/interpret_as_ibm_277.h"
-#include "encoding/interpret_as_ibm_273.h"
-#include "encoding/interpret_as_ibm_1047.h"
-#include "encoding/interpret_as_ibm_1026.h"
-#include "encoding/interpret_as_ibm_037.h"
-#include "encoding/interpret_as_ibm_01149.h"
-#include "encoding/interpret_as_ibm_01148.h"
-#include "encoding/interpret_as_ibm_01147.h"
-#include "encoding/interpret_as_ibm_01146.h"
-#include "encoding/interpret_as_ibm_01145.h"
-#include "encoding/interpret_as_ibm_01144.h"
-#include "encoding/interpret_as_ibm_01143.h"
-#include "encoding/interpret_as_ibm_01142.h"
-#include "encoding/interpret_as_ibm_01141.h"
-#include "encoding/interpret_as_ibm_01140.h"
+// decodings
+#include "decoding/interpret_as_utf_8.h"
+#include "decoding/interpret_as_utf_8_without_bom.h"
+#include "decoding/interpret_as_utf_16_be.h"
+#include "decoding/interpret_as_utf_16_le.h"
+#include "decoding/interpret_as_dialog.h"
+#include "decoding/interpret_as_utf_8.h"
+#include "decoding/interpret_as_utf_7.h"
+#include "decoding/interpret_as_utf_32_le.h"
+#include "decoding/interpret_as_utf_32_be.h"
+#include "decoding/interpret_as_utf_16.h"
+#include "decoding/interpret_as_us_ascii.h"
+#include "decoding/interpret_as_tscii.h"
+#include "decoding/interpret_as_tis_620.h"
+#include "decoding/interpret_as_shift_jts.h"
+#include "decoding/interpret_as_scsu.h"
+#include "decoding/interpret_as_koi8_u.h"
+#include "decoding/interpret_as_koi8_r.h"
+#include "decoding/interpret_as_iso_8859_15.h"
+#include "decoding/interpret_as_iso_8859_14.h"
+#include "decoding/interpret_as_iso_8859_13.h"
+#include "decoding/interpret_as_iso_8859_10.h"
+#include "decoding/interpret_as_iso_8859_9.h"
+#include "decoding/interpret_as_iso_8859_8.h"
+#include "decoding/interpret_as_iso_8859_7.h"
+#include "decoding/interpret_as_iso_8859_6.h"
+#include "decoding/interpret_as_iso_8859_5.h"
+#include "decoding/interpret_as_iso_8859_4.h"
+#include "decoding/interpret_as_iso_8859_3.h"
+#include "decoding/interpret_as_iso_8859_2.h"
+#include "decoding/interpret_as_iso_8859_1.h"
+#include "decoding/interpret_as_iso_2022_kr.h"
+#include "decoding/interpret_as_iso_2022_jp_2.h"
+#include "decoding/interpret_as_iso_2022_jp_1.h"
+#include "decoding/interpret_as_iso_2022_jp.h"
+#include "decoding/interpret_as_iso_2022_cn_ext.h"
+#include "decoding/interpret_as_iso_2022_cn.h"
+#include "decoding/interpret_as_ibm_918.h"
+#include "decoding/interpret_as_ibm_871.h"
+#include "decoding/interpret_as_ibm_870.h"
+#include "decoding/interpret_as_ibm_869.h"
+#include "decoding/interpret_as_ibm_868.h"
+#include "decoding/interpret_as_ibm_866.h"
+#include "decoding/interpret_as_ibm_865.h"
+#include "decoding/interpret_as_ibm_864.h"
+#include "decoding/interpret_as_ibm_863.h"
+#include "decoding/interpret_as_ibm_862.h"
+#include "decoding/interpret_as_ibm_861.h"
+#include "decoding/interpret_as_ibm_860.h"
+#include "decoding/interpret_as_ibm_857.h"
+#include "decoding/interpret_as_ibm_855.h"
+#include "decoding/interpret_as_ibm_852.h"
+#include "decoding/interpret_as_ibm_850.h"
+#include "decoding/interpret_as_ibm_775.h"
+#include "decoding/interpret_as_ibm_500.h"
+#include "decoding/interpret_as_ibm_437.h"
+#include "decoding/interpret_as_ibm_424.h"
+#include "decoding/interpret_as_ibm_420.h"
+#include "decoding/interpret_as_ibm_297.h"
+#include "decoding/interpret_as_ibm_290.h"
+#include "decoding/interpret_as_ibm_285.h"
+#include "decoding/interpret_as_ibm_284.h"
+#include "decoding/interpret_as_ibm_280.h"
+#include "decoding/interpret_as_ibm_278.h"
+#include "decoding/interpret_as_ibm_277.h"
+#include "decoding/interpret_as_ibm_273.h"
+#include "decoding/interpret_as_ibm_1047.h"
+#include "decoding/interpret_as_ibm_1026.h"
+#include "decoding/interpret_as_ibm_037.h"
+#include "decoding/interpret_as_ibm_01149.h"
+#include "decoding/interpret_as_ibm_01148.h"
+#include "decoding/interpret_as_ibm_01147.h"
+#include "decoding/interpret_as_ibm_01146.h"
+#include "decoding/interpret_as_ibm_01145.h"
+#include "decoding/interpret_as_ibm_01144.h"
+#include "decoding/interpret_as_ibm_01143.h"
+#include "decoding/interpret_as_ibm_01142.h"
+#include "decoding/interpret_as_ibm_01141.h"
+#include "decoding/interpret_as_ibm_01140.h"
+#include "decoding/interpret_as_ibm_00858.h"
+#include "decoding/interpret_as_ibm_thai.h"
+#include "decoding/interpret_as_hz_gb_2312.h"
+#include "decoding/interpret_as_gbk.h"
+#include "decoding/interpret_as_gb18030.h"
+#include "decoding/interpret_as_euc_jp.h"
+#include "decoding/interpret_as_cesu_8.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -828,7 +835,7 @@ void MainWindow::on_action_Full_Screen_toggled(bool enabled)
     ui->action_Full_Screen->setChecked(isFullScreen());
 }
 
-/* Encoding */
+/* decoding */
 
 void MainWindow::on_action_Interpret_as_UTF_8_triggered()
 {
@@ -1099,6 +1106,27 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "IBM-01140") {
             Interpret_As_IBM_01140::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-00858") {
+            Interpret_As_IBM_00858::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-Thai") {
+            Interpret_As_IBM_Thai::instance().execute(editor);
+        }
+        if (selectedItem == "HZ-GB-2312") {
+            Interpret_As_HZ_GB_2312::instance().execute(editor);
+        }
+        if (selectedItem == "GBK") {
+            Interpret_As_GBK::instance().execute(editor);
+        }
+        if (selectedItem == "GB18030") {
+            Interpret_As_GB18030::instance().execute(editor);
+        }
+        if (selectedItem == "EUC-JP") {
+            Interpret_As_EUC_JP::instance().execute(editor);
+        }
+        if (selectedItem == "CESU-8") {
+            Interpret_As_CESU_8::instance().execute(editor);
         }
     }
 }
