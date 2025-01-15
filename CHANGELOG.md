@@ -6,7 +6,7 @@
 ## 0.0.96
 
 - Implemented:
-- Encoding Menu -> Interpret as ... IBM-00858, IBM-Thai, HZ-GB-2312, GBK, GH18030, EUC-JP, CESU-8
+- Encoding Menu -> Interpret as ... IBM-00858, IBM-Thai, HZ-GB-2312, GBK, GH18030, EUC-JP, CESU-8, Big5-HKSCS, Big5, BOCU-1, Adobe-Standard-Encoding
 
 ## 0.0.95
 

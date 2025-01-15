@@ -92,7 +92,11 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "GBK",
         "GB18030",
         "EUC-JP",
-        "CESU-8"
+        "CESU-8",
+        "Big5-HKSCS",
+        "Big5",
+        "BOCU-1",
+        "Adobe-Standard-Encoding"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

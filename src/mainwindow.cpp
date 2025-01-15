@@ -110,6 +110,10 @@
 #include "decoding/interpret_as_gb18030.h"
 #include "decoding/interpret_as_euc_jp.h"
 #include "decoding/interpret_as_cesu_8.h"
+#include "decoding/interpret_as_big5_hkscs.h"
+#include "decoding/interpret_as_big5.h"
+#include "decoding/interpret_as_bocu_1.h"
+#include "decoding/interpret_as_adobe_standard_encoding.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1127,6 +1131,19 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "CESU-8") {
             Interpret_As_CESU_8::instance().execute(editor);
+        }
+        if (selectedItem == "Big5-HKSCS") {
+            Interpret_As_Big5_HKSCS::instance().execute(editor);
+        }
+        if (selectedItem == "Big5") {
+            Interpret_As_Big5::instance().execute(editor);
+        }
+        if (selectedItem == "BOCU-1") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_BOCU_1::instance().execute(editor);
+        }
+        if (selectedItem == "Adobe-Standard-Encoding") {
+            Interpret_As_Adobe_Standard_Encoding::instance().execute(editor);
         }
     }
 }

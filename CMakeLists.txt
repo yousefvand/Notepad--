@@ -295,6 +295,14 @@ set(PROJECT_SOURCES
     src/decoding/interpret_as_euc_jp.h
     src/decoding/interpret_as_cesu_8.cpp
     src/decoding/interpret_as_cesu_8.h
+    src/decoding/interpret_as_big5_hkscs.cpp
+    src/decoding/interpret_as_big5_hkscs.h
+    src/decoding/interpret_as_big5.cpp
+    src/decoding/interpret_as_big5.h
+    src/decoding/interpret_as_bocu_1.cpp
+    src/decoding/interpret_as_bocu_1.h
+    src/decoding/interpret_as_adobe_standard_encoding.cpp
+    src/decoding/interpret_as_adobe_standard_encoding.h
     ${PROJECT_UI}
 )
 
