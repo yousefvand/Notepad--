@@ -303,6 +303,14 @@ set(PROJECT_SOURCES
     src/decoding/interpret_as_bocu_1.h
     src/decoding/interpret_as_adobe_standard_encoding.cpp
     src/decoding/interpret_as_adobe_standard_encoding.h
+    src/decoding/interpret_as_cp851.cpp
+    src/decoding/interpret_as_cp851.h
+    src/decoding/interpret_as_hp_roman8.cpp
+    src/decoding/interpret_as_hp_roman8.h
+    src/decoding/interpret_as_macintosh.cpp
+    src/decoding/interpret_as_macintosh.h
+    src/decoding/interpret_as_windows_1250.cpp
+    src/decoding/interpret_as_windows_1250.h
     ${PROJECT_UI}
 )
 

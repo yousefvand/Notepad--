@@ -114,6 +114,11 @@
 #include "decoding/interpret_as_big5.h"
 #include "decoding/interpret_as_bocu_1.h"
 #include "decoding/interpret_as_adobe_standard_encoding.h"
+#include "decoding/interpret_as_cp851.h"
+#include "decoding/interpret_as_big5_hkscs.h"
+#include "decoding/interpret_as_hp_roman8.h"
+#include "decoding/interpret_as_macintosh.h"
+#include "decoding/interpret_as_windows_1250.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1144,6 +1149,26 @@ void MainWindow::on_actionInterpret_As_triggered()
         }
         if (selectedItem == "Adobe-Standard-Encoding") {
             Interpret_As_Adobe_Standard_Encoding::instance().execute(editor);
+        }
+        if (selectedItem == "cp851") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_cp851::instance().execute(editor);
+        }
+        if (selectedItem == "hp-roman8") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_hp_roman8::instance().execute(editor);
+        }
+        if (selectedItem == "cp851") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_cp851::instance().execute(editor);
+        }
+        if (selectedItem == "macintosh") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_macintosh::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1250") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1250::instance().execute(editor);
         }
     }
 }

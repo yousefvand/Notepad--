@@ -2,8 +2,13 @@
 
 ============
 
+## 0.0.98
 
-## 0.0.96
+- Implemented:
+- Encoding Menu -> Interpret as ... cp851, hp-roman8, macintosh, windows-1250
+
+
+## 0.0.97
 
 - Implemented:
 - Encoding Menu -> Interpret as ... IBM-00858, IBM-Thai, HZ-GB-2312, GBK, GH18030, EUC-JP, CESU-8, Big5-HKSCS, Big5, BOCU-1, Adobe-Standard-Encoding

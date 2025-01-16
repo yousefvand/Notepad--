@@ -96,7 +96,11 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "Big5-HKSCS",
         "Big5",
         "BOCU-1",
-        "Adobe-Standard-Encoding"
+        "Adobe-Standard-Encoding",
+        "cp851",
+        "hp-roman8",
+        "macintosh",
+        "windows-1250"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox
