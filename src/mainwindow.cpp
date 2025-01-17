@@ -119,6 +119,10 @@
 #include "decoding/interpret_as_hp_roman8.h"
 #include "decoding/interpret_as_macintosh.h"
 #include "decoding/interpret_as_windows_1250.h"
+#include "decoding/interpret_as_windows_1251.h"
+#include "decoding/interpret_as_windows_1252.h"
+#include "decoding/interpret_as_windows_1253.h"
+#include "decoding/interpret_as_windows_1254.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1169,6 +1173,20 @@ void MainWindow::on_actionInterpret_As_triggered()
         if (selectedItem == "windows-1250") {
             Helpers::notImplemented(this);Helpers::notImplemented(this);
             Interpret_As_windows_1250::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1251") {
+            Interpret_As_windows_1251::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1252") {
+            Interpret_As_windows_1252::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1253") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1253::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1254") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1254::instance().execute(editor);
         }
     }
 }

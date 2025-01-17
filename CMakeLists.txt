@@ -311,6 +311,14 @@ set(PROJECT_SOURCES
     src/decoding/interpret_as_macintosh.h
     src/decoding/interpret_as_windows_1250.cpp
     src/decoding/interpret_as_windows_1250.h
+    src/decoding/interpret_as_windows_1251.cpp
+    src/decoding/interpret_as_windows_1251.h
+    src/decoding/interpret_as_windows_1252.cpp
+    src/decoding/interpret_as_windows_1252.h
+    src/decoding/interpret_as_windows_1253.cpp
+    src/decoding/interpret_as_windows_1253.h
+    src/decoding/interpret_as_windows_1254.cpp
+    src/decoding/interpret_as_windows_1254.h
     ${PROJECT_UI}
 )
 
