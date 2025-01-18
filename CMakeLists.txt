@@ -319,6 +319,16 @@ set(PROJECT_SOURCES
     src/decoding/interpret_as_windows_1253.h
     src/decoding/interpret_as_windows_1254.cpp
     src/decoding/interpret_as_windows_1254.h
+    src/decoding/interpret_as_windows_1255.cpp
+    src/decoding/interpret_as_windows_1255.h
+    src/decoding/interpret_as_windows_1256.cpp
+    src/decoding/interpret_as_windows_1256.h
+    src/decoding/interpret_as_windows_1257.cpp
+    src/decoding/interpret_as_windows_1257.h
+    src/decoding/interpret_as_windows_1258.cpp
+    src/decoding/interpret_as_windows_1258.h
+    src/decoding/interpret_as_windows_949.cpp
+    src/decoding/interpret_as_windows_949.h
     ${PROJECT_UI}
 )
 

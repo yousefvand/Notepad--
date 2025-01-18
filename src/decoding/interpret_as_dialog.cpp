@@ -104,7 +104,12 @@ InterpreteAsDialog::InterpreteAsDialog(QWidget* parent)
         "windows-1251",
         "windows-1252",
         "windows-1253",
-        "windows-1254"
+        "windows-1254",
+        "windows-1255",
+        "windows-1256",
+        "windows-1257",
+        "windows-1258",
+        "windows-949"
     });
 
     // Create OK and Cancel buttons using QDialogButtonBox

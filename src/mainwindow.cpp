@@ -123,6 +123,11 @@
 #include "decoding/interpret_as_windows_1252.h"
 #include "decoding/interpret_as_windows_1253.h"
 #include "decoding/interpret_as_windows_1254.h"
+#include "decoding/interpret_as_windows_1255.h"
+#include "decoding/interpret_as_windows_1256.h"
+#include "decoding/interpret_as_windows_1257.h"
+#include "decoding/interpret_as_windows_1258.h"
+#include "decoding/interpret_as_windows_949.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1187,6 +1192,26 @@ void MainWindow::on_actionInterpret_As_triggered()
         if (selectedItem == "windows-1254") {
             Helpers::notImplemented(this);Helpers::notImplemented(this);
             Interpret_As_windows_1254::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1255") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1255::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1256") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1256::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1257") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1257::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1258") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1258::instance().execute(editor);
+        }
+        if (selectedItem == "windows-949") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_949::instance().execute(editor);
         }
     }
 }

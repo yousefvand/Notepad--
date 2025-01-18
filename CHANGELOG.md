@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.100
+
+- Implemented:
+- Encoding Menu -> windows-1255, windows-1256, windows-1257, windows-1258, windows-949
+
 ## 0.0.99
 
 - Implemented:
