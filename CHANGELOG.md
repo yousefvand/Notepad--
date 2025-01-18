@@ -2,6 +2,152 @@
 
 ============
 
+## 0.0.100
+
+- Implemented:
+- Encoding Menu -> windows-1255, windows-1256, windows-1257, windows-1258, windows-949
+
+## 0.0.99
+
+- Implemented:
+- Encoding Menu -> windows-1251, windows-1252, windows-1253, windows-1254
+
+## 0.0.98
+
+- Implemented:
+- Encoding Menu -> Interpret as ... cp851, hp-roman8, macintosh, windows-1250
+
+
+## 0.0.97
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-00858, IBM-Thai, HZ-GB-2312, GBK, GH18030, EUC-JP, CESU-8, Big5-HKSCS, Big5, BOCU-1, Adobe-Standard-Encoding
+
+## 0.0.95
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-01144, IBM-01143, IBM-01142, IBM-01141, IBM-01140
+
+## 0.0.94
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-273, IBM-1047, IBM-1026, IBM-037, IBM-01149, IBM-01148, IBM-01147, IBM-01146, IBM-01145
+
+
+## 0.0.93
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-297, IBM-290, IBM-285, IBM-284, IBM-280, IBM-278, IBM-277
+
+## 0.0.92
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-775, IBM-500, IBM-437, IBM-424, IBM-420
+
+## 0.0.91
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-857, IBM-855, IBM-852, IBM-850
+
+## 0.0.90
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-866, IBM-865, IBM-864, IBM-863, IBM-862, IBM-861, IBM-860
+
+## 0.0.89
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-869, IBM-868
+
+## 0.0.88
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-871, IBM-870
+
+## 0.0.87
+
+- Implemented:
+- Encoding Menu -> Interpret as ... IBM-918
+
+## 0.0.86
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-2022-JP, ISO-2022-CN-EXT, ISO-2022-CN
+
+## 0.0.85
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-2022-JP-1, ISO-2022-JP-2
+
+## 0.0.84
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-10, ISO-2022-KR
+
+## 0.0.83
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-14, ISO-8859-13
+
+## 0.0.82
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-1, ISO-8859-15
+
+## 0.0.81
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-5, ISO-8859-4, ISO-8859-3, ISO-8859-2
+
+## 0.0.80
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-7, ISO-8859-6
+
+## 0.0.79
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-8
+
+## 0.0.78
+
+- Implemented:
+- Encoding Menu -> Interpret as ... ISO-8859-9
+
+## 0.0.77
+
+- Implemented:
+- Encoding Menu -> Interpret as ... KOI8-R
+
+## 0.0.76
+
+- Implemented:
+- Encoding Menu -> Interpret as ... KOI8-U (needs fundamental change in file loading)
+
+## 0.0.75
+
+- Implemented:
+- Encoding Menu -> Interpret as ... TIS-620, SHIFT-JIS, SCSU
+
+## 0.0.74
+
+- Implemented:
+- Encoding Menu -> Interpret as ... UTF-7, 32LE, 32BE, UTF32, UTF-16, US-ASCII, TSCII
+
+## 0.0.73
+
+- Implemented:
+- Encoding Menu -> Interpret as ... UTF-32LE
+
+## 0.0.72
+
+- Implemented:
+- Encoding Menu -> Interpret as UTF-8
+- Encoding Menu -> Interpret as UTF-8 without BOM
+- Encoding Menu -> Interpret as UTF-16BE (UCS2 Big Endian)
+- Encoding Menu -> Interpret as UTF-16LE (UCS2 Little Endian)
+- Encoding Menu -> Interpret as ...
+
 ## 0.0.71
 
 - Implemented:

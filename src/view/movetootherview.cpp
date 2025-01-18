@@ -66,7 +66,7 @@ void MoveToOtherView::execute() {
         qDebug() << "No secondary editor found. Creating a second editor.";
 
         // Create and configure the second editor
-        textEdit2 = new CodeEditor(currentTab);
+        textEdit2 = new CodeEditor(currentTab, "");
         textEdit2->setObjectName("textEdit2");
         textEdit2->setPlainText(textEdit->toPlainText());
 
