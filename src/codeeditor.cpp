@@ -1,3 +1,5 @@
+#define FONT_NAME "VL Gothic"
+
 #include "codeeditor.h"
 #include <QPainter>
 #include <QTextBlock>
@@ -5,9 +7,10 @@
 #include <QTabWidget>
 #include "settings.h"
 
-CodeEditor::CodeEditor(QWidget *parent)
+CodeEditor::CodeEditor(QWidget *parent, QString filePath)
     : QPlainTextEdit(parent), lineNumberArea(new LineNumberArea(this)) {
 
+    m_filePath = filePath;
     QTabWidget* doc = qobject_cast<QTabWidget*>(parent);
     m_documentsTab = doc;
     QPalette p = this->palette();
@@ -16,7 +19,7 @@ CodeEditor::CodeEditor(QWidget *parent)
     this->setStyleSheet("QPlainTextEdit { background-color: white; }");
 
     QFont font;
-    font.setFamily("sans serif");
+    font.setFamily(FONT_NAME); // Macro defined at top of the file
     font.setFixedPitch(true);
     font.setPointSize(12);
     this->setFont(font);
@@ -44,6 +47,10 @@ CodeEditor::CodeEditor(QWidget *parent)
         m_showSpaces = true;
         m_showEOL = true;
     }
+}
+
+QString CodeEditor::filePath() {
+    return m_filePath;
 }
 
 int CodeEditor::lineNumberAreaWidth() {

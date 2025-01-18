@@ -25,7 +25,7 @@ Document::Document(const QString &filePath, QWidget *parent)
 
     qDebug() << "Document created for file: " << filePath;
     // Initialize the code editor and layout
-    m_editor = new CodeEditor(this);
+    m_editor = new CodeEditor(this, filePath);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(m_editor);

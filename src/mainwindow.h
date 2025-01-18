@@ -188,6 +188,16 @@ private slots:
 
     void on_action_Full_Screen_toggled(bool enabled);
 
+    void on_action_Interpret_as_UTF_8_triggered();
+
+    void on_actionInterpret_as_16_BE_triggered();
+
+    void on_actionInterpret_as_utf_8_without_BOM_triggered();
+
+    void on_actionInterpret_as_16_LE_triggered();
+
+    void on_actionInterpret_As_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;

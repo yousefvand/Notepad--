@@ -14,7 +14,7 @@ class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 
 public:
-    explicit CodeEditor(QWidget *parent = nullptr);
+    explicit CodeEditor(QWidget *parent, QString filePath);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -35,6 +35,7 @@ public:
     void zoomOut();
     void defaultZoom();
     void setShowMathRendering(bool enabled);
+    QString filePath();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -61,6 +62,7 @@ private:
     bool m_showWrapSymbol = false;
     int m_tabWidth;
     bool m_showMathRendering = false;
+    QString m_filePath;
 
     void paintTabs(QPainter& painter, const QTextBlock& block, int top);
     void paintSpaces(QPainter& painter, const QTextBlock& block, int top);
