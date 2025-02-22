@@ -225,7 +225,6 @@
     <addaction name="actionInterpret_as_16_LE"/>
     <addaction name="actionInterpret_As"/>
     <addaction name="separator"/>
-    <addaction name="action_Reload_file_interpreted_as"/>
     <addaction name="actionConvert_to_UTF_8"/>
     <addaction name="actionConvert_to_UTF_8_without_BOM"/>
     <addaction name="actionConvert_to_UTF_16BE_UCS_2_Big_Endian"/>

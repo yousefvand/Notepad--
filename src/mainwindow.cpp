@@ -1216,8 +1216,54 @@ void MainWindow::on_actionInterpret_As_triggered()
     }
 }
 
+void MainWindow::on_actionConvert_to_UTF_8_triggered()
+{
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    QString text = activeDocument->getEditorContent();
+    QByteArray utf8Data = text.toUtf8();
+    QString utf8Text = QString::fromUtf8(utf8Data);
+    activeDocument->editor()->setPlainText(utf8Text);
+}
+
+void MainWindow::on_actionConvert_to_UTF_8_without_BOM_triggered()
+{
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    QString text = activeDocument->getEditorContent();
+    QByteArray utf8Data = text.toUtf8();
+    // Remove the BOM if it exists
+    if (utf8Data.startsWith("\xEF\xBB\xBF")) {
+        utf8Data.remove(0, 3);
+    }
+    QString utf8Text = QString::fromUtf8(utf8Data);
+    activeDocument->editor()->setPlainText(utf8Text);
+}
 
 
+void MainWindow::on_actionConvert_to_UTF_16BE_UCS_2_Big_Endian_triggered()
+{
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    QString text = activeDocument->getEditorContent();
+    QByteArray utf16BEData;
+    QTextStream stream(&utf16BEData, QIODevice::WriteOnly);
+    stream.setEncoding(QStringConverter::Encoding::Utf16BE); // Set encoding to UTF-16BE
+    stream << text;
+    stream.flush();
+    QString utf16BEText = QString::fromUtf16(reinterpret_cast<const char16_t*>(utf16BEData.constData()), utf16BEData.size() / 2);
+    activeDocument->editor()->setPlainText(utf16BEText);
+}
+
+void MainWindow::on_actionConvert_to_UTF_16LE_UCS_2_Little_Endian_triggered()
+{
+    Document* activeDocument = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+    QString text = activeDocument->getEditorContent();
+    QByteArray utf16LEData;
+    QTextStream stream(&utf16LEData, QIODevice::WriteOnly);
+    stream.setEncoding(QStringConverter::Encoding::Utf16LE); // Set encoding to UTF-16LE
+    stream << text;
+    stream.flush();
+    QString utf16LEText = QString::fromUtf16(reinterpret_cast<const char16_t*>(utf16LEData.constData()), utf16LEData.size() / 2);
+    activeDocument->editor()->setPlainText(utf16LEText);
+}
 
 
 
@@ -1489,5 +1535,4 @@ void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this, tr("About Qt"));
 }
-
 

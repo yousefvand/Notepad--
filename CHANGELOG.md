@@ -2,6 +2,11 @@
 
 ============
 
+## 0.0.101
+
+- Implemented:
+- Encoding Menu -> convert to UTF-8, convert to UTF-8 without BOM, convert to UTF-16BE (UCS-2 big endian), UTF-16LE (UCS-2 little endian)
+
 ## 0.0.100
 
 - Implemented:
