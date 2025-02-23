@@ -6,7 +6,7 @@
 ## 0.0.102
 
 - Implemented:
-- Encoding Menu -> convert to UTF-8, convrt to UTF-7
+- Encoding Menu -> convert to UTF-8, convert to UTF-7
 
 ## 0.0.101
 
