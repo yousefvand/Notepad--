@@ -329,6 +329,10 @@ set(PROJECT_SOURCES
     src/decoding/interpret_as_windows_1258.h
     src/decoding/interpret_as_windows_949.cpp
     src/decoding/interpret_as_windows_949.h
+    src/encoding/convert_to_dialog.cpp
+    src/encoding/convert_to_dialog.h
+    src/encoding/convert_to_utf_8.cpp
+    src/encoding/convert_to_utf_8.h
     ${PROJECT_UI}
 )
 
@@ -336,6 +340,7 @@ set(PROJECT_SOURCES
 qt_add_executable(Notepad--
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
+    src/encoding/convert_to_utf_7.h src/encoding/convert_to_utf_7.cpp
 )
 
 # Link Qt6 libraries

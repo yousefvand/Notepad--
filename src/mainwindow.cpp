@@ -128,6 +128,10 @@
 #include "decoding/interpret_as_windows_1257.h"
 #include "decoding/interpret_as_windows_1258.h"
 #include "decoding/interpret_as_windows_949.h"
+// encodings
+#include "encoding/convert_to_dialog.h"
+#include "encoding/convert_to_utf_8.h"
+#include "encoding/convert_to_utf_7.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1263,6 +1267,341 @@ void MainWindow::on_actionConvert_to_UTF_16LE_UCS_2_Little_Endian_triggered()
     stream.flush();
     QString utf16LEText = QString::fromUtf16(reinterpret_cast<const char16_t*>(utf16LEData.constData()), utf16LEData.size() / 2);
     activeDocument->editor()->setPlainText(utf16LEText);
+}
+
+void MainWindow::on_actionC_onvert_to_triggered()
+{
+    ConvertToDialog dialog(this); // Create the CCC with MainWindow as the parent
+
+    if (dialog.exec() == QDialog::Accepted) {
+        // OK clicked
+        QString selectedItem = dialog.getSelectedItem();
+        qDebug() << "Selected item:" << selectedItem;
+        Document* doc = qobject_cast<Document*>(ui->documentsTab->currentWidget());
+        CodeEditor* editor = doc->editor();
+        if (!editor) {
+            qFatal("No active editor");
+            return;
+        } // combobox items are in interpret as dialog.cpp
+        if (selectedItem == "UTF-8") {
+            Convert_To_Utf_8::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-7") {
+            Convert_To_Utf_7::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-32LE") {
+            Interpret_As_UTF_32_LE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-32BE") {
+            Interpret_As_UTF_32_BE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-16LE") {
+            InterpretAsUTF16LE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-16BE") {
+            Interpret_As_UTF_16_BE::instance().execute(editor);
+        }
+        if (selectedItem == "UTF-16") {
+            Interpret_As_UTF_16::instance().execute(editor);
+        }
+        if (selectedItem == "US-ASCII") {
+            Interpret_As_US_ASCII::instance().execute(editor);
+        }
+        if (selectedItem == "TSCII") {
+            Interpret_As_TSCII::instance().execute(editor);
+        }
+        if (selectedItem == "TIS-620") {
+            Interpret_As_TIS_620::instance().execute(editor);
+        }
+        if (selectedItem == "TIS-620") {
+            Interpret_As_Shift_JTS::instance().execute(editor);
+        }
+        if (selectedItem == "SCSU") {
+            Interpret_As_SCSU::instance().execute(editor);
+        }
+        if (selectedItem == "KOI8-U") {
+            Helpers::notImplemented(this);
+            //Interpret_As_KOI8_U::instance().execute(editor);
+        }
+        if (selectedItem == "KOI8-R") {
+            Helpers::notImplemented(this);
+            Interpret_As_KOI8_R::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-15") {
+            Interpret_As_ISO_8859_15::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-14") {
+            Interpret_As_ISO_8859_14::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-13") {
+            Interpret_As_ISO_8859_13::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-10") {
+            Interpret_As_ISO_8859_10::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-9") {
+            Interpret_As_ISO_8859_9::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-8") {
+            Interpret_As_ISO_8859_8::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-7") {
+            Interpret_As_ISO_8859_7::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-6") {
+            Interpret_As_ISO_8859_6::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-5") {
+            Helpers::notImplemented(this);
+            Interpret_As_ISO_8859_5::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-4") {
+            Interpret_As_ISO_8859_4::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-3") {
+            Interpret_As_ISO_8859_3::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-2") {
+            Interpret_As_ISO_8859_2::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-8859-1") {
+            Interpret_As_ISO_8859_1::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-KR") {
+            Helpers::notImplemented(this);
+            Interpret_As_ISO_2022_KR::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-JP-2") {
+            Helpers::notImplemented(this);
+            Interpret_As_ISO_2022_JP_2::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-JP-1") {
+            Interpret_As_ISO_2022_JP_1::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-JP") {
+            Interpret_As_ISO_2022_JP::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-CN-EXT") {
+            Interpret_As_ISO_2022_CN_EXT::instance().execute(editor);
+        }
+        if (selectedItem == "ISO-2022-CN") {
+            Interpret_As_ISO_2022_CN::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-918") {
+            Interpret_As_IBM_918::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-871") {
+            Interpret_As_IBM_871::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-870") {
+            Interpret_As_IBM_870::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-869") {
+            Interpret_As_IBM_869::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-868") {
+            Interpret_As_IBM_868::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-866") {
+            Interpret_As_IBM_866::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-865") {
+            Interpret_As_IBM_865::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-864") {
+            Interpret_As_IBM_864::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-863") {
+            Interpret_As_IBM_863::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-862") {
+            Interpret_As_IBM_862::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-861") {
+            Interpret_As_IBM_861::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-860") {
+            Interpret_As_IBM_860::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-857") {
+            Interpret_As_IBM_857::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-855") {
+            Interpret_As_IBM_855::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-852") {
+            Interpret_As_IBM_852::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-850") {
+            Interpret_As_IBM_850::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-775") {
+            Interpret_As_IBM_775::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-500") {
+            Interpret_As_IBM_500::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-437") {
+            Interpret_As_IBM_437::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-424") {
+            Interpret_As_IBM_424::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-420") {
+            Interpret_As_IBM_420::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-297") {
+            Interpret_As_IBM_297::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-290") {
+            Interpret_As_IBM_290::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-285") {
+            Interpret_As_IBM_285::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-284") {
+            Interpret_As_IBM_284::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-280") {
+            Interpret_As_IBM_280::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-278") {
+            Interpret_As_IBM_278::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-277") {
+            Interpret_As_IBM_277::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-273") {
+            Interpret_As_IBM_273::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-1047") {
+            Interpret_As_IBM_1047::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-1026") {
+            Interpret_As_IBM_1026::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-037") {
+            Interpret_As_IBM_037::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01149") {
+            Interpret_As_IBM_01149::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01148") {
+            Interpret_As_IBM_01148::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01147") {
+            Interpret_As_IBM_01147::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01146") {
+            Interpret_As_IBM_01146::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01145") {
+            Interpret_As_IBM_01145::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01144") {
+            Interpret_As_IBM_01144::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01143") {
+            Interpret_As_IBM_01143::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01142") {
+            Interpret_As_IBM_01142::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01141") {
+            Interpret_As_IBM_01141::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-01140") {
+            Interpret_As_IBM_01140::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-00858") {
+            Interpret_As_IBM_00858::instance().execute(editor);
+        }
+        if (selectedItem == "IBM-Thai") {
+            Interpret_As_IBM_Thai::instance().execute(editor);
+        }
+        if (selectedItem == "HZ-GB-2312") {
+            Interpret_As_HZ_GB_2312::instance().execute(editor);
+        }
+        if (selectedItem == "GBK") {
+            Interpret_As_GBK::instance().execute(editor);
+        }
+        if (selectedItem == "GB18030") {
+            Interpret_As_GB18030::instance().execute(editor);
+        }
+        if (selectedItem == "EUC-JP") {
+            Interpret_As_EUC_JP::instance().execute(editor);
+        }
+        if (selectedItem == "CESU-8") {
+            Interpret_As_CESU_8::instance().execute(editor);
+        }
+        if (selectedItem == "Big5-HKSCS") {
+            Interpret_As_Big5_HKSCS::instance().execute(editor);
+        }
+        if (selectedItem == "Big5") {
+            Interpret_As_Big5::instance().execute(editor);
+        }
+        if (selectedItem == "BOCU-1") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_BOCU_1::instance().execute(editor);
+        }
+        if (selectedItem == "Adobe-Standard-Encoding") {
+            Interpret_As_Adobe_Standard_Encoding::instance().execute(editor);
+        }
+        if (selectedItem == "cp851") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_cp851::instance().execute(editor);
+        }
+        if (selectedItem == "hp-roman8") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_hp_roman8::instance().execute(editor);
+        }
+        if (selectedItem == "cp851") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_cp851::instance().execute(editor);
+        }
+        if (selectedItem == "macintosh") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_macintosh::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1250") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1250::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1251") {
+            Interpret_As_windows_1251::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1252") {
+            Interpret_As_windows_1252::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1253") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1253::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1254") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1254::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1255") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1255::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1256") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1256::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1257") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1257::instance().execute(editor);
+        }
+        if (selectedItem == "windows-1258") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_1258::instance().execute(editor);
+        }
+        if (selectedItem == "windows-949") {
+            Helpers::notImplemented(this);Helpers::notImplemented(this);
+            Interpret_As_windows_949::instance().execute(editor);
+        }
+    }
 }
 
 

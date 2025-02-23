@@ -206,6 +206,8 @@ private slots:
 
     void on_actionConvert_to_UTF_16LE_UCS_2_Little_Endian_triggered();
 
+    void on_actionC_onvert_to_triggered();
+
 private:
     Ui::MainWindow* ui;
     FileOperations* fileOperations;
